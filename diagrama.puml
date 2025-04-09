@@ -1,0 +1,158 @@
+@startuml
+
+' ========================
+' Entidades Principales
+' ========================
+
+class Empleado {
+  - id: UUID
+  - nombre: String
+  - contraseña: String <<cifrada con BCrypt>>
+  - etiquetas: List<String>
+  - estado: Enum (ACTIVO, INACTIVO, BLOQUEADO)
+  - subordinados: List<Empleado>
+  - direccion: Dirección <<embebida>>
+  + modificarDatos(nuevoNombre: String, nuevaDireccion: Dirección): void
+  + etiquetarSubordinado(subordinado: Empleado, etiqueta: String): void
+  + eliminarEtiqueta(subordinado: Empleado, etiqueta: String): void
+}
+
+class Producto {
+  - id: UUID
+  - nombre: String
+  - categoria: String
+  - fechaCarga: LocalDate
+  - empleadoCreador: Empleado
+  + actualizarCategoria(nuevaCategoria: String): void
+}
+
+class Nómina {
+  - id: UUID
+  - empleado: Empleado
+  - lineasNomina: List<LineaNomina>
+  - subtotal: BigDecimal
+  - fecha: LocalDate
+  + calcularSubtotal(): void
+}
+
+class LineaNomina {
+  - concepto: String
+  - importe: BigDecimal
+}
+
+class Colaboración {
+  - id: UUID
+  - empleadoOrigen: Empleado
+  - empleadoDestino: Empleado
+  - estado: Enum (ACTIVA, CANCELADA)
+  - mensajes: List<Mensaje>
+  + cancelar(): void
+}
+
+class SolicitudColaboración {
+  - id: UUID
+  - solicitante: Empleado
+  - destinatario: Empleado
+  - estado: Enum (PENDIENTE, ACEPTADA, RECHAZADA)
+  - fechaSolicitud: LocalDateTime
+  + aceptar(): void
+  + rechazar(): void
+}
+
+class Departamento {
+  - id: UUID
+  - nombre: String
+  - descripcion: String
+  + consultarEmpleados(param: Map<String,Object>): List<Empleado>
+}
+
+class Dirección {
+ via: String,
+  tipo_via: String,
+  numero: String,
+  piso: String,
+  puerta: String,
+  localidad: String,
+  cp: String,
+  region: String,
+  pais: String
+  {static} + of(via: String, tipo_via: String, numero: String, piso: String, puerta: String, localidad: String, cp: String, region: String, pais: String): Dirección
+}
+
+class Mensaje {
+  String contenido
+}
+
+class Periodo {
+  LocalDate inicio,
+  LocalDate fin,
+  {static} + of(inicio: LocalDate, fin: LocalDate): Periodo
+}
+
+' ========================
+' Clases de Servicio
+' ========================
+
+class AuthService {
+  + cifrarContraseña(contraseñaPlana: String): String
+  + validarCredenciales(email: String, contraseña: String): boolean
+  + generarTokenRecuperacion(email: String): String
+}
+
+class EmpleadoService {
+  - empleadoRepository: EmpleadoRepository
+  + darBajaLogica(empleadoId: UUID): void
+  + recuperarBaja(empleadoId: UUID): void
+  + buscarPorEtiqueta(etiqueta: String): List<Empleado>
+}
+
+class ProductoService {
+  - productoRepository: ProductoRepository
+  + cargarMasiva(archivoCSV: File): List<Producto>
+  + consultarParametrizada(filtro: FiltroProducto): List<Producto>
+}
+
+interface EmpleadoRepository
+interface ProductoRepository
+class FiltroProducto
+
+' ========================
+' DTOs
+' ========================
+
+class EmpleadoDTO {
+  - nombre: String
+  - email: String
+  - datosParciales: Map<String, Object>
+}
+
+class ProductoDTO {
+  - nombre: String
+  - categoria: String
+  - fechaCarga: LocalDate
+}
+
+' ========================
+' Utilidades
+' ========================
+
+class Validaciones {
+  {static} + validarEmail(email: String): boolean
+  {static} + validarArchivo(archivo: File, maxSizeMB: int): boolean
+  {static} + validarContraseña(contraseña: String): boolean
+}
+
+
+' ========================
+' Relaciones
+' ========================
+
+Empleado "1" o-- "*" Nómina
+Empleado "1" --> "*" SolicitudColaboración : solicitante
+SolicitudColaboración "1" --> "1" Empleado : destinatario
+Colaboración "1" *-- "*" Mensaje
+Producto --> "1" Empleado : creado por
+Empleado "1" --> "1" Departamento : pertenece a
+Departamento "1" --> "*" Empleado : contiene
+
+@enduml
