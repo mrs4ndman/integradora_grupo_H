@@ -1,0 +1,6 @@
+// settings.gradle (raíz)
+rootProject.name = 'integradora_grupo_H'
+
+include 'administracion'
+include 'empleados'
+include 'comun'
