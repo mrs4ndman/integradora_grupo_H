@@ -1,4 +1,4 @@
-package org.grupo_h.empleados.entity;
+package org.grupo_h.comun.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
