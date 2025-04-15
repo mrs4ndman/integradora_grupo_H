@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.grupo_h.comun.entity.chat.Colaboracion;
+import org.grupo_h.comun.entity.chat.Mensaje;
 
 import java.util.List;
 import java.util.UUID;

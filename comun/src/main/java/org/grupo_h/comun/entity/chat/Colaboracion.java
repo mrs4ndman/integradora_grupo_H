@@ -1,9 +1,10 @@
-package org.grupo_h.comun.entity;
+package org.grupo_h.comun.entity.chat;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.grupo_h.comun.entity.Empleado;
 
 import java.util.List;
 import java.util.UUID;

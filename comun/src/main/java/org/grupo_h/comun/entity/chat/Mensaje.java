@@ -1,9 +1,10 @@
-package org.grupo_h.comun.entity;
+package org.grupo_h.comun.entity.chat;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import lombok.*;
+import org.grupo_h.comun.entity.Empleado;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

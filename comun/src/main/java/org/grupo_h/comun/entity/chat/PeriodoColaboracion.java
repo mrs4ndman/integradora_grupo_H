@@ -1,4 +1,4 @@
-package org.grupo_h.comun.entity;
+package org.grupo_h.comun.entity.chat;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
