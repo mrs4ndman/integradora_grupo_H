@@ -18,14 +18,4 @@ public class Empleado {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    // Relaciones
-    @OneToMany(mappedBy = "empleado")
-    private List<Colaboracion> colaboraciones;
-
-    @OneToMany(mappedBy = "remitente")
-    private List<Mensaje> mensajesEnviados;
-
-    @OneToMany(mappedBy = "destinatario")
-    private List<Mensaje> mensajesRecibidos;
 }

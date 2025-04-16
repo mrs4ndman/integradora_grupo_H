@@ -22,8 +22,10 @@ public class Colaboracion {
     @JoinColumn(name = "empleado_id")
     private Empleado empleado;
 
-    @OneToMany(mappedBy = "colaboracion")
-    private List<PeriodoColaboracion> periodos;
+//    @OneToMany(mappedBy = "colaboracion")
+//    private List<PeriodoColaboracion> periodos;
+//
+//    @OneToMany(mappedBy = "colaboracion")
+//    private List<SolicitudColaboracion> solicitudes;
 
-    @OneToMany(mappedBy = "colaboracion")
-    private List<SolicitudColaboracion> solicitudes;}
+}

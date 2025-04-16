@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Usuario</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<h1>Registro de Usuario</h1>
+
+<!-- Se muestra un mensaje de éxito si lo hay -->
+<div th:if="${param.success}">
+    <p style="color: green;">¡Registro exitoso!</p>
+</div>
+
+<!-- Se muestra un mensaje de error si lo hay -->
+<div th:if="${error != null}">
+    <p style="color: red;" th:text="${error}"></p>
+</div>
+
+<!-- El formulario usa el objeto 'usuarioRegistroDTO' para hacer binding de sus campos -->
+<form th:action="@{/usuarios/registro}" th:object="${usuarioRegistroDTO}" method="post">
+    <div>
+        <label for="nombreUsuario">Nombre de Usuario</label>
+        <input type="text" th:field="*{nombreUsuario}" id="nombreUsuario" placeholder="Escribe tu nombre de usuario" required/>
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input type="email" th:field="*{email}" id="email" placeholder="tuemail@dominio.com" required/>
+    </div>
+    <div>
+        <label for="contrasena">Contraseña</label>
+        <input type="password" th:field="*{contrasena}" id="contrasena" required/>
+    </div>
+    <div>
+        <button type="submit">Registrarse</button>
+    </div>
+</form>
+</body>
+</html>
