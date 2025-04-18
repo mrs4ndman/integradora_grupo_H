@@ -20,7 +20,13 @@ public class Configuraciones {
         http.csrf(csrf -> csrf.disable())  // Deshabilitar CSRF para desarrollo (opcional, verificar en producción)
                 .authorizeHttpRequests(authz -> authz
                         // Permite el acceso público al endpoint de registro
-                        .requestMatchers("/usuarios/registro", "/css/**", "/js/**").permitAll()
+                        .requestMatchers(
+                                "/usuarios/registro",
+                                "/empleados/registro-datos",
+                                "/empleados/registro-direccion",
+                                "/empleados/registro-financiero",
+                                "/empleados/registro-finales",
+                                "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults()); // Habilita el login por defecto para otros endpoints protegidos

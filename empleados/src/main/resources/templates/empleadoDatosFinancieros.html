@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Datos Empleado</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<h2>Formulario de Registro de Datos Financieros del Empleado</h2>
+<!-- Se muestra un mensaje de éxito si lo hay -->
+<div th:if="${param.success}">
+    <p style="color: green;">¡Registro exitoso!</p>
+</div>
+
+<!-- Se muestra un mensaje de error si lo hay -->
+<div th:if="${error != null}">
+    <p style="color: red;" th:text="${error}"></p>
+</div>
+
+<form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post">
+    <label for="banco">Banco:</label>
+    <input type="text" id="banco" th:field="*{cuentaCorriente.banco}"  />
+    <ul>
+        <li th:each="err : ${#fields.errors('cuentaCorriente.banco')}" th:text="${err}" class="error"></li>
+    </ul>
+    <br><br>
+
+    <label for="cuentaCorriente">Cuenta Corriente:</label>
+    <input type="text" id="cuentaCorriente" th:field="*{cuentaCorriente.cuentaCorriente}"  />
+    <ul>
+        <li th:each="err : ${#fields.errors('cuentaCorriente.cuentaCorriente')}" th:text="${err}" class="error"></li>
+    </ul>
+    <br><br>
+
+    <button type="submit">Enviar</button>
+</form>
+
+</body>
+</html>

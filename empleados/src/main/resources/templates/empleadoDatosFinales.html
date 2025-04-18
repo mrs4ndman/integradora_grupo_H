@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen</title>
+<!--    <link rel="stylesheet" th:href="@{css/estilos.css}">-->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<!--    <script th:src="@{/js/script.js}"></script>-->
+</head>
+<body>
+
+
+<h2>Resumen</h2>
+
+<form action="" method="post">
+
+<!--    <div th:replace="~{fragments/navbar :: navbar}"></div>-->
+    <h2>Empleado</h2>
+
+    <p>Nombre: <span th:text="${datos.nombre}"></span> </p>
+    <p>Apellido: <span th:text="${datos.apellido}"></span> </p>
+    <p>Fecha de Nacimiento: <span th:text="${datos.fechaNacimiento}"></span></p>
+
+    <h2>Dirección</h2>
+
+    <p>Tipo de Vía: <span th:text="${datos.direccion.tipoVia}"></span></p>
+    <p>Vía: <span th:text="${datos.direccion.via}"></span></p>
+    <p>Número: <span th:text="${datos.direccion.numero}"></span></p>
+    <p>Piso: <span th:text="${datos.direccion.piso}"></span></p>
+    <p>Puerta: <span th:text="${datos.direccion.puerta}"></span></p>
+    <p>Localidad: <span th:text="${datos.direccion.localidad}"></span></p>
+    <p>Código Postal: <span th:text="${datos.direccion.codigoPostal}"></span></p>
+    <p>Región: <span th:text="${datos.direccion.region}"></span></p>
+    <p>País: <span th:text="${datos.direccion.pais}"></span></p>
+
+    <h2>Datos Financieros</h2>
+
+    <p>Banco: <span th:text="${datos.cuentaCorriente.banco}"></span></p>
+    <p>Cuenta Corriente: <span th:text="${datos.cuentaCorriente.cuentaCorriente}"></span></p>
+
+
+
+</form>
+<!--<a th:href="@{/logout}" class="btn">Volver al inicio</a>-->
+
+
+</body>
+</html>
