@@ -18,7 +18,7 @@ import java.util.Optional;
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private static final int MAX_INTENTOS_FALLIDOS = 2;
+    private static final int MAX_INTENTOS_FALLIDOS = 3;
 
     private final UsuarioRepository usuarioRepository;
     private final BCryptPasswordEncoder passwordEncoder;
