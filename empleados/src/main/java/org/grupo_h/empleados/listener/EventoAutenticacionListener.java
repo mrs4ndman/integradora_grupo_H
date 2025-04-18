@@ -1,0 +1,43 @@
+package org.grupo_h.empleados.listener;
+
+import org.grupo_h.empleados.service.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+@Component
+public class EventoAutenticacionListener {
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @EventListener
+    public void handleAuthenticationSuccess(AuthenticationSuccessEvent event) {
+        // El objeto 'principal' suele ser UserDetails si la autenticación fue exitosa
+        Object principal = event.getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            System.out.println("Login exitoso para: " + username); // Log
+            usuarioService.procesarLoginExitoso(username);
+        } else if (principal instanceof String) {
+            // A veces el principal puede ser solo el String del username
+            String username = (String) principal;
+            System.out.println("Login exitoso para: " + username); // Log
+            usuarioService.procesarLoginExitoso(username);
+        }
+    }
+
+    @EventListener
+    public void handleAuthenticationFailure(AuthenticationFailureBadCredentialsEvent event) {
+        // En eventos de fallo, el principal suele ser el username intentado (String)
+        Object principal = event.getAuthentication().getPrincipal();
+        if (principal instanceof String) {
+            String username = (String) principal;
+            System.out.println("Login fallido (BadCredentials) para: " + username); // Log
+            usuarioService.procesarLoginFallido(username);
+        }
+    }
+}

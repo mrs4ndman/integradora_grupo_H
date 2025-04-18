@@ -29,7 +29,4 @@ public class Usuario {
 
     // Flag para determinar si la cuenta está activa
     private boolean habilitado = true;
-
-    @Column(nullable = false)
-    private int intentosFallidos = 0;
 }
