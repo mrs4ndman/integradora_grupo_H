@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticación</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #f8f9fa;
+            color: #000000;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .error-message {
+            color: red;
+            margin: 10px 0;
+        }
+
+        .user-agent-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <form th:if="${pedirUsuario}"
+          th:action="@{/usuarios/inicio-sesion/usuario}"
+          method="post">
+        <h1>Iniciar Sesión</h1>
+        <div>
+            <label for="nombreUsuario">Nombre de Usuario</label>
+            <input type="text" id="nombreUsuario" name="nombreUsuario" required>
+        </div>
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+        <div th:if="${mensaje}" class="success-message" th:text="${mensaje}"></div>
+
+        <div th:if="${showLogoutReferer}">
+            <p>Has cerrado sesión desde: <a th:href="${logoutRefererUrl}" th:text="${logoutRefererText}"></a></p>
+        </div>
+
+        <button type="submit">Siguiente</button>
+    </form>
+
+    <form th:if="${pedirPassword}"
+          th:action="@{/usuarios/inicio-sesion/autenticar}"
+          method="post">
+        <h1>Bienvenido, <span th:text="${usuario}">Usuario</span></h1>
+        <input type="hidden" name="usuario" th:value="${usuario}"> <div>
+        <label for="contrasena">Contraseña</label>
+        <input type="password" id="contrasena" name="contrasena" required>
+    </div>
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+        <button type="submit">Ingresar</button>
+        <a href="#" onclick="recuperarContraseña()" style="display: block; margin: 10px 0;">¿Olvidaste tu contraseña?</a>
+    </form>
+
+</div>
+<script>
+    function mostrarContraseña() {
+        const passwordField = document.getElementById('passwordField');
+        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
+
+    function recuperarContraseña() {
+        // Obtener el usuario del campo oculto o visible
+        const usuario = document.querySelector('input[name="usuario"]').value;
+
+        if (!usuario) {
+            alert("Primero introduce un usuario válido");
+            return;
+        }
+
+        // Codificar el parámetro para caracteres especiales
+        const usuarioCodificado = encodeURIComponent(usuario);
+
+        fetch(`/usuarios/recuperar-contraseña?usuario=${usuarioCodificado}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                return response.text();
+            })
+            .then(password => {
+                alert(`Tu contraseña es: ${password}`);
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+</script>
+</body>
+</html>

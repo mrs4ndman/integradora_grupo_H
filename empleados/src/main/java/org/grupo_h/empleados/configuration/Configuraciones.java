@@ -21,15 +21,15 @@ public class Configuraciones {
                 .authorizeHttpRequests(authz -> authz
                         // Permite el acceso público al endpoint de registro
                         .requestMatchers(
-                                "/usuarios/registro",
+                                "/usuarios/**",
                                 "/empleados/registro-datos",
                                 "/empleados/registro-direccion",
                                 "/empleados/registro-financiero",
                                 "/empleados/registro-finales",
                                 "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
-                )
-                .formLogin(Customizer.withDefaults()); // Habilita el login por defecto para otros endpoints protegidos
+                );
+//                .formLogin(Customizer.withDefaults()); // Habilita el login por defecto para otros endpoints protegidos
 
         return http.build();
     }

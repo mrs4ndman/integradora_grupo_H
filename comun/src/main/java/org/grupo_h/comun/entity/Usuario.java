@@ -32,4 +32,7 @@ public class Usuario {
 
     @Column(nullable = false)
     private int intentosFallidos = 0;
+
+    @Column(nullable = false)
+    private int sesionesTotales = 0;
 }

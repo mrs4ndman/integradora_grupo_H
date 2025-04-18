@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Información de Usuario</title>
+</head>
+<body>
+<h1>Información del Usuario: <span th:text="${nombreUsuario}"></span></h1>
+
+<div>
+    <h2>Contadores de Autenticación</h2>
+    <ul>
+        <li>
+            <strong>Total de autenticaciones válidas para este usuario:</strong>
+            <span th:text="${totalLoginsUsuario}">0</span>
+            (Independiente del navegador)
+        </li>
+        <li>
+            <strong>Autenticaciones válidas en esta sesión del navegador:</strong>
+            <span th:text="${loginsSesionActual}">0</span>
+        </li>
+    </ul>
+</div>
+
+<div>
+    <h2>Información del Cliente Actual</h2>
+    <p>Navegador (User-Agent): <span th:text="${navegadorActual}"></span></p>
+</div>
+
+<hr>
+<p>
+    <a th:href="@{/empleados/registro-datos}">Ir a Registro de Empleado</a> </p>
+<p>
+    <a th:href="@{/usuarios/logout}">Cerrar sesión</a>
+</p>
+
+</body>
+</html>
