@@ -22,10 +22,7 @@ public class Configuraciones {
                         // Permite el acceso público al endpoint de registro
                         .requestMatchers(
                                 "/usuarios/**",
-                                "/empleados/registro-datos",
-                                "/empleados/registro-direccion",
-                                "/empleados/registro-financiero",
-                                "/empleados/registro-finales",
+                                "/empleados/**",
                                 "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
                 );

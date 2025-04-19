@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("empleados")
@@ -131,16 +132,16 @@ public class EmpleadoController {
 
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
 
-        EmpleadoRegistroDTO dto = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
-
-
-        try {
-            empleadoService.registrarEmpleado(empleadoRegistroDTO);
-        } catch (RuntimeException ex) {
-            // Si ocurre un error (por ejemplo, usuario ya existente), se añade al modelo y se vuelve al formulario
-            model.addAttribute("error", ex.getMessage());
-            return "empleadoDatosFinancieros";
-        }
+//        EmpleadoRegistroDTO dto = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
+//
+//
+//        try {
+//            empleadoService.registrarEmpleado(empleadoRegistroDTO);
+//        } catch (RuntimeException ex) {
+//            // Si ocurre un error (por ejemplo, usuario ya existente), se añade al modelo y se vuelve al formulario
+//            model.addAttribute("error", ex.getMessage());
+//            return "empleadoDatosFinancieros";
+//        }
 
         return "redirect:/empleados/registro-finales"; // corresponde a registro.html
     }
@@ -157,8 +158,34 @@ public class EmpleadoController {
 
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
         model.addAttribute("datos", empleadoRegistroDTO);
+        model.addAttribute("datosAGuardar", "¿quires Guardas los datos?");
         return "empleadoDatosFinales";
     }
+
+    @PostMapping("/registro-finales")
+    public String datosFinalesPost(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
+                                   RedirectAttributes redirectAttrs,
+                                   HttpSession session,
+                                   Model model) {
+
+        empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
+        // Mensaje que aparece en la ventana de alerta tras guardar datos
+        redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
+
+        
+        try {
+            empleadoService.registrarEmpleado(empleadoRegistroDTO);
+        } catch (RuntimeException ex) {
+            // Si ocurre un error (por ejemplo, usuario ya existente), se añade al modelo y se vuelve al formulario
+            model.addAttribute("error", ex.getMessage());
+            return "empleadoDatosFinales";
+        }
+//        return "empleadoDatosFinales";
+        return "redirect:/empleados/registro-finales"; // redirige a la vista resumen
+    }
+
+
+
 
 
 

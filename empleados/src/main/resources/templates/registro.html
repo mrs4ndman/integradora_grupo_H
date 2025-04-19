@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Registro de Usuario</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
 </head>
 <body>
 <h1>Registro de Usuario</h1>
@@ -22,15 +22,18 @@
 <form th:action="@{/usuarios/registro}" th:object="${usuarioRegistroDTO}" method="post">
     <div>
         <label for="nombreUsuario">Nombre de Usuario</label>
-        <input type="text" th:field="*{nombreUsuario}" id="nombreUsuario" placeholder="Escribe tu nombre de usuario" required/>
+        <input type="text" th:field="*{nombreUsuario}" id="nombreUsuario" placeholder="Escribe tu nombre de usuario" />
+        <div th:if="${#fields.hasErrors('nombreUsuario')}" th:errors="*{nombreUsuario}" class="error"></div>
     </div>
     <div>
         <label for="email">Email</label>
-        <input type="email" th:field="*{email}" id="email" placeholder="tuemail@dominio.com" required/>
+        <input type="email" th:field="*{email}" id="email" placeholder="tuemail@dominio.com" />
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></div>
     </div>
     <div>
         <label for="contrasena">Contraseña</label>
-        <input type="password" th:field="*{contrasena}" id="contrasena" required/>
+        <input type="password" th:field="*{contrasena}" id="contrasena" />
+        <div th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}" class="error"></div>
     </div>
     <div>
         <button type="submit">Registrarse</button>

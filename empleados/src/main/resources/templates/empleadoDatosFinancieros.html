@@ -3,6 +3,7 @@
 <head>
     <title>Datos Empleado</title>
     <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
 </head>
 <body>
 
@@ -20,19 +21,15 @@
 <form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post">
     <label for="banco">Banco:</label>
     <input type="text" id="banco" th:field="*{cuentaCorriente.banco}"  />
-    <ul>
-        <li th:each="err : ${#fields.errors('cuentaCorriente.banco')}" th:text="${err}" class="error"></li>
-    </ul>
+    <div th:if="${#fields.hasErrors('cuentaCorriente.banco')}" th:errors="*{cuentaCorriente.banco}" class="error"></div>
     <br><br>
 
     <label for="cuentaCorriente">Cuenta Corriente:</label>
     <input type="text" id="cuentaCorriente" th:field="*{cuentaCorriente.cuentaCorriente}"  />
-    <ul>
-        <li th:each="err : ${#fields.errors('cuentaCorriente.cuentaCorriente')}" th:text="${err}" class="error"></li>
-    </ul>
+    <div th:if="${#fields.hasErrors('cuentaCorriente.cuentaCorriente')}" th:errors="*{cuentaCorriente.cuentaCorriente}" class="error"></div>
     <br><br>
 
-    <button type="submit">Enviar</button>
+    <button type="submit">Siguiente</button>
 </form>
 
 </body>

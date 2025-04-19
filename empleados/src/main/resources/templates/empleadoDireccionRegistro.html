@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario Dirección</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
 </head>
 <body>
 <h1>Formulario de Dirección</h1>
@@ -15,50 +16,50 @@
 
     <label for="tipoVia">Tipo de vía:</label>
     <input type="text" id="tipoVia" th:field="*{direccion.tipoVia}" />
-    <div th:if="${#fields.hasErrors('direccion.tipoVia')}" th:errors="*{direccion.tipoVia}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.tipoVia')}" th:errors="*{direccion.tipoVia}" class="error"></div>
     <br><br>
 
     <label for="via">Vía:</label>
     <input type="text" id="via" th:field="*{direccion.via}" />
-    <div th:if="${#fields.hasErrors('direccion.via')}" th:errors="*{direccion.via}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.via')}" th:errors="*{direccion.via}" class="error"></div>
     <br><br>
 
     <label for="numero">Número:</label>
     <input type="number" id="numero" th:field="*{direccion.numero}" />
-    <div th:if="${#fields.hasErrors('direccion.numero')}" th:errors="*{direccion.numero}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.numero')}" th:errors="*{direccion.numero}" class="error"></div>
     <br><br>
 
     <label for="piso">Piso:</label>
     <input type="number" id="piso" th:field="*{direccion.piso}" />
-    <div th:if="${#fields.hasErrors('direccion.piso')}" th:errors="*{direccion.piso}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.piso')}" th:errors="*{direccion.piso}" class="error"></div>
     <br><br>
 
     <label for="puerta">Puerta:</label>
     <input type="text" id="puerta" th:field="*{direccion.puerta}" />
-    <div th:if="${#fields.hasErrors('direccion.puerta')}" th:errors="*{direccion.puerta}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.puerta')}" th:errors="*{direccion.puerta}" class="error"></div>
     <br><br>
 
     <label for="localidad">Localidad:</label>
     <input type="text" id="localidad" th:field="*{direccion.localidad}" />
-    <div th:if="${#fields.hasErrors('direccion.localidad')}" th:errors="*{direccion.localidad}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.localidad')}" th:errors="*{direccion.localidad}" class="error"></div>
     <br><br>
 
     <label for="codigoPostal">Código Postal:</label>
     <input type="text" id="codigoPostal" th:field="*{direccion.codigoPostal}" />
-    <div th:if="${#fields.hasErrors('direccion.codigoPostal')}" th:errors="*{direccion.codigoPostal}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.codigoPostal')}" th:errors="*{direccion.codigoPostal}" class="error"></div>
     <br><br>
 
     <label for="region">Región:</label>
     <input type="text" id="region" th:field="*{direccion.region}" />
-    <div th:if="${#fields.hasErrors('direccion.region')}" th:errors="*{direccion.region}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.region')}" th:errors="*{direccion.region}" class="error"></div>
     <br><br>
 
     <label for="pais">País:</label>
     <input type="text" id="pais" th:field="*{direccion.pais}" />
-    <div th:if="${#fields.hasErrors('direccion.pais')}" th:errors="*{direccion.pais}" style="color: red;"></div>
+    <div th:if="${#fields.hasErrors('direccion.pais')}" th:errors="*{direccion.pais}" class="error"></div>
     <br><br>
 
-    <button type="submit">Enviar</button>
+    <button type="submit">Siguiente</button>
 </form>
 
 </body>
