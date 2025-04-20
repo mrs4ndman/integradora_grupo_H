@@ -9,6 +9,9 @@
 </head>
 <body>
 
+<!--NavBar-->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
 <h2>Formulario de Registro de Empleado</h2>
 <!-- Se muestra un mensaje de éxito si lo hay -->
 <div th:if="${param.success}">
@@ -20,7 +23,7 @@
   <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<form th:action="@{/empleados/registro-datos}" th:object="${empleadoRegistroDTO}" method="post">
+<form th:action="@{/empleados/registro-datos}" th:object="${empleadoRegistroDTO}" method="post" id="formulario">
   <label for="nombre">Nombre:</label>
   <input type="text" id="nombre" th:field="*{nombre}"  />
   <div th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}" class="error"></div>
@@ -41,7 +44,17 @@
   <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></div>
   <br><br>
 
-  <button type="submit">Siguiente</button>
+  <input type="button"
+         th:value="#{Boton.vaciar}"
+         onclick="vaciarFormulario()">
+  <br><br>
+
+  <input type="submit"
+         th:value="#{Boton.siguiente}">
+
+<!--  <button type="submit"-->
+<!--          th:value="#{Boton.siguiente}"-->
+<!--  >Siguiente</button>-->
 </form>
 
 </body>

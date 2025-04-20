@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Resumen</title>
-<!--    <link rel="stylesheet" th:href="@{css/estilos.css}">-->
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
 </head>
 <body>
 
+<!--NavBar-->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<h2>Resumen</h2>
+<h2>Resumen de los Datos del Empleado</h2>
 
 <form th:action="@{/empleados/registro-finales}" method="post">
 
-<!--    <div th:replace="~{fragments/navbar :: navbar}"></div>-->
+
     <h2>Empleado</h2>
 
     <p>Nombre: <span th:text="${datos.nombre}"></span> </p>
     <p>Apellido: <span th:text="${datos.apellido}"></span> </p>
-    <p>Fecha de Nacimiento: <span th:text="${datos.fechaNacimiento}"></span></p>
+    <p>Fecha de Nacimiento: <span th:text="${#temporals.format(datos.fechaNacimiento, 'dd/MM/yyyy')}"></span></p>
+    <p>Email: <span th:text="${datos.email}"></span></p>
 
     <h2>Dirección</h2>
 
@@ -41,16 +44,19 @@
     <br>
 
     <div>
-        <button type="submit" id="btn_guardar">Guardar Empleado</button>
+<!--        <button type="submit" id="btn_guardar">Guardar Empleado</button>-->
+        <input type="submit"
+               th:value="#{Boton.guardar}">
     </div>
 
 </form>
 <!--<a th:href="@{/empleados/logout}" class="btn">Volver al inicio</a>-->
 
 
-<script th:if="${mensaje}" th:inline="javascript">
+<script th:if="${mensaje}" th:inline="javascript" >
     alert([[${mensaje}]]);
 </script>
+<script th:src="@{/js/script.js}"></script>
 
 </body>
 </html>

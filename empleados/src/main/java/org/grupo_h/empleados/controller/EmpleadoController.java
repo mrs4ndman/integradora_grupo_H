@@ -132,16 +132,7 @@ public class EmpleadoController {
 
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
 
-//        EmpleadoRegistroDTO dto = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
-//
-//
-//        try {
-//            empleadoService.registrarEmpleado(empleadoRegistroDTO);
-//        } catch (RuntimeException ex) {
-//            // Si ocurre un error (por ejemplo, usuario ya existente), se añade al modelo y se vuelve al formulario
-//            model.addAttribute("error", ex.getMessage());
-//            return "empleadoDatosFinancieros";
-//        }
+
 
         return "redirect:/empleados/registro-finales"; // corresponde a registro.html
     }
@@ -158,7 +149,6 @@ public class EmpleadoController {
 
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
         model.addAttribute("datos", empleadoRegistroDTO);
-        model.addAttribute("datosAGuardar", "¿quires Guardas los datos?");
         return "empleadoDatosFinales";
     }
 
