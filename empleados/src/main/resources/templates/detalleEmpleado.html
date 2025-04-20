@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Empleado</title>
+</head>
+<body>
+<h1>Detalle del Empleado</h1>
+
+<div th:if="${empleado}">
+    <!--
+    <p><strong>ID:</strong> <span th:text="${empleado.id}"></span></p>
+    <p><strong>Fecha de Alta en BD:</strong> <span th:text="${empleado.fechaAltaEnBaseDeDatos}"></span></p>
+    -->
+    <p><strong>Nombre:</strong> <span th:text="${empleado.nombre}"></span></p>
+    <p><strong>Apellido:</strong> <span th:text="${empleado.apellido}"></span></p>
+    <p><strong>Email:</strong> <span th:text="${empleado.email}"></span></p>
+    <p><strong>Fecha de Nacimiento:</strong> <span th:text="${empleado.fechaNacimiento}"></span></p>
+    <p><strong>Dirección:</strong></p>
+    <ul>
+        <li><strong>Tipo de Vía:</strong> <span th:text="${empleado.direccion.tipoVia}"></span></li>
+        <li><strong>Vía:</strong> <span th:text="${empleado.direccion.via}"></span></li>
+        <li><strong>Número:</strong> <span th:text="${empleado.direccion.numero}"></span></li>
+        <li><strong>Piso:</strong> <span th:text="${empleado.direccion.piso}"></span></li>
+        <li><strong>Puerta:</strong> <span th:text="${empleado.direccion.puerta}"></span></li>
+        <li><strong>Localidad:</strong> <span th:text="${empleado.direccion.localidad}"></span></li>
+        <li><strong>Código Postal:</strong> <span th:text="${empleado.direccion.codigoPostal}"></span></li>
+        <li><strong>Región:</strong> <span th:text="${empleado.direccion.region}"></span></li>
+        <li><strong>País:</strong> <span th:text="${empleado.direccion.pais}"></span></li>
+    </ul>
+    <p><strong>Cuenta Corriente:</strong></p>
+    <ul>
+        <li><strong>Banco:</strong> <span th:text="${empleado.cuentaCorriente.banco}"></span></li>
+        <li><strong>Cuenta Corriente:</strong> <span th:text="${empleado.cuentaCorriente.cuentaCorriente}"></span></li>
+    </ul>
+</div>
+
+<div th:unless="${empleado}">
+    <p>Empleado no encontrado.</p>
+</div>
+
+</body>
+</html>

@@ -5,6 +5,7 @@ import org.grupo_h.comun.entity.auxiliar.CuentaCorriente;
 import org.grupo_h.comun.entity.auxiliar.Direccion;
 import org.grupo_h.empleados.dto.CuentaCorrienteDTO;
 import org.grupo_h.empleados.dto.DireccionDTO;
+import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.grupo_h.empleados.repository.EmpleadoRepository;
 import org.grupo_h.empleados.repository.UsuarioRepository;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class EmpleadoServiceImpl implements EmpleadoService {
@@ -65,6 +67,22 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     public Optional<Empleado> findByNombreEmpleado(String nombreEmpleado) {
         return Optional.empty();
+    }
+
+    @Override
+    public Optional<EmpleadoDetalleDTO> obtenerDetalleEmpleado(UUID id) {
+        return empleadosRepository.findById(id).map(empleado -> {
+            EmpleadoDetalleDTO detalleDTO = new EmpleadoDetalleDTO();
+            detalleDTO.setId(empleado.getId());
+            detalleDTO.setNombre(empleado.getNombre());
+            detalleDTO.setApellido(empleado.getApellido());
+            detalleDTO.setEmail(empleado.getEmail());
+            detalleDTO.setFechaNacimiento(empleado.getFechaNacimiento());
+            detalleDTO.setDireccion(empleado.getDireccion());
+            detalleDTO.setCuentaCorriente(empleado.getCuentaCorriente());
+            detalleDTO.setFechaAltaEnBaseDeDatos(empleado.getFechaAltaEnBaseDeDatos());
+            return detalleDTO;
+        });
     }
 
 
