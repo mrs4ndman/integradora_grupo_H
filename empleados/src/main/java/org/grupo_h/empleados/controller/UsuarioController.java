@@ -140,6 +140,7 @@ public class UsuarioController {
                                               RedirectAttributes redirectAttributes) {
 
         String nombreUsuario = (String) session.getAttribute("usuarioParaLogin");
+
         if (nombreUsuario == null) {
             redirectAttributes.addFlashAttribute("error", "Error de sesión. Por favor, inicia sesión de nuevo.");
             return "redirect:/usuarios/inicio-sesion";
@@ -179,6 +180,26 @@ public class UsuarioController {
             // Limpiar el usuario temporal
             session.removeAttribute("usuarioParaLogin");
 
+            // Obtener contador actual de la sesión (si existe)
+            Integer contadorActual = (Integer) session.getAttribute("contadorConexiones");
+
+            int nuevoContador;
+            if (contadorActual == null) {
+                // Si no existe (primera vez en esta sesión), inicializar a 1
+                nuevoContador = 1;
+                System.out.println("Inicializando contador de sesión a 1 para: " + nombreUsuario);
+            } else {
+                // Si existe, incrementarlo
+                nuevoContador = contadorActual + 1;
+                System.out.println("Incrementando contador de sesión a " + nuevoContador + " para: " + nombreUsuario);
+            }
+            // Guardar el valor nuevo o inicializado en la sesión
+            session.setAttribute("contadorConexiones", nuevoContador);
+
+            redirectAttributes.addFlashAttribute("contadorConexionesFlash", nuevoContador); // <-- CLAVE AQUÍ
+
+            Object checkValor = session.getAttribute("contadorConexiones");
+
             // 3. Establecer atributos de sesión definitivos
             session.setAttribute("usuarioAutenticado", usuario.getNombreUsuario());
             session.setAttribute("contadorConexiones", 1); // CONTADOR DE SESIÓN (se inicializa)
@@ -213,6 +234,34 @@ public class UsuarioController {
     public String mostrarInformacionUsuario(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         String nombreUsuario = (String) session.getAttribute("usuarioAutenticado");
 
+        Integer contadorSesion = null;
+
+        if (model.containsAttribute("contadorConexionesFlash")) {
+            try {
+                // Obtener valor del flash attribute
+                contadorSesion = (Integer) model.getAttribute("contadorConexionesFlash");
+                System.out.println("DEBUG (GET /info): Leyendo contador desde Flash Attribute. Valor = " + contadorSesion);
+
+                if (contadorSesion != null) {
+                    session.setAttribute("contadorConexiones", contadorSesion);
+                    System.out.println("DEBUG (GET /info): Actualizando 'contadorConexiones' en sesión con valor de Flash Attribute.");
+                }
+
+            } catch (Exception e) {
+                System.err.println("ERROR (GET /info): No se pudo convertir contadorConexionesFlash a Integer. " + e.getMessage());
+                // Si falla, intentar leer de la sesión como fallback
+                Object contadorObj = session.getAttribute("contadorConexiones");
+                if (contadorObj instanceof Integer) { contadorSesion = (Integer) contadorObj; }
+            }
+        } else {
+            // Si no hay flash attribute (acceso directo, refresco de página), leer de la sesión
+            Object contadorObj = session.getAttribute("contadorConexiones");
+            System.out.println("DEBUG (GET /info): Flash attribute no encontrado. Leyendo 'contadorConexiones' desde sesión. Valor = " + contadorObj);
+            if (contadorObj instanceof Integer) {
+                contadorSesion = (Integer) contadorObj;
+            }
+        }
+
         // Proteger el endpoint: verificar si el usuario está autenticado manualmente
         if (nombreUsuario == null) {
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para ver esta información.");
@@ -228,7 +277,7 @@ public class UsuarioController {
         }
 
         Usuario usuario = usuarioOpt.get();
-        Integer contadorSesion = (Integer) session.getAttribute("contadorConexiones");
+//        Integer contadorSesion = (Integer) session.getAttribute("contadorConexiones");
         String userAgent = (String) session.getAttribute("userAgent");
 
         // Añadir datos al modelo para la vista
@@ -253,6 +302,19 @@ public class UsuarioController {
             System.out.println("Invalidando sesión HTTP: " + session.getId());
             session.invalidate();
         }
+//        if (session != null) {
+//            String usuario = (String) session.getAttribute("usuarioAutenticado"); // Obtener usuario antes de borrar
+//            System.out.println("Cerrando sesión manual para: " + usuario + " (Sesión ID: " + session.getId() + ")");
+//
+//            session.removeAttribute("usuarioAutenticado");
+////            session.removeAttribute("contadorConexiones");
+//            session.removeAttribute("userAgent");
+//
+//            System.out.println("Atributos de autenticación eliminados de la sesión.");
+//
+//        } else {
+//            System.out.println("Logout manual: No se encontró sesión activa.");
+//        }
 
         // Añadir el referer como flash attribute para que sobreviva la redirección
         if (referer != null && !referer.contains("/inicio-sesion")) { // Evitar referer desde páginas de login
