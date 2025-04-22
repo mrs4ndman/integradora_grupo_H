@@ -2,10 +2,13 @@ package org.grupo_h.empleados.controller;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.empleados.dto.CuentaCorrienteDTO;
 import org.grupo_h.empleados.dto.DireccionDTO;
+import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
+import org.grupo_h.empleados.repository.EmpleadoRepository;
 import org.grupo_h.empleados.service.EmpleadoService;
 import org.grupo_h.empleados.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+
 
 @Controller
 @RequestMapping("empleados")
@@ -26,8 +32,12 @@ public class EmpleadoController {
     @Autowired
     private final EmpleadoService empleadoService;
 
-    public EmpleadoController(EmpleadoService empleadoService) {
+    @Autowired
+    private final EmpleadoRepository empleadoRepository;
+
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository) {
         this.empleadoService = empleadoService;
+        this.empleadoRepository = empleadoRepository;
     }
 
     // Instanciar objeto EmpleadoDTO
@@ -205,12 +215,14 @@ public class EmpleadoController {
     }
 
 
-
-
-
-
-
-
-
-
+    @GetMapping("/detalle/{id}")
+    public String obtenerDetalleEmpleado(@PathVariable UUID id, Model model) {
+        Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.obtenerDetalleEmpleado(id);
+        if (empleadoOpt.isPresent()) {
+            model.addAttribute("empleado", empleadoOpt.get());
+            return "detalleEmpleado"; // Plantilla Thymeleaf
+        } else {
+            return "detalleEmpleado"; // Página de error
+        }
+    }
 }
