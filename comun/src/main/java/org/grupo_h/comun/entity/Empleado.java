@@ -46,4 +46,12 @@ public class Empleado {
     @Column(name = "fecha_alta_en_BD")
     private LocalDate fechaAltaEnBaseDeDatos = LocalDate.now();
 
+    @Lob // Large Object
+    @Basic(fetch = FetchType.LAZY) // Carga perezosa para rendimiento
+    @Column(name = "archivo_contenido", columnDefinition="LONGBLOB") // Tipo específico para MySQL
+    private byte[] archivoContenido;
+
+    @Column(name = "archivo_nombre_original")
+    private String archivoNombreOriginal;
+
 }

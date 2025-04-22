@@ -22,7 +22,7 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post" id="formulario">
+<form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" enctype="multipart/form-data">
     <label for="banco">Banco:</label>
     <input type="text" id="banco" th:field="*{cuentaCorriente.banco}"  />
     <div th:if="${#fields.hasErrors('cuentaCorriente.banco')}" th:errors="*{cuentaCorriente.banco}" class="error"></div>
@@ -31,6 +31,10 @@
     <label for="cuentaCorriente">Cuenta Corriente:</label>
     <input type="text" id="cuentaCorriente" th:field="*{cuentaCorriente.cuentaCorriente}"  />
     <div th:if="${#fields.hasErrors('cuentaCorriente.cuentaCorriente')}" th:errors="*{cuentaCorriente.cuentaCorriente}" class="error"></div>
+    <br><br>
+
+    <label for="archivoAdjunto">Adjuntar documento:</label>
+    <input type="file" id="archivoAdjunto" name="archivoAdjunto" />
     <br><br>
 
     <input type="button"

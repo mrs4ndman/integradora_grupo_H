@@ -14,11 +14,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
 
 @Controller
 @RequestMapping("empleados")
@@ -122,17 +122,44 @@ public class EmpleadoController {
     public String RegistroFinanciero(
             @Valid @ModelAttribute("empleadoRegistroDTO") EmpleadoRegistroDTO empleadoRegistroDTO,
             BindingResult result,
+            @RequestParam("archivoAdjunto") MultipartFile archivoAdjunto,
             HttpSession session,
             Model model) {
+
+        // Recuperar el DTO existente de la sesión
+        EmpleadoRegistroDTO dtoSesion = getEmpleadoDTO(session);
+
+        // Actualizar los datos financieros en el DTO de sesión
+        if (empleadoRegistroDTO.getCuentaCorriente() != null) {
+            dtoSesion.setCuentaCorriente(empleadoRegistroDTO.getCuentaCorriente());
+        }
+
+        // Procesar el archivo recibido y guardar bytes y nombre en DTO de sesión
+        if (archivoAdjunto != null && !archivoAdjunto.isEmpty()) {
+            try {
+                dtoSesion.setArchivoContenido(archivoAdjunto.getBytes());
+                dtoSesion.setArchivoNombreOriginal(archivoAdjunto.getOriginalFilename());
+                System.out.println("Bytes, nombre y tipo del archivo '" + archivoAdjunto.getOriginalFilename() + "' añadidos al DTO en sesión.");
+            } catch (IOException e) {
+                System.err.println("Error al leer los bytes del archivo: " + e.getMessage());
+                model.addAttribute("errorArchivo", "Error al procesar el archivo subido.");
+                model.addAttribute("empleadoRegistroDTO", dtoSesion);
+                return "empleadoDatosFinancieros";
+            }
+        } else {
+            // Si no se subió archivo, asegurarse que los campos estén null en sesión
+            dtoSesion.setArchivoContenido(null);
+            dtoSesion.setArchivoNombreOriginal(null);
+            System.out.println("No se añadió archivo al DTO en sesión.");
+        }
 
         // Si hay errores de validación, se retorna a la misma vista
         if (result.hasErrors()) {
             return "empleadoDatosFinancieros";
         }
 
-        session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-
-
+        // Guardar el DTO actualizado de nuevo en la sesión
+        session.setAttribute("empleadoRegistroDTO", dtoSesion);
 
         return "redirect:/empleados/registro-finales"; // corresponde a registro.html
     }
@@ -149,6 +176,9 @@ public class EmpleadoController {
 
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
         model.addAttribute("datos", empleadoRegistroDTO);
+        if (empleadoRegistroDTO.getArchivoNombreOriginal() != null && !empleadoRegistroDTO.getArchivoNombreOriginal().isEmpty()) {
+            model.addAttribute("nombreArchivo", empleadoRegistroDTO.getArchivoNombreOriginal());
+        }
         return "empleadoDatosFinales";
     }
 

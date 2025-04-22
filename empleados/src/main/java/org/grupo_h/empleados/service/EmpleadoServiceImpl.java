@@ -9,9 +9,18 @@ import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.grupo_h.empleados.repository.EmpleadoRepository;
 import org.grupo_h.empleados.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class EmpleadoServiceImpl implements EmpleadoService {
@@ -25,7 +34,6 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         this.empleadosRepository = empleadosRepository;
         this.usuarioRepository = usuarioRepository;
     }
-
 
     @Override
     public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
@@ -58,6 +66,21 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         empleado.setDireccion(direccion); // aquí se establece la dirección embebida
         empleado.setCuentaCorriente(cuentaCorriente); // aquí se establece la Cuenta Corriente embebida
+
+        byte[] archivoContenido = empleadoDTO.getArchivoContenido(); // Obtener bytes
+        String archivoNombreOriginal = empleadoDTO.getArchivoNombreOriginal(); // Obtener nombre original
+
+        // Asignar directamente a la entidad si hay contenido
+        if (archivoContenido != null && archivoContenido.length > 0) {
+            empleado.setArchivoContenido(archivoContenido);
+            empleado.setArchivoNombreOriginal(archivoNombreOriginal);
+            System.out.println("Servicio: Contenido del archivo [" + archivoNombreOriginal + "] asignado a la entidad Empleado para guardar en BD.");
+        } else {
+            // Asegurarse de que los campos sean null en la entidad si no hay archivo
+            empleado.setArchivoContenido(null);
+            empleado.setArchivoNombreOriginal(null);
+            System.out.println("Servicio: No había contenido de archivo en el DTO para asignar a la entidad.");
+        }
 
         return empleadosRepository.save(empleado);
     }

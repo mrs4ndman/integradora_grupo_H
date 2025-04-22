@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -39,5 +40,7 @@ public class EmpleadoRegistroDTO {
     @Valid
     private CuentaCorrienteDTO cuentaCorriente;
 
+    private byte[] archivoContenido;
+    private String archivoNombreOriginal;
 
 }
