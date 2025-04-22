@@ -9,23 +9,37 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST para gestionar las operaciones relacionadas con los usuarios.
+ */
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioRestController {
 
     private final UsuarioService usuarioService;
 
+    /**
+     * Constructor para inyectar el servicio de usuarios.
+     *
+     * @param usuarioService Servicio de usuarios.
+     */
+    @Autowired
     public UsuarioRestController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
 
+    /**
+     * Registra un nuevo usuario.
+     *
+     * @param usuarioDTO DTO con los datos del usuario a registrar.
+     * @return Respuesta con el usuario creado o un mensaje de error.
+     */
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@Validated @RequestBody UsuarioRegistroDTO usuarioDTO) {
         try {
             Usuario usuarioCreado = usuarioService.registrarUsuario(usuarioDTO);
             return new ResponseEntity<>(usuarioCreado, HttpStatus.CREATED);
         } catch (RuntimeException ex) {
-            // Se podría mejorar con un manejo de excepciones propio
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

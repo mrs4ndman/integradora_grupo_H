@@ -13,12 +13,24 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+/**
+ * Implementación de UserDetailsService para cargar los detalles del usuario durante la autenticación.
+ */
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Carga los detalles del usuario por su nombre de usuario.
+     *
+     * @param nombreUsuario Nombre de usuario a buscar.
+     * @return UserDetails con los detalles del usuario.
+     * @throws UsernameNotFoundException Si el usuario no se encuentra.
+     * @throws DisabledException         Si la cuenta del usuario está deshabilitada.
+     * @throws LockedException           Si la cuenta del usuario está bloqueada.
+     */
     @Override
     public UserDetails loadUserByUsername(String nombreUsuario) throws UsernameNotFoundException, DisabledException, LockedException {
         Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario)

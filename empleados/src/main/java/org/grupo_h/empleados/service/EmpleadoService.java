@@ -11,6 +11,8 @@ import java.util.UUID;
 @Service
 public interface EmpleadoService {
     Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO);
+
     Optional<Empleado> findByNombreEmpleado(String nombreEmpleado);
+
     Optional<EmpleadoDetalleDTO> obtenerDetalleEmpleado(UUID id);
 }

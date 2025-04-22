@@ -1,32 +1,48 @@
 package org.grupo_h.empleados.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+/**
+ * DTO que representa los datos de registro de un empleado.
+ */
 @Data
 public class EmpleadoRegistroDTO {
 
+    /**
+     * Identificador único del empleado.
+     */
     private UUID id;
 
+    /**
+     * Nombre del empleado. No puede estar vacío.
+     */
     @NotBlank
     private String nombre;
 
+    /**
+     * Apellido del empleado. No puede estar vacío.
+     */
     @NotBlank
     private String apellido;
 
-    @DateTimeFormat( pattern = "dd/MM/yyyy")
+    /**
+     * Fecha de nacimiento del empleado. Debe ser una fecha pasada.
+     */
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     @Past(message = "{Validacion.fechaNac.Past}")
     private LocalDate fechaNacimiento;
 
+    /**
+     * Correo electrónico del empleado. Debe seguir un formato válido.
+     */
     @NotBlank
     @Pattern(
             regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
@@ -34,13 +50,25 @@ public class EmpleadoRegistroDTO {
     )
     private String email;
 
+    /**
+     * Dirección del empleado.
+     */
     @Valid
     private DireccionDTO direccion;
 
+    /**
+     * Cuenta corriente del empleado.
+     */
     @Valid
     private CuentaCorrienteDTO cuentaCorriente;
 
+    /**
+     * Contenido del archivo adjunto.
+     */
     private byte[] archivoContenido;
-    private String archivoNombreOriginal;
 
+    /**
+     * Nombre original del archivo adjunto.
+     */
+    private String archivoNombreOriginal;
 }
