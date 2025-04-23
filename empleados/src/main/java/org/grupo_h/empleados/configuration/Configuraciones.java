@@ -42,7 +42,7 @@ public class Configuraciones {
                                 "/usuarios/**",
                                 "/empleados/**",
                                 "/sendMail",
-                                "/css/**", "/js/**", "/imgggV/**").permitAll()
+                                "/css/**", "/js/**", "/img/**").permitAll()
                         .anyRequest().authenticated()
                 );
 //                .formLogin(Customizer.withDefaults()); // Habilita el login por defecto para otros endpoints protegidos
