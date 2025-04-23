@@ -2,18 +2,11 @@ package org.grupo_h.empleados.controller;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.grupo_h.comun.entity.Empleado;
-import org.grupo_h.comun.entity.Usuario;
-import org.grupo_h.empleados.dto.CuentaCorrienteDTO;
-import org.grupo_h.empleados.dto.DireccionDTO;
 import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.grupo_h.empleados.repository.EmpleadoRepository;
 import org.grupo_h.empleados.service.EmpleadoService;
-import org.grupo_h.empleados.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,10 +18,13 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-
+/**
+ * Controlador para gestionar las operaciones relacionadas con los empleados.
+ */
 @Controller
 @RequestMapping("empleados")
 public class EmpleadoController {
+
     @Autowired
     private final EmpleadoService empleadoService;
 
@@ -40,94 +36,113 @@ public class EmpleadoController {
         this.empleadoRepository = empleadoRepository;
     }
 
-    // Instanciar objeto EmpleadoDTO
+    /**
+     * Crea o recupera un objeto EmpleadoRegistroDTO de la sesión.
+     *
+     * @param session La sesión HTTP actual.
+     * @return El objeto EmpleadoRegistroDTO.
+     */
     @ModelAttribute("empleadoRegistroDTO")
     private EmpleadoRegistroDTO getEmpleadoDTO(HttpSession session) {
-        // Accedemos a la sesión
         EmpleadoRegistroDTO empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
-        // Si hay null
         if (empleadoRegistroDTO == null) {
-            // Instancia el objeto
             empleadoRegistroDTO = new EmpleadoRegistroDTO();
-            // Añade el atributo del objeto a la sesión de dicho usuario
             session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
         }
         return empleadoRegistroDTO;
     }
 
-
-
-
-    // Muestra el formulario de registro
+    /**
+     * Muestra el formulario de registro de datos básicos del empleado.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param session             La sesión HTTP actual.
+     * @return La vista del formulario de registro.
+     */
     @GetMapping("/registro-datos")
-    public String mostrarFormularioRegistro( @ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
-                                             HttpSession session) {
+    public String mostrarFormularioRegistro(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session) {
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-        return "empleadoRegistro"; // corresponde a empleadoRegistro.html
+        return "empleadoRegistro";
     }
 
-    // Procesa el envío del formulario de registro
+    /**
+     * Procesa el formulario de registro de datos básicos del empleado.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param result              El resultado de la validación.
+     * @param session             La sesión HTTP actual.
+     * @return Redirección al siguiente paso del registro.
+     */
     @PostMapping("/registro-datos")
     public String registrarUsuario(
             @Valid @ModelAttribute("empleadoRegistroDTO") EmpleadoRegistroDTO empleadoRegistroDTO,
             BindingResult result,
             HttpSession session) {
-
-        // Si hay errores de validación, se retorna a la misma vista
         if (result.hasErrors()) {
             return "empleadoRegistro";
         }
-
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-
-        // Redirige al formulario de registro de la dirección del empleado
         return "redirect:/empleados/registro-direccion";
     }
 
-
-
-
-
-
+    /**
+     * Muestra el formulario de registro de la dirección del empleado.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param session             La sesión HTTP actual.
+     * @return La vista del formulario de registro de dirección.
+     */
     @GetMapping("/registro-direccion")
-    public String mostrarFormularioRegistroDireccion(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
-                                                     HttpSession session) {
-
+    public String mostrarFormularioRegistroDireccion(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session) {
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-
-        return "empleadoDireccionRegistro"; // corresponde a empleadoDireccionRegistro.html
+        return "empleadoDireccionRegistro";
     }
 
+    /**
+     * Procesa el formulario de registro de la dirección del empleado.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param result              El resultado de la validación.
+     * @param session             La sesión HTTP actual.
+     * @param model               El modelo para pasar datos a la vista.
+     * @return Redirección al siguiente paso del registro.
+     */
     @PostMapping("/registro-direccion")
     public String RegistroDireccion(
             @Valid @ModelAttribute("empleadoRegistroDTO") EmpleadoRegistroDTO empleadoRegistroDTO,
             BindingResult result,
             HttpSession session,
             Model model) {
-
-        // Si hay errores de validación, se retorna a la misma vista
         if (result.hasErrors()) {
             return "empleadoDireccionRegistro";
         }
-
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-
-        return "redirect:/empleados/registro-financiero"; // corresponde a registro.html
+        return "redirect:/empleados/registro-financiero";
     }
 
-
-
-
-
+    /**
+     * Muestra el formulario de registro de datos financieros del empleado.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param session             La sesión HTTP actual.
+     * @return La vista del formulario de registro de datos financieros.
+     */
     @GetMapping("/registro-financiero")
-    public String mostrarFormularioRegistroFinanciero(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
-                                                      HttpSession session) {
-
+    public String mostrarFormularioRegistroFinanciero(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session) {
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-
-        return "empleadoDatosFinancieros"; // corresponde a empleadoDatosFinancieros.html
+        return "empleadoDatosFinancieros";
     }
 
+    /**
+     * Procesa el formulario de registro de datos financieros del empleado.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param result              El resultado de la validación.
+     * @param archivoAdjunto      El archivo adjunto subido.
+     * @param session             La sesión HTTP actual.
+     * @param model               El modelo para pasar datos a la vista.
+     * @return Redirección al siguiente paso del registro.
+     */
     @PostMapping("/registro-financiero")
     public String RegistroFinanciero(
             @Valid @ModelAttribute("empleadoRegistroDTO") EmpleadoRegistroDTO empleadoRegistroDTO,
@@ -135,55 +150,44 @@ public class EmpleadoController {
             @RequestParam("archivoAdjunto") MultipartFile archivoAdjunto,
             HttpSession session,
             Model model) {
-
-        // Recuperar el DTO existente de la sesión
         EmpleadoRegistroDTO dtoSesion = getEmpleadoDTO(session);
 
-        // Actualizar los datos financieros en el DTO de sesión
         if (empleadoRegistroDTO.getCuentaCorriente() != null) {
             dtoSesion.setCuentaCorriente(empleadoRegistroDTO.getCuentaCorriente());
         }
 
-        // Procesar el archivo recibido y guardar bytes y nombre en DTO de sesión
         if (archivoAdjunto != null && !archivoAdjunto.isEmpty()) {
             try {
                 dtoSesion.setArchivoContenido(archivoAdjunto.getBytes());
                 dtoSesion.setArchivoNombreOriginal(archivoAdjunto.getOriginalFilename());
-                System.out.println("Bytes, nombre y tipo del archivo '" + archivoAdjunto.getOriginalFilename() + "' añadidos al DTO en sesión.");
             } catch (IOException e) {
-                System.err.println("Error al leer los bytes del archivo: " + e.getMessage());
                 model.addAttribute("errorArchivo", "Error al procesar el archivo subido.");
                 model.addAttribute("empleadoRegistroDTO", dtoSesion);
                 return "empleadoDatosFinancieros";
             }
         } else {
-            // Si no se subió archivo, asegurarse que los campos estén null en sesión
             dtoSesion.setArchivoContenido(null);
             dtoSesion.setArchivoNombreOriginal(null);
-            System.out.println("No se añadió archivo al DTO en sesión.");
         }
 
-        // Si hay errores de validación, se retorna a la misma vista
         if (result.hasErrors()) {
             return "empleadoDatosFinancieros";
         }
 
-        // Guardar el DTO actualizado de nuevo en la sesión
         session.setAttribute("empleadoRegistroDTO", dtoSesion);
-
-        return "redirect:/empleados/registro-finales"; // corresponde a registro.html
+        return "redirect:/empleados/registro-finales";
     }
 
-
-
-
-
-    //    End-Point ===========> /datos-finales
+    /**
+     * Muestra el resumen final de los datos del empleado antes de guardar.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param session             La sesión HTTP actual.
+     * @param model               El modelo para pasar datos a la vista.
+     * @return La vista del resumen final.
+     */
     @GetMapping("/registro-finales")
-    public String datosFinalesGet(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
-                                  HttpSession session,
-                                  Model model) {
-
+    public String datosFinalesGet(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session, Model model) {
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
         model.addAttribute("datos", empleadoRegistroDTO);
         if (empleadoRegistroDTO.getArchivoNombreOriginal() != null && !empleadoRegistroDTO.getArchivoNombreOriginal().isEmpty()) {
@@ -192,37 +196,44 @@ public class EmpleadoController {
         return "empleadoDatosFinales";
     }
 
+    /**
+     * Procesa el guardado final de los datos del empleado.
+     *
+     * @param empleadoRegistroDTO El DTO de registro del empleado.
+     * @param redirectAttrs       Atributos para redirección.
+     * @param session             La sesión HTTP actual.
+     * @param model               El modelo para pasar datos a la vista.
+     * @return Redirección a la vista de resumen o al formulario en caso de error.
+     */
     @PostMapping("/registro-finales")
-    public String datosFinalesPost(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
-                                   RedirectAttributes redirectAttrs,
-                                   HttpSession session,
-                                   Model model) {
-
+    public String datosFinalesPost(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, RedirectAttributes redirectAttrs, HttpSession session, Model model) {
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
-        // Mensaje que aparece en la ventana de alerta tras guardar datos
         redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
 
-        
         try {
             empleadoService.registrarEmpleado(empleadoRegistroDTO);
         } catch (RuntimeException ex) {
-            // Si ocurre un error (por ejemplo, usuario ya existente), se añade al modelo y se vuelve al formulario
             model.addAttribute("error", ex.getMessage());
             return "empleadoDatosFinales";
         }
-//        return "empleadoDatosFinales";
-        return "redirect:/empleados/registro-finales"; // redirige a la vista resumen
+        return "redirect:/empleados/registro-finales";
     }
 
-
+    /**
+     * Muestra los detalles de un empleado específico.
+     *
+     * @param id    El ID del empleado.
+     * @param model El modelo para pasar datos a la vista.
+     * @return La vista de detalles del empleado.
+     */
     @GetMapping("/detalle/{id}")
     public String obtenerDetalleEmpleado(@PathVariable UUID id, Model model) {
         Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.obtenerDetalleEmpleado(id);
         if (empleadoOpt.isPresent()) {
             model.addAttribute("empleado", empleadoOpt.get());
-            return "detalleEmpleado"; // Plantilla Thymeleaf
+            return "detalleEmpleado";
         } else {
-            return "detalleEmpleado"; // Página de error
+            return "detalleEmpleado";
         }
     }
 }

@@ -10,5 +10,6 @@ public interface UsuarioService {
 
     // Métodos para manejar intentos de login
     void procesarLoginFallido(String nombreUsuario);
+
     void procesarLoginExitoso(String nombreUsuario);
 }

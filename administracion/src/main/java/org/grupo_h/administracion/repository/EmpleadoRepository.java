@@ -6,6 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+/**
+ * Repositorio para la entidad Empleado.
+ * Proporciona operaciones de acceso a datos para los empleados en la base de datos.
+ */
 @Repository
 public interface EmpleadoRepository extends JpaRepository<Empleado, UUID> {
 }

@@ -1,7 +1,6 @@
 package org.grupo_h.empleados.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.grupo_h.comun.entity.Usuario;
@@ -18,16 +17,18 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
 import java.util.Optional;
 
+/**
+ * Controlador para gestionar las operaciones relacionadas con los usuarios.
+ */
 @Controller
 @RequestMapping("/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
-    private final UsuarioRepository usuarioRepository; // Inyectar repositorio
-    private final BCryptPasswordEncoder passwordEncoder; // Inyectar encoder
+    private final UsuarioRepository usuarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
     private static final int MAX_INTENTOS_FALLIDOS = 2;
 
     @Autowired
@@ -37,21 +38,32 @@ public class UsuarioController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Muestra el formulario de registro
+    /**
+     * Muestra el formulario de registro de usuario.
+     *
+     * @param model Modelo para pasar datos a la vista.
+     * @return Nombre de la vista de registro.
+     */
     @GetMapping("/registro")
     public String mostrarFormularioRegistro(Model model) {
         model.addAttribute("usuarioRegistroDTO", new UsuarioRegistroDTO());
-        return "registro"; // corresponde a registro.html
+        return "registro";
     }
 
-    // Procesa el envío del formulario de registro
+    /**
+     * Procesa el formulario de registro de usuario.
+     *
+     * @param usuarioRegistroDTO DTO con los datos del formulario.
+     * @param result             Resultado de la validación.
+     * @param model              Modelo para pasar datos a la vista.
+     * @return Redirección a la vista de registro con parámetro de éxito o error.
+     */
     @PostMapping("/registro")
     public String registrarUsuario(
             @Valid @ModelAttribute("usuarioRegistroDTO") UsuarioRegistroDTO usuarioRegistroDTO,
             BindingResult result,
             Model model) {
 
-        // Si hay errores de validación, se retorna a la misma vista
         if (result.hasErrors()) {
             return "registro";
         }
@@ -59,39 +71,47 @@ public class UsuarioController {
         try {
             usuarioService.registrarUsuario(usuarioRegistroDTO);
         } catch (RuntimeException ex) {
-            // Si ocurre un error (por ejemplo, usuario ya existente), se añade al modelo y se vuelve al formulario
             model.addAttribute("error", ex.getMessage());
             return "registro";
         }
 
-        // Redirige al formulario de registro con un parámetro de éxito si todo va bien
         return "redirect:/usuarios/registro?success";
     }
 
-    // AUTENTICACION
-
-    // --- LOGIN PASO 1: Pedir Usuario ---
+    /**
+     * Muestra el formulario de inicio de sesión.
+     *
+     * @param model         Modelo para pasar datos a la vista.
+     * @param error         Parámetro de error, si existe.
+     * @param logout        Parámetro de logout, si existe.
+     * @param logoutReferer Referer de la página de logout.
+     * @return Nombre de la vista de autenticación.
+     */
     @GetMapping("/inicio-sesion")
     public String mostrarFormularioUsuario(Model model,
                                            @RequestParam(value = "error", required = false) String error,
                                            @RequestParam(value = "logout", required = false) String logout,
-                                           // Recibe el flash attribute del logout
                                            @ModelAttribute("logoutReferer") String logoutReferer) {
         if (logout != null) {
             model.addAttribute("mensaje", "Has cerrado sesión exitosamente.");
-            // Añadir el referer al modelo si existe para mostrar el enlace
             if (logoutReferer != null && !logoutReferer.isEmpty()) {
                 model.addAttribute("showLogoutReferer", true);
                 model.addAttribute("logoutRefererUrl", logoutReferer);
                 model.addAttribute("logoutRefererText", obtenerUrl(logoutReferer));
-
             }
         }
-        model.addAttribute("pedirUsuario", true); // Indicador para la plantilla
-        return "autenticacionPorPasos"; // Plantilla que muestra el formulario de usuario
+        model.addAttribute("pedirUsuario", true);
+        return "autenticacionPorPasos";
     }
 
-    // --- LOGIN PASO 1: Procesar Usuario ---
+    /**
+     * Procesa el nombre de usuario para el inicio de sesión.
+     *
+     * @param nombreUsuario      Nombre de usuario introducido.
+     * @param session            Sesión HTTP.
+     * @param redirectAttributes Atributos para redirección.
+     * @return Redirección al formulario de contraseña o de error.
+     */
     @PostMapping("/inicio-sesion/usuario")
     public String procesarUsuario(@RequestParam String nombreUsuario,
                                   HttpSession session,
@@ -109,34 +129,45 @@ public class UsuarioController {
             return "redirect:/usuarios/inicio-sesion?error=true";
         }
 
-        // Guardar temporalmente el usuario en sesión para el siguiente paso
         session.setAttribute("usuarioParaLogin", nombreUsuario);
-
-        return "redirect:/usuarios/inicio-sesion/password"; // Redirigir a pedir contraseña
+        return "redirect:/usuarios/inicio-sesion/password";
     }
 
-    // --- LOGIN PASO 2: Pedir Contraseña ---
+    /**
+     * Muestra el formulario de contraseña para el inicio de sesión.
+     *
+     * @param model              Modelo para pasar datos a la vista.
+     * @param session            Sesión HTTP.
+     * @param redirectAttributes Atributos para redirección.
+     * @return Nombre de la vista de autenticación.
+     */
     @GetMapping("/inicio-sesion/password")
     public String mostrarFormularioPassword(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         String nombreUsuario = (String) session.getAttribute("usuarioParaLogin");
 
         if (nombreUsuario == null) {
-            // Si no hay usuario en sesión (ej. acceso directo a la URL), volver al paso 1
             redirectAttributes.addFlashAttribute("error", "Por favor, introduce primero tu nombre de usuario.");
             return "redirect:/usuarios/inicio-sesion";
         }
 
         model.addAttribute("usuario", nombreUsuario);
-        model.addAttribute("pedirPassword", true); // Indicador para la plantilla
-        return "autenticacionPorPasos"; // Plantilla que muestra el formulario de contraseña
+        model.addAttribute("pedirPassword", true);
+        return "autenticacionPorPasos";
     }
 
-
-    // --- LOGIN PASO 2: Procesar Contraseña y Autenticar ---
+    /**
+     * Procesa la contraseña y autentica al usuario.
+     *
+     * @param contrasenia        Contraseña introducida.
+     * @param request            Solicitud HTTP.
+     * @param session            Sesión HTTP.
+     * @param redirectAttributes Atributos para redirección.
+     * @return Redirección a la página de información o de error.
+     */
     @PostMapping("/inicio-sesion/autenticar")
-    public String autenticarManualConPassword(@RequestParam String contrasena,
-                                              HttpServletRequest request, // Necesario para el User-Agent
-                                              HttpSession session, // Para obtener/modificar la sesión
+    public String autenticarManualConPassword(@RequestParam String contrasenia,
+                                              HttpServletRequest request,
+                                              HttpSession session,
                                               RedirectAttributes redirectAttributes) {
 
         String nombreUsuario = (String) session.getAttribute("usuarioParaLogin");
@@ -148,88 +179,63 @@ public class UsuarioController {
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
 
-        // Doble verificación (aunque ya se hizo en paso 1, por si acaso)
         if (usuarioOpt.isEmpty()) {
-            session.removeAttribute("usuarioParaLogin"); // Limpiar sesión
+            session.removeAttribute("usuarioParaLogin");
             redirectAttributes.addFlashAttribute("error", "Usuario no encontrado.");
             return "redirect:/usuarios/inicio-sesion?error=true";
         }
 
         Usuario usuario = usuarioOpt.get();
 
-        // Verificar estado (habilitado/bloqueado) de nuevo
         if (!usuario.isHabilitado() || usuario.isCuentaBloqueada()) {
             session.removeAttribute("usuarioParaLogin");
             redirectAttributes.addFlashAttribute("error", "La cuenta no está disponible.");
-            return "redirect:/usuarios/inicio-sesion/password?error=true"; // Volver a pedir pass con error
+            return "redirect:/usuarios/inicio-sesion/password?error=true";
         }
 
-        // Verificar contraseña
-        if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
-            // Éxito
-
-            // 1. Incrementar contador TOTAL y guardar
+        if (passwordEncoder.matches(contrasenia, usuario.getContrasena())) {
             usuario.setSesionesTotales(usuario.getSesionesTotales() + 1);
-
-            // 2. Resetear intentos fallidos
             if (usuario.getIntentosFallidos() > 0) {
                 usuario.setIntentosFallidos(0);
             }
-            usuarioRepository.save(usuario); // Guardar ambos cambios
+            usuarioRepository.save(usuario);
 
-            // Limpiar el usuario temporal
             session.removeAttribute("usuarioParaLogin");
 
-            // Obtener contador actual de la sesión (si existe)
             Integer contadorActual = (Integer) session.getAttribute("contadorConexiones");
-
-            int nuevoContador;
-            if (contadorActual == null) {
-                // Si no existe (primera vez en esta sesión), inicializar a 1
-                nuevoContador = 1;
-                System.out.println("Inicializando contador de sesión a 1 para: " + nombreUsuario);
-            } else {
-                // Si existe, incrementarlo
-                nuevoContador = contadorActual + 1;
-                System.out.println("Incrementando contador de sesión a " + nuevoContador + " para: " + nombreUsuario);
-            }
-            // Guardar el valor nuevo o inicializado en la sesión
+            int nuevoContador = (contadorActual == null) ? 1 : contadorActual + 1;
             session.setAttribute("contadorConexiones", nuevoContador);
 
-            redirectAttributes.addFlashAttribute("contadorConexionesFlash", nuevoContador); // <-- CLAVE AQUÍ
+            redirectAttributes.addFlashAttribute("contadorConexionesFlash", nuevoContador);
 
-            Object checkValor = session.getAttribute("contadorConexiones");
-
-            // 3. Establecer atributos de sesión definitivos
             session.setAttribute("usuarioAutenticado", usuario.getNombreUsuario());
-            session.setAttribute("contadorConexiones", 1); // CONTADOR DE SESIÓN (se inicializa)
+            session.setAttribute("contadorConexiones", 1);
             session.setAttribute("userAgent", request.getHeader("User-Agent"));
 
-            System.out.println("Login manual exitoso para: " + nombreUsuario + ". Total logins: " + usuario.getSesionesTotales());
-
-            return "redirect:/usuarios/info"; // Redirigir a la página de información
-
+            return "redirect:/usuarios/info";
         } else {
-            // Fallo contraseña
-            System.out.println("Login manual fallido (contraseña incorrecta) para: " + nombreUsuario);
             usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
             if (usuario.getIntentosFallidos() >= MAX_INTENTOS_FALLIDOS) {
                 usuario.setCuentaBloqueada(true);
-                System.out.println("Cuenta bloqueada para usuario: " + nombreUsuario);
                 usuarioRepository.save(usuario);
                 redirectAttributes.addFlashAttribute("error", "Cuenta bloqueada.");
                 return "redirect:/usuarios/inicio-sesion/password?error=true";
             }
-            usuarioRepository.save(usuario); // Guardar intentos/bloqueo
+            usuarioRepository.save(usuario);
 
             redirectAttributes.addFlashAttribute("error", "Contraseña incorrecta.");
-            // No limpiar 'usuarioParaLogin' para que pueda reintentar la contraseña
-            return "redirect:/usuarios/inicio-sesion/password?error=true"; // Volver a pedir pass con error
+            return "redirect:/usuarios/inicio-sesion/password?error=true";
         }
     }
 
-
-    // --- ENDPOINT 3: Mostrar Información ---
+    /**
+     * Muestra la información del usuario autenticado.
+     *
+     * @param model              Modelo para pasar datos a la vista.
+     * @param session            Sesión HTTP.
+     * @param redirectAttributes Atributos para redirección.
+     * @return Nombre de la vista de información del usuario.
+     */
     @GetMapping("/info")
     public String mostrarInformacionUsuario(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         String nombreUsuario = (String) session.getAttribute("usuarioAutenticado");
@@ -238,31 +244,23 @@ public class UsuarioController {
 
         if (model.containsAttribute("contadorConexionesFlash")) {
             try {
-                // Obtener valor del flash attribute
                 contadorSesion = (Integer) model.getAttribute("contadorConexionesFlash");
-                System.out.println("DEBUG (GET /info): Leyendo contador desde Flash Attribute. Valor = " + contadorSesion);
-
                 if (contadorSesion != null) {
                     session.setAttribute("contadorConexiones", contadorSesion);
-                    System.out.println("DEBUG (GET /info): Actualizando 'contadorConexiones' en sesión con valor de Flash Attribute.");
                 }
-
             } catch (Exception e) {
-                System.err.println("ERROR (GET /info): No se pudo convertir contadorConexionesFlash a Integer. " + e.getMessage());
-                // Si falla, intentar leer de la sesión como fallback
                 Object contadorObj = session.getAttribute("contadorConexiones");
-                if (contadorObj instanceof Integer) { contadorSesion = (Integer) contadorObj; }
+                if (contadorObj instanceof Integer) {
+                    contadorSesion = (Integer) contadorObj;
+                }
             }
         } else {
-            // Si no hay flash attribute (acceso directo, refresco de página), leer de la sesión
             Object contadorObj = session.getAttribute("contadorConexiones");
-            System.out.println("DEBUG (GET /info): Flash attribute no encontrado. Leyendo 'contadorConexiones' desde sesión. Valor = " + contadorObj);
             if (contadorObj instanceof Integer) {
                 contadorSesion = (Integer) contadorObj;
             }
         }
 
-        // Proteger el endpoint: verificar si el usuario está autenticado manualmente
         if (nombreUsuario == null) {
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para ver esta información.");
             return "redirect:/usuarios/inicio-sesion";
@@ -270,66 +268,54 @@ public class UsuarioController {
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
         if (usuarioOpt.isEmpty()) {
-            // Raro que ocurra si está en sesión, pero por seguridad
-            session.invalidate(); // Invalidar sesión corrupta
+            session.invalidate();
             redirectAttributes.addFlashAttribute("error", "Error al recuperar datos de usuario.");
             return "redirect:/usuarios/inicio-sesion";
         }
 
         Usuario usuario = usuarioOpt.get();
-//        Integer contadorSesion = (Integer) session.getAttribute("contadorConexiones");
         String userAgent = (String) session.getAttribute("userAgent");
 
-        // Añadir datos al modelo para la vista
         model.addAttribute("nombreUsuario", nombreUsuario);
-        model.addAttribute("totalLoginsUsuario", usuario.getSesionesTotales()); // Contador persistente
-        model.addAttribute("loginsSesionActual", contadorSesion != null ? contadorSesion : 0); // Contador de sesión
+        model.addAttribute("totalLoginsUsuario", usuario.getSesionesTotales());
+        model.addAttribute("loginsSesionActual", contadorSesion != null ? contadorSesion : 0);
         model.addAttribute("navegadorActual", userAgent != null ? userAgent : "No disponible");
 
-        // Aquí no mostramos el enlace de logout referer, se muestra en la pág de login
-
-        return "infoUsuario"; // Nombre de la nueva plantilla HTML
+        return "infoUsuario";
     }
 
-
-    // --- LOGOUT MANUAL (Modificado para Referer) ---
+    /**
+     * Cierra la sesión del usuario.
+     *
+     * @param request            Solicitud HTTP.
+     * @param redirectAttributes Atributos para redirección.
+     * @return Redirección a la página de inicio de sesión.
+     */
     @GetMapping("/logout")
-    public String logoutManual(HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+    public String logoutManual(HttpServletRequest request, RedirectAttributes redirectAttributes) {
         HttpSession session = request.getSession(false);
-        String referer = request.getHeader("Referer"); // Capturar página anterior
+        String referer = request.getHeader("Referer");
 
         if (session != null) {
-            System.out.println("Invalidando sesión HTTP: " + session.getId());
             session.invalidate();
         }
-//        if (session != null) {
-//            String usuario = (String) session.getAttribute("usuarioAutenticado"); // Obtener usuario antes de borrar
-//            System.out.println("Cerrando sesión manual para: " + usuario + " (Sesión ID: " + session.getId() + ")");
-//
-//            session.removeAttribute("usuarioAutenticado");
-////            session.removeAttribute("contadorConexiones");
-//            session.removeAttribute("userAgent");
-//
-//            System.out.println("Atributos de autenticación eliminados de la sesión.");
-//
-//        } else {
-//            System.out.println("Logout manual: No se encontró sesión activa.");
-//        }
 
-        // Añadir el referer como flash attribute para que sobreviva la redirección
-        if (referer != null && !referer.contains("/inicio-sesion")) { // Evitar referer desde páginas de login
+        if (referer != null && !referer.contains("/inicio-sesion")) {
             redirectAttributes.addFlashAttribute("logoutReferer", referer);
         }
 
-        System.out.println("Logout manual ejecutado. Redirigiendo a /usuarios/inicio-sesion?logout=true");
         return "redirect:/usuarios/inicio-sesion?logout=true";
     }
 
-
-    // --- RECUPERACIÓN DE CONTRASEÑA (Adaptado, ¡PERO INSEGURO!) ---
+    /**
+     * Recupera la contraseña de un usuario (¡Inseguro!).
+     *
+     * @param usuario Nombre de usuario.
+     * @return Respuesta con la contraseña o mensaje de error.
+     */
     @GetMapping("/recuperar-contraseña")
     @ResponseBody
-    public ResponseEntity<String> recuperarContraseña(
+    public ResponseEntity<String> recuperarContrasenia(
             @RequestParam(value = "usuario", required = false) String usuario) {
 
         if (usuario == null || usuario.isEmpty()) {
@@ -342,15 +328,19 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }
 
-        // Respuesta temporal segura (indica que se iniciaría el proceso)
         return ResponseEntity.ok(usuarioRepository.findByNombreUsuario(usuario).get().getContrasena());
     }
 
-    // Método auxiliar simple para texto del referer
+    /**
+     * Método auxiliar para obtener la URL de un referer.
+     *
+     * @param url URL del referer.
+     * @return URL formateada.
+     */
     private String obtenerUrl(String url) {
         if (url == null || url.isEmpty()) {
             return "";
         }
-        return url; // Por defecto, mostrar la URL
+        return url;
     }
 }

@@ -10,19 +10,14 @@ import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.grupo_h.empleados.repository.EmpleadoRepository;
 import org.grupo_h.empleados.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Implementación del servicio para gestionar operaciones relacionadas con los empleados.
+ */
 @Service
 public class EmpleadoServiceImpl implements EmpleadoService {
 
@@ -31,14 +26,25 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Autowired
     private final UsuarioRepository usuarioRepository;
 
+    /**
+     * Constructor para inyectar las dependencias necesarias.
+     *
+     * @param empleadosRepository Repositorio de empleados.
+     * @param usuarioRepository   Repositorio de usuarios.
+     */
     public EmpleadoServiceImpl(EmpleadoRepository empleadosRepository, UsuarioRepository usuarioRepository) {
         this.empleadosRepository = empleadosRepository;
         this.usuarioRepository = usuarioRepository;
     }
 
+    /**
+     * Registra un nuevo empleado en el sistema.
+     *
+     * @param empleadoDTO DTO con los datos del empleado a registrar.
+     * @return El empleado registrado.
+     */
     @Override
     public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
-
         DireccionDTO direccionDTO = empleadoDTO.getDireccion();
 
         Direccion direccion = new Direccion();
@@ -54,7 +60,6 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         CuentaCorrienteDTO cuentaCorrienteDTO = empleadoDTO.getCuentaCorriente();
 
-
         CuentaCorriente cuentaCorriente = new CuentaCorriente();
         cuentaCorriente.setBanco(cuentaCorrienteDTO.getBanco());
         cuentaCorriente.setCuentaCorriente(cuentaCorrienteDTO.getCuentaCorriente());
@@ -65,32 +70,40 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleado.setFechaNacimiento(empleadoDTO.getFechaNacimiento());
         empleado.setEmail(empleadoDTO.getEmail());
 
-        empleado.setDireccion(direccion); // aquí se establece la dirección embebida
-        empleado.setCuentaCorriente(cuentaCorriente); // aquí se establece la Cuenta Corriente embebida
+        empleado.setDireccion(direccion);
+        empleado.setCuentaCorriente(cuentaCorriente);
 
-        byte[] archivoContenido = empleadoDTO.getArchivoContenido(); // Obtener bytes
-        String archivoNombreOriginal = empleadoDTO.getArchivoNombreOriginal(); // Obtener nombre original
+        byte[] archivoContenido = empleadoDTO.getArchivoContenido();
+        String archivoNombreOriginal = empleadoDTO.getArchivoNombreOriginal();
 
-        // Asignar directamente a la entidad si hay contenido
         if (archivoContenido != null && archivoContenido.length > 0) {
             empleado.setArchivoContenido(archivoContenido);
             empleado.setArchivoNombreOriginal(archivoNombreOriginal);
-            System.out.println("Servicio: Contenido del archivo [" + archivoNombreOriginal + "] asignado a la entidad Empleado para guardar en BD.");
         } else {
-            // Asegurarse de que los campos sean null en la entidad si no hay archivo
             empleado.setArchivoContenido(null);
             empleado.setArchivoNombreOriginal(null);
-            System.out.println("Servicio: No había contenido de archivo en el DTO para asignar a la entidad.");
         }
 
         return empleadosRepository.save(empleado);
     }
 
+    /**
+     * Busca un empleado por su nombre.
+     *
+     * @param nombreEmpleado Nombre del empleado a buscar.
+     * @return Un Optional con el empleado encontrado, si existe.
+     */
     @Override
     public Optional<Empleado> findByNombreEmpleado(String nombreEmpleado) {
         return Optional.empty();
     }
 
+    /**
+     * Obtiene los detalles de un empleado por su ID.
+     *
+     * @param id ID del empleado.
+     * @return Un Optional con los detalles del empleado, si existe.
+     */
     @Override
     public Optional<EmpleadoDetalleDTO> obtenerDetalleEmpleado(UUID id) {
         return empleadosRepository.findById(id).map(empleado -> {
@@ -106,6 +119,4 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             return detalleDTO;
         });
     }
-
-
 }
