@@ -158,7 +158,7 @@ public class EmpleadoController {
 
         if (archivoAdjunto != null && !archivoAdjunto.isEmpty()) {
             try {
-                dtoSesion.setArchivoContenido(archivoAdjunto.getBytes());
+                dtoSesion.setFotografia(archivoAdjunto.getBytes());
                 dtoSesion.setArchivoNombreOriginal(archivoAdjunto.getOriginalFilename());
             } catch (IOException e) {
                 model.addAttribute("errorArchivo", "Error al procesar el archivo subido.");
@@ -166,7 +166,7 @@ public class EmpleadoController {
                 return "empleadoDatosFinancieros";
             }
         } else {
-            dtoSesion.setArchivoContenido(null);
+            dtoSesion.setFotografia(null);
             dtoSesion.setArchivoNombreOriginal(null);
         }
 
@@ -208,6 +208,7 @@ public class EmpleadoController {
     @PostMapping("/registro-finales")
     public String datosFinalesPost(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, RedirectAttributes redirectAttrs, HttpSession session, Model model) {
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
+        // Mensaje que aparece en la ventana de alerta tras guardar datos
         redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
 
         try {

@@ -28,10 +28,10 @@ public class EmpleadoRegistroDTO {
     private String nombre;
 
     /**
-     * Apellido del empleado. No puede estar vacío.
+     * Apellidos del empleado. No puede estar vacío.
      */
     @NotBlank
-    private String apellido;
+    private String apellidos;
 
     /**
      * Fecha de nacimiento del empleado. Debe ser una fecha pasada.
@@ -65,7 +65,7 @@ public class EmpleadoRegistroDTO {
     /**
      * Contenido del archivo adjunto.
      */
-    private byte[] archivoContenido;
+    private byte[] fotografia;
 
     /**
      * Nombre original del archivo adjunto.

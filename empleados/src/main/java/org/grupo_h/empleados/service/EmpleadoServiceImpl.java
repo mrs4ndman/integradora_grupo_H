@@ -66,21 +66,21 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         Empleado empleado = new Empleado();
         empleado.setNombre(empleadoDTO.getNombre());
-        empleado.setApellido(empleadoDTO.getApellido());
+        empleado.setApellidos(empleadoDTO.getApellidos());
         empleado.setFechaNacimiento(empleadoDTO.getFechaNacimiento());
         empleado.setEmail(empleadoDTO.getEmail());
 
         empleado.setDireccion(direccion);
         empleado.setCuentaCorriente(cuentaCorriente);
 
-        byte[] archivoContenido = empleadoDTO.getArchivoContenido();
+        byte[] archivoContenido = empleadoDTO.getFotografia();
         String archivoNombreOriginal = empleadoDTO.getArchivoNombreOriginal();
 
         if (archivoContenido != null && archivoContenido.length > 0) {
-            empleado.setArchivoContenido(archivoContenido);
+            empleado.setFotografia(archivoContenido);
             empleado.setArchivoNombreOriginal(archivoNombreOriginal);
         } else {
-            empleado.setArchivoContenido(null);
+            empleado.setFotografia(null);
             empleado.setArchivoNombreOriginal(null);
         }
 
@@ -110,7 +110,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             EmpleadoDetalleDTO detalleDTO = new EmpleadoDetalleDTO();
             detalleDTO.setId(empleado.getId());
             detalleDTO.setNombre(empleado.getNombre());
-            detalleDTO.setApellido(empleado.getApellido());
+            detalleDTO.setApellidos(empleado.getApellidos());
             detalleDTO.setEmail(empleado.getEmail());
             detalleDTO.setFechaNacimiento(empleado.getFechaNacimiento());
             detalleDTO.setDireccion(empleado.getDireccion());
