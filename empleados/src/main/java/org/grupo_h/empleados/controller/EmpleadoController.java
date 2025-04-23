@@ -158,7 +158,7 @@ public class EmpleadoController {
 
         if (archivoAdjunto != null && !archivoAdjunto.isEmpty()) {
             try {
-                dtoSesion.setArchivoContenido(archivoAdjunto.getBytes());
+                dtoSesion.setFotografia(archivoAdjunto.getBytes());
                 dtoSesion.setArchivoNombreOriginal(archivoAdjunto.getOriginalFilename());
             } catch (IOException e) {
                 model.addAttribute("errorArchivo", "Error al procesar el archivo subido.");
@@ -166,7 +166,7 @@ public class EmpleadoController {
                 return "empleadoDatosFinancieros";
             }
         } else {
-            dtoSesion.setArchivoContenido(null);
+            dtoSesion.setFotografia(null);
             dtoSesion.setArchivoNombreOriginal(null);
         }
 

@@ -30,7 +30,7 @@ public class EmpleadoDetalleDTO {
     /**
      * Apellido del empleado.
      */
-    private String apellido;
+    private String apellidos;
 
     /**
      * Correo electrónico del empleado.

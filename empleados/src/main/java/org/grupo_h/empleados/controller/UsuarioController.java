@@ -158,14 +158,14 @@ public class UsuarioController {
     /**
      * Procesa la contraseña y autentica al usuario.
      *
-     * @param contrasenia        Contraseña introducida.
+     * @param contrasena        Contraseña introducida.
      * @param request            Solicitud HTTP.
      * @param session            Sesión HTTP.
      * @param redirectAttributes Atributos para redirección.
      * @return Redirección a la página de información o de error.
      */
     @PostMapping("/inicio-sesion/autenticar")
-    public String autenticarManualConPassword(@RequestParam String contrasenia,
+    public String autenticarManualConPassword(@RequestParam String contrasena,
                                               HttpServletRequest request,
                                               HttpSession session,
                                               RedirectAttributes redirectAttributes) {
@@ -193,7 +193,7 @@ public class UsuarioController {
             return "redirect:/usuarios/inicio-sesion/password?error=true";
         }
 
-        if (passwordEncoder.matches(contrasenia, usuario.getContrasena())) {
+        if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
             usuario.setSesionesTotales(usuario.getSesionesTotales() + 1);
             if (usuario.getIntentosFallidos() > 0) {
                 usuario.setIntentosFallidos(0);
