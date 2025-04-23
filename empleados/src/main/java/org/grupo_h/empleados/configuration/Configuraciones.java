@@ -2,9 +2,14 @@ package org.grupo_h.empleados.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.Properties;
 
 /**
  * Configuración de seguridad y configuración de la aplicación.
@@ -36,6 +41,7 @@ public class Configuraciones {
                         .requestMatchers(
                                 "/usuarios/**",
                                 "/empleados/**",
+                                "/sendMail",
                                 "/css/**", "/js/**", "/imgggV/**").permitAll()
                         .anyRequest().authenticated()
                 );
@@ -43,5 +49,30 @@ public class Configuraciones {
 
         return http.build();
     }
-}
 
+    @Bean
+    public JavaMailSender getJavaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("smtp.gmail.com");
+        mailSender.setPort(587);
+
+        mailSender.setUsername("recuperacontrasena.grupoh@gmail.com");
+        mailSender.setPassword("jufb pfnt cdwn qzjt");
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.debug", "true");
+
+        return mailSender;
+    }
+
+    @Bean
+    public SimpleMailMessage templateSimpleMessage() {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setText(
+                "This is the test email template for your email:\n%s\n");
+        return message;
+    }
+}
