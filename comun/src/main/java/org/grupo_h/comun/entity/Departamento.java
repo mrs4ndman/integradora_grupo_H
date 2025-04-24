@@ -26,7 +26,4 @@ public class Departamento {
 
     @Column(name = "departamento", nullable = false)
     private String nombreDepartamento;
-
-    @Column(name = "direccion")
-    private Direccion direccion;
 }

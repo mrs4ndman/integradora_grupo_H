@@ -4,10 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.grupo_h.comun.entity.auxiliar.CuentaCorriente;
-import org.grupo_h.comun.entity.auxiliar.Direccion;
+import org.grupo_h.comun.entity.auxiliar.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -17,6 +17,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@SecondaryTable(name = "datosEconomicos",
+        pkJoinColumns = @PrimaryKeyJoinColumn(name = "empleados_id"),
+        foreignKey = @ForeignKey(name = "FK_EMPLEADO_DATOS_ECONOMICOS")
+)
 public class Empleado {
 
     /**
@@ -49,8 +53,9 @@ public class Empleado {
     /**
      * Género del empleado. Es un Enum alojado en entity/auxiliar
      */
-    // @Column(nullable = false)
-    // private Genero genero;
+    @ManyToOne
+    @JoinColumn(name = "codigo_genero", nullable = false)
+    private Genero generoSeleccionado;
 
     /**
      * Correo electrónico del empleado. No puede ser nulo.
@@ -69,16 +74,59 @@ public class Empleado {
     // private Usuario usuario;
 
     /**
+     * Edad del empleado.
+     */
+    @Column(name = "Edad")
+    private Integer edad;
+
+    /**
+     * País de Nacimiento del empleado.
+     */
+    @ManyToOne
+    @JoinColumn(
+            name = "pais_nacimiento",
+            foreignKey = @ForeignKey(name = "FK_PAIS_NACIMIENTO_EMPLEADO")
+    )
+    private Pais paisNacimiento;
+
+    /**
+     * Comentario del empleado.
+     */
+    @Column(name = "Comentarios")
+    private String comentarios;
+
+    /**
+     * Tipo de Documento de Identidad del empleado.
+     */
+    @ManyToOne
+    @JoinColumn(name = "tipo_documento_cod_tipo_doc",
+                foreignKey = @ForeignKey(name = "FK_TIPO_DOCUMENTO_EMPLEADO")
+    )
+    private TipoDocumento tipoDocumento;
+
+    /**
+     * Número del Documento de Identidad del empleado.
+     */
+    @Column(name = "Documento")
+    private String documento;
+
+    /**
+     * Prefijo del teléfono móvil del empleado.
+     */
+    @Column(name = "Prefijo_Internacional_Telf")
+    private String prefijoTelefono;
+
+    /**
+     * Teléfono móvil del empleado.
+     */
+    @Column(name = "Telf_Movil")
+    private String telefonoMovil;
+
+    /**
      * Dirección del empleado.
      */
     @Embedded
     private Direccion direccion;
-
-    /**
-     * Cuenta corriente del empleado.
-     */
-    @Embedded
-    private CuentaCorriente cuentaCorriente;
 
     /**
      * Fecha de alta del empleado en la base de datos.
@@ -91,4 +139,20 @@ public class Empleado {
      */
     @Column(name = "archivo_nombre_original")
     private String archivoNombreOriginal;
+
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "cuenta_corriente_id",
+            foreignKey = @ForeignKey(name = "FK_EMPLEADO_CUENTA_CORRIENTE"))
+    private CuentaCorriente cuentaCorriente;
+
+
+    @Column(name="Salario", table = "datosEconomicos")
+    private Double salario;
+
+    @Column(name="Comision", table = "datosEconomicos")
+    private Double comision;
+
+    @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TarjetaCredito> tarjetasCredito;
 }

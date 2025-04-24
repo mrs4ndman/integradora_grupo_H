@@ -34,6 +34,18 @@
   <div th:if="${#fields.hasErrors('apellidos')}" th:errors="*{apellidos}" class="error"></div>
   <br><br>
 
+  <label>Género:</label><br>
+  <div th:each="genero : ${generos}">
+    <input type="radio"
+           th:field="*{genero}"
+           th:value="${genero.codigoGenero}"
+           th:id="${'genero_' + genero.codigoGenero}" />
+    <label th:for="${'genero_' + genero.codigoGenero}"
+           th:text="${genero.nombreGenero}"></label><br> <!-- Muestra el nombre del género -->
+  </div>
+
+
+
   <label for="fechaNacimiento">Fecha de Nacimiento:</label>
   <input type="text" id="fechaNacimiento" th:field="*{fechaNacimiento}"  />
   <div th:if="${#fields.hasErrors('fechaNacimiento')}" th:errors="*{fechaNacimiento}" class="error"></div>
