@@ -5,6 +5,7 @@
     <title>Resumen</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}">
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
 </head>
 <body>
 
@@ -38,12 +39,8 @@
     <p th:text="'País: ' + *{direccion.pais}"></p>
 
     <h2>Datos Financieros</h2>
-
-    <p>Banco: <span th:text="${datos.cuentaCorriente.banco}"></span></p>
-    <p>Cuenta Corriente: <span th:text="${datos.cuentaCorriente.cuentaCorriente}"></span></p>
-    <p>Arhchivo: <span th:text="${datos.archivoNombreOriginal}"></span></p>
-
-    <br>
+    <p th:text="'Banco: ' + *{cuentaCorriente.banco}"></p>
+    <p th:text="'Cuenta Corriente: ' + *{cuentaCorriente.cuentaCorriente}"></p>
 
     <div>
         <input type="submit" th:value="#{Boton.guardar}">
@@ -64,7 +61,6 @@
         }
     }
 </script>
-
 <script th:src="@{/js/script.js}"></script>
 
 </body>

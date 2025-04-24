@@ -33,17 +33,9 @@ public class EmpleadoController {
     @Autowired
     private final EmpleadoRepository empleadoRepository;
 
-    @Autowired
-    private final GeneroRepository generoRepository;
-
-    @Autowired
-    private final PaisRepository paisRepository;
-
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
-        this.generoRepository = generoRepository;
-        this.paisRepository = paisRepository;
     }
 
     /**
@@ -70,11 +62,8 @@ public class EmpleadoController {
      * @return La vista del formulario de registro.
      */
     @GetMapping("/registro-datos")
-    public String mostrarFormularioRegistro(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
-                                            HttpSession session,
-                                            Model model) {
+    public String mostrarFormularioRegistro(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session) {
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-        model.addAttribute("generos", generoRepository.findAll());
         return "empleadoRegistro";
     }
 
@@ -90,10 +79,8 @@ public class EmpleadoController {
     public String registrarUsuario(
             @Valid @ModelAttribute("empleadoRegistroDTO") EmpleadoRegistroDTO empleadoRegistroDTO,
             BindingResult result,
-            HttpSession session,
-            Model model) {
+            HttpSession session) {
         if (result.hasErrors()) {
-            model.addAttribute("generos", generoRepository.findAll());
             return "empleadoRegistro";
         }
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
@@ -223,7 +210,8 @@ public class EmpleadoController {
     @PostMapping("/registro-finales")
     public String datosFinalesPost(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, RedirectAttributes redirectAttrs, HttpSession session, Model model) {
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
-
+        // Mensaje que aparece en la ventana de alerta tras guardar datos
+        redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
 
         try {
             empleadoService.registrarEmpleado(empleadoRegistroDTO);
@@ -231,9 +219,6 @@ public class EmpleadoController {
             model.addAttribute("error", ex.getMessage());
             return "empleadoDatosFinales";
         }
-        // Mensaje que aparece en la ventana de alerta tras guardar datos
-        redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
-
         return "redirect:/empleados/registro-finales";
     }
 

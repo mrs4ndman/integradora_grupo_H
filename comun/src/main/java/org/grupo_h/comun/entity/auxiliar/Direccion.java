@@ -1,6 +1,7 @@
 package org.grupo_h.comun.entity.auxiliar;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
