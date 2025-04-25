@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 // Escanear entidades en el módulo Comun
 @EntityScan("org.grupo_h.comun.entity")
+//@EnableJpaRepositories(basePackages = {"org.grupo_h.comun.Repositories"})
+//@ComponentScan(basePackages = {"org.grupo_h.comun"})
 // Escanear repositorios en el módulo Comun
 @EnableJpaRepositories(basePackages = {"org.grupo_h.comun.repository"})
 // Escanear componentes en el módulo Comun y empleados
