@@ -39,6 +39,7 @@ public class EmpleadoController {
     public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, org.grupo_h.empleados.repository.GeneroRepository generoRepository) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
+        this.generoRepository = generoRepository;
     }
 
     /**
@@ -65,7 +66,9 @@ public class EmpleadoController {
      * @return La vista del formulario de registro.
      */
     @GetMapping("/registro-datos")
-    public String mostrarFormularioRegistro(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session) {
+    public String mostrarFormularioRegistro(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
+                                            HttpSession session,
+                                            Model model) {
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
         model.addAttribute("generos", generoRepository.findAll());
         return "empleadoRegistro";
