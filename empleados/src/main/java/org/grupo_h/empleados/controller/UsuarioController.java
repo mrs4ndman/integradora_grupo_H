@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.empleados.dto.UsuarioRegistroDTO;
-import org.grupo_h.empleados.repository.UsuarioRepository;
+import org.grupo_h.comun.repository.UsuarioRepository;
 import org.grupo_h.empleados.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

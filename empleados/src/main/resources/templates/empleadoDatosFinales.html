@@ -12,29 +12,30 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <h2>Resumen de los Datos del Empleado</h2>
+<div th:if="${error != null}">
+    <p style="color: red;" th:text="${error}"></p>
+</div>
 
 <form th:action="@{/empleados/registro-finales}" method="post"
       onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
 
 
     <h2>Empleado</h2>
-
-    <p>Nombre: <span th:text="${datos.nombre}"></span> </p>
-    <p>Apellidos: <span th:text="${datos.apellidos}"></span> </p>
-    <p>Fecha de Nacimiento: <span th:text="${#temporals.format(datos.fechaNacimiento, 'dd/MM/yyyy')}"></span></p>
-    <p>Email: <span th:text="${datos.email}"></span></p>
+    <p th:text="'Nombre: ' + *{nombre}"></p>
+    <p th:text="'Apellidos: ' + *{apellidos}"></p>
+    <p th:text="'Género: ' + *{genero}"></p>
+    <p th:text="'Fecha de nacimiento: ' + *{fechaNacimiento}"></p>
 
     <h2>Dirección</h2>
-
-    <p>Tipo de Vía: <span th:text="${datos.direccion.tipoVia}"></span></p>
-    <p>Vía: <span th:text="${datos.direccion.via}"></span></p>
-    <p>Número: <span th:text="${datos.direccion.numero}"></span></p>
-    <p>Piso: <span th:text="${datos.direccion.piso}"></span></p>
-    <p>Puerta: <span th:text="${datos.direccion.puerta}"></span></p>
-    <p>Localidad: <span th:text="${datos.direccion.localidad}"></span></p>
-    <p>Código Postal: <span th:text="${datos.direccion.codigoPostal}"></span></p>
-    <p>Región: <span th:text="${datos.direccion.region}"></span></p>
-    <p>País: <span th:text="${datos.direccion.pais}"></span></p>
+    <p th:text="'Tipo de vía: ' + *{direccion.tipoVia}"></p>
+    <p th:text="'Nombre de vía: ' + *{direccion.via}"></p>
+    <p th:text="'Número de vía: ' + *{direccion.numero}"></p>
+    <p th:text="'Planta: ' + *{direccion.piso}"></p>
+    <p th:text="'Puerta: ' + *{direccion.puerta}"></p>
+    <p th:text="'Localidad: ' + *{direccion.localidad}"></p>
+    <p th:text="'Código postal: ' + *{direccion.codigoPostal}"></p>
+    <p th:text="'Región: ' + *{direccion.region}"></p>
+    <p th:text="'País: ' + *{direccion.pais}"></p>
 
     <h2>Datos Financieros</h2>
 
@@ -45,14 +46,10 @@
     <br>
 
     <div>
-<!--        <button type="submit" id="btn_guardar">Guardar Empleado</button>-->
-        <input type="submit"
-               th:value="#{Boton.guardar}">
+        <input type="submit" th:value="#{Boton.guardar}">
     </div>
 
 </form>
-<!--<a th:href="@{/empleados/logout}" class="btn">Volver al inicio</a>-->
-
 
 <script th:inline="javascript" >
     function confirmarAccionFormulario(formulario, mensaje) {

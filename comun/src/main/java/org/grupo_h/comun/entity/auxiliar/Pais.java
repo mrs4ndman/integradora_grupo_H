@@ -7,17 +7,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Entity
-public class Genero {
+public class Pais {
     @Id
-    @Column(nullable = false,
-            unique = true,
-            length = 1)
-    private String codigoGenero;
-    @Column(name = "genero")
-    private String nombreGenero;
-
+    @Column(name = "Cod_pais", length = 3, nullable = false)
+    private String codigoPais;
+    @Column(name = "Nombre_Pais")
+    private String nombrePais;
 }

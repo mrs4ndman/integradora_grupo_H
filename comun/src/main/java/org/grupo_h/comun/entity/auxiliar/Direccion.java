@@ -1,7 +1,6 @@
 package org.grupo_h.comun.entity.auxiliar;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,38 +13,43 @@ import lombok.NoArgsConstructor;
 public class Direccion {
 
     /** Tipo de vía (calle, avenida, etc.). */
-    @Column(name = "tipo_via")
-    private String tipoVia;
+
+    @ManyToOne
+    @JoinColumn(name = "tipo_via_dirreccion_ppal_id",
+                referencedColumnName = "codigoTipoVia",
+                foreignKey = @ForeignKey(name = "FK_TIPOVIA_DIRECCION"))
+    private TipoVia tipoViaDirreccionPpal;
 
     /** Nombre de la vía. */
-    @Column(name = "via")
-    private String via;
+    @Column(name = "Nombre_via")
+    private String nombreViaDirreccionPpal;
 
     /** Número de la dirección. */
     @Column(name = "numero")
-    private int numero;
+    private int numeroViaDirreccionPpal;
 
-    /** Piso del edificio. */
-    @Column(name = "piso")
-    private int piso;
+    /** Portal de la dirección. */
+    @Column(name = "Portal")
+    private String portalDirreccionPpal;
 
-    /** Puerta o letra del piso. */
-    @Column(name = "puerta")
-    private String puerta;
+    /** Planta de la dirección. */
+    @Column(name = "Planta")
+    private String plantaDirreccionPpal;
+
+    /** Puerta de la dirección. */
+    @Column(name = "Puerta")
+    private String puertaDirreccionPpal;
 
     /** Localidad o ciudad. */
     @Column(name = "localidad")
-    private String localidad;
+    private String localidadDirreccionPpal;
+
+    /** Región/Comunidad Autónoma o Estado. */
+    @Column(name = "region")
+    private String regionDirreccionPpal;
 
     /** Código postal. */
-    @Column(name = "codigo_postal")
-    private String codigoPostal;
+    @Column(name = "Cod_postal")
+    private String codigoPostalDirreccionPpal;
 
-    /** Región o provincia. */
-    @Column(name = "region")
-    private String region;
-
-    /** País. */
-    @Column(name = "pais")
-    private String pais;
 }

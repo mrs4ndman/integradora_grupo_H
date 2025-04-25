@@ -1,7 +1,8 @@
 package org.grupo_h.comun.entity.auxiliar;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,13 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Genero {
+public class TipoVia {
     @Id
-    @Column(nullable = false,
-            unique = true,
-            length = 1)
-    private String codigoGenero;
-    @Column(name = "genero")
-    private String nombreGenero;
-
+    private String codigoTipoVia;
+    private String tipoVia;
 }

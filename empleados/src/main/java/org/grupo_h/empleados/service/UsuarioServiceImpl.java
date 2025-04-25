@@ -3,7 +3,7 @@ package org.grupo_h.empleados.service;
 import jakarta.transaction.Transactional;
 import org.grupo_h.empleados.dto.UsuarioRegistroDTO;
 import org.grupo_h.comun.entity.Usuario;
-import org.grupo_h.empleados.repository.UsuarioRepository;
+import org.grupo_h.comun.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 

@@ -7,17 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class Genero {
+public class TipoDocumento {
     @Id
-    @Column(nullable = false,
-            unique = true,
-            length = 1)
-    private String codigoGenero;
-    @Column(name = "genero")
-    private String nombreGenero;
-
+    @Column(name = "Cod_Tipo_Doc", length = 3, nullable = false)
+    private String codTipoDocumento;
+    private String tipoDocumento;
 }
