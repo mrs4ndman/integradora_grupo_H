@@ -1,4 +1,4 @@
-package org.grupo_h.comun.Repositories;
+package org.grupo_h.comun.repository;
 
 import org.grupo_h.comun.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;

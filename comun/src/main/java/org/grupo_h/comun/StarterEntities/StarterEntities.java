@@ -1,9 +1,9 @@
 package org.grupo_h.comun.StarterEntities;
 
 import jakarta.annotation.PostConstruct;
-import org.grupo_h.comun.Repositories.GeneroRepository;
-import org.grupo_h.comun.Repositories.PaisRepository;
-import org.grupo_h.comun.Repositories.TipoViaRepository;
+import org.grupo_h.comun.repository.GeneroRepository;
+import org.grupo_h.comun.repository.PaisRepository;
+import org.grupo_h.comun.repository.TipoViaRepository;
 import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.comun.entity.auxiliar.Pais;
 import org.grupo_h.comun.entity.auxiliar.TipoVia;

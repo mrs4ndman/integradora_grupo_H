@@ -3,9 +3,9 @@ package org.grupo_h.empleados.service;
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
-import org.grupo_h.comun.Repositories.EmpleadoRepository;
-import org.grupo_h.comun.Repositories.GeneroRepository;
-import org.grupo_h.comun.Repositories.UsuarioRepository;
+import org.grupo_h.comun.repository.EmpleadoRepository;
+import org.grupo_h.comun.repository.GeneroRepository;
+import org.grupo_h.comun.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

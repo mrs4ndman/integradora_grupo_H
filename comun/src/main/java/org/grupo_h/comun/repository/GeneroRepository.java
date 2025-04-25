@@ -1,4 +1,4 @@
-package org.grupo_h.comun.Repositories;
+package org.grupo_h.comun.repository;
 
 import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.springframework.data.repository.CrudRepository;

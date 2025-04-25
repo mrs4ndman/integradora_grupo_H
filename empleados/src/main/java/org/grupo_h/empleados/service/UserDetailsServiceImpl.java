@@ -1,7 +1,7 @@
 package org.grupo_h.empleados.service;
 
 import org.grupo_h.comun.entity.Usuario;
-import org.grupo_h.comun.Repositories.UsuarioRepository;
+import org.grupo_h.comun.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;

@@ -1,7 +1,7 @@
 package org.grupo_h.empleados.controller;
 
-import org.grupo_h.comun.Repositories.GeneroRepository;
-import org.grupo_h.comun.Repositories.PaisRepository;
+import org.grupo_h.comun.repository.GeneroRepository;
+import org.grupo_h.comun.repository.PaisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
