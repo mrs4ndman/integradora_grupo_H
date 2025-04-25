@@ -40,12 +40,12 @@ public class UsuarioServiceImpl implements UsuarioService {
      */
     @Override
     public Usuario registrarUsuario(UsuarioRegistroDTO usuarioDTO) {
-        if (usuarioRepository.findByNombreUsuario(usuarioDTO.getNombreUsuario()).isPresent()) {
-            throw new RuntimeException("El nombre de usuario ya existe");
+        if (usuarioRepository.findByEmail(usuarioDTO.getEmail()).isPresent()) {
+            throw new RuntimeException("El email ya existe");
         }
 
         Usuario usuario = new Usuario();
-        usuario.setNombreUsuario(usuarioDTO.getNombreUsuario());
+//        usuario.setNombreUsuario(usuarioDTO.getNombreUsuario());
         usuario.setEmail(usuarioDTO.getEmail());
         String encodedPassword = passwordEncoder.encode(usuarioDTO.getContrasena());
         usuario.setContrasena(encodedPassword);
@@ -59,19 +59,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     /**
      * Procesa un intento de inicio de sesión fallido.
      *
-     * @param nombreUsuario Nombre de usuario que intentó iniciar sesión.
+     * @param email Email que intentó iniciar sesión.
      */
     @Override
     @Transactional
-    public void procesarLoginFallido(String nombreUsuario) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+    public void procesarLoginFallido(String email) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             if (usuario.isHabilitado() && !usuario.isCuentaBloqueada()) {
                 usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
                 if (usuario.getIntentosFallidos() >= MAX_INTENTOS_FALLIDOS) {
                     usuario.setCuentaBloqueada(true);
-                    System.out.println("Cuenta bloqueada para usuario: " + nombreUsuario);
+                    System.out.println("Cuenta bloqueada para usuario con email: " + email);
                 }
                 usuarioRepository.save(usuario);
             }
@@ -81,12 +81,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     /**
      * Procesa un inicio de sesión exitoso.
      *
-     * @param nombreUsuario Nombre de usuario que inició sesión.
+     * @param email Email que inició sesión.
      */
     @Override
     @Transactional
-    public void procesarLoginExitoso(String nombreUsuario) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+    public void procesarLoginExitoso(String email) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             if (usuario.getIntentosFallidos() > 0) {

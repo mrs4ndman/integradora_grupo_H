@@ -19,17 +19,13 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /** Nombre de usuario. Debe ser único y no puede ser nulo. */
+    /** Correo electrónico del usuario. No puede ser nulo. */
     @Column(nullable = false, unique = true)
-    private String nombreUsuario;
+    private String email;
 
     /** Contraseña del usuario. No puede ser nula. */
     @Column(nullable = false)
     private String contrasena;
-
-    /** Correo electrónico del usuario. No puede ser nulo. */
-    @Column(nullable = false)
-    private String email;
 
     /** Indica si la cuenta está bloqueada (por ejemplo, tras intentos fallidos de ingreso). */
     private boolean cuentaBloqueada = false;

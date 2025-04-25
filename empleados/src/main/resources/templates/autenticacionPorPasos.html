@@ -70,14 +70,35 @@
 <body>
 <div class="container">
 
-    <form th:if="${pedirUsuario}"
+    <form th:if="${pedirEmail}"
+          id="formEmail"
           th:action="@{/usuarios/inicio-sesion/usuario}"
           method="post">
         <h1>Iniciar Sesión</h1>
-        <div>
-            <label for="nombreUsuario">Nombre de Usuario</label>
-            <input type="text" id="nombreUsuario" name="nombreUsuario" required>
+
+        <div th:if="${not #lists.isEmpty(loginsAnteriores)}" id="contenedorSelect" style="display: block;">
+            <div class="mb-3">
+                <label for="loginsAnterioresSelect">Elige tu usuario:</label>
+                <select id="loginsAnterioresSelect" required>
+                    <option value="" disabled selected>-- Selecciona tu email --</option>
+                    <th:block th:each="loginEmail : ${loginsAnteriores}">
+                        <option th:value="${loginEmail}" th:text="${loginEmail}"></option>
+                    </th:block>
+                </select>
+            </div>
+            <div>
+                <button type="button" onclick="eliminarUsuarioSeleccionado()">Eliminar Seleccionado</button>
+                <button type="button" onclick="mostrarInputManual()">Introducir email manualmente</button>
+            </div>
         </div>
+
+        <div id="emailInputContainer"
+             th:style="${not #lists.isEmpty(loginsAnteriores)} ? 'display: none;' : 'display: block;'">
+            <label for="email">Email del usuario:</label>
+            <input type="text" id="email" name="email">
+            <button th:if="${not #lists.isEmpty(loginsAnteriores)}" type="button" onclick="mostrarListaUsuarios()">Volver a la lista de usuarios</button>
+        </div>
+
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
         <div th:if="${mensaje}" class="success-message" th:text="${mensaje}"></div>
 
@@ -86,54 +107,162 @@
         </div>
 
         <button type="submit">Siguiente</button>
+
+        <div>
+            <a th:href="@{/usuarios/registro}">Registrar Usuario</a>
+        </div>
     </form>
 
     <form th:if="${pedirPassword}"
           th:action="@{/usuarios/inicio-sesion/autenticar}"
           method="post">
-        <h1>Bienvenido, <span th:text="${usuario}">Usuario</span></h1>
-        <input type="hidden" name="usuario" th:value="${usuario}"> <div>
-        <label for="contrasena">Contraseña</label>
-        <input type="password" id="contrasena" name="contrasena" required>
-    </div>
+        <h1>Bienvenido, <span th:text="${email}">Email</span></h1>
+        <input type="hidden" name="email" th:value="${email}">
+        <div>
+            <label for="contrasena">Contraseña</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+        </div>
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
         <button type="submit">Ingresar</button>
-        <a href="#" onclick="recuperarContraseña()" style="display: block; margin: 10px 0;">¿Olvidaste tu contraseña?</a>
+        <a href="#" onclick="recuperarContraseña()" style="display: block; margin: 10px 0;">¿Olvidaste tu
+            contraseña?</a>
     </form>
 
 </div>
 <script>
+    // Referencias a los elementos del DOM
+    const formEmail = document.getElementById('formEmail'); // Formulario
+    const contenedorSelect = document.getElementById('contenedorSelect');
+    const loginsAnterioresSelect = document.getElementById('loginsAnterioresSelect');
+    const emailInputContainer = document.getElementById('emailInputContainer');
+    const emailInput = document.getElementById('email'); // El input de email único
+
+    // Variable para saber si la lista existe inicialmente
+    const hayListaInicial = contenedorSelect != null; // Comprobar si el contenedor del select existe
+
+    // Función para mostrar el input manual
+    function mostrarInputManual() {
+        if (contenedorSelect) {
+            contenedorSelect.style.display = 'none';
+            if (loginsAnterioresSelect) loginsAnterioresSelect.removeAttribute('required'); // Ya no es requerido
+        }
+        if (emailInputContainer) {
+            emailInputContainer.style.display = 'block';
+            if (emailInput) {
+                emailInput.setAttribute('required', 'required'); // Ahora este es requerido
+                emailInput.value = ''; // Limpiar valor previo (del select)
+                emailInput.focus();
+            }
+        }
+        // Asegurarse que el select no tenga valor seleccionado
+        if (loginsAnterioresSelect) loginsAnterioresSelect.value = '';
+    }
+
+    function mostrarListaUsuarios() {
+        if (emailInputContainer) {
+            emailInputContainer.style.display = 'none';
+            if (emailInput) emailInput.removeAttribute('required');
+        }
+        if (contenedorSelect) {
+            contenedorSelect.style.display = 'block';
+            if (loginsAnterioresSelect) {
+                loginsAnterioresSelect.setAttribute('required', 'required');
+                // Opcional: Reseleccionar el valor que estaba o el placeholder
+                loginsAnterioresSelect.value = ''; // Vuelve al placeholder "-- Selecciona tu email --"
+                actualizarEmailDesdeSelect(); // Actualiza el input oculto (lo pondrá vacío)
+            }
+        }
+    }
+
+    // Función para actualizar el valor del input oculto cuando cambia el select
+    function actualizarEmailDesdeSelect() {
+        if (loginsAnterioresSelect && emailInput) {
+            emailInput.value = loginsAnterioresSelect.value;
+        }
+    }
+
+    // --- Event Listeners ---
+
+    // Actualizar input cuando cambia el select (si el select existe)
+    if (loginsAnterioresSelect) {
+        loginsAnterioresSelect.addEventListener('change', actualizarEmailDesdeSelect);
+    }
+
+    // --- Funciones de Botones ---
+
+    // Función eliminar (revisada para asegurar que funciona)
+    function eliminarUsuarioSeleccionado() {
+        const select = document.getElementById('previousLoginsSelect'); // Re-obtener por si acaso
+        if (!select || !select.value) {
+            alert("Por favor, selecciona un usuario de la lista para eliminar.");
+            return;
+        }
+        const emailAEliminar = select.value;
+
+        if (confirm('¿Estás seguro de que quieres eliminar "' + emailAEliminar + '" de la lista de usuarios recordados?')) {
+            fetch('/usuarios/inicio-sesion/eliminar-usuario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    // CSRF token si es necesario
+                },
+                body: 'emailAEliminar=' + encodeURIComponent(emailAEliminar)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Usuario eliminado.');
+                        window.location.reload(); // Recargar siempre para refrescar lista
+                    } else {
+                        response.text().then(text => { // Leer cuerpo de la respuesta para más info
+                            console.error("Error al eliminar:", response.status, text);
+                            alert('Error al eliminar el usuario: ' + (text || response.statusText));
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en fetch eliminarUsuario:', error);
+                    alert('Error de red al intentar eliminar el usuario.');
+                });
+        }
+    }
+
+
+    // Función recuperar contraseña (usa siempre el input#email)
+    function recuperarContraseña() {
+        const currentEmail = emailInput ? emailInput.value : null;
+        if (currentEmail) {
+            if (confirm('Se enviarán instrucciones para restablecer la contraseña a ' + currentEmail + '. ¿Continuar?')) {
+                window.location.href = '/usuarios/solicitar-recuperacion?email=' + encodeURIComponent(currentEmail);
+            }
+        } else {
+            alert("Por favor, selecciona o introduce un email válido antes de intentar recuperar la contraseña.");
+        }
+        return false; // Prevenir comportamiento por defecto del enlace
+    }
+
     function mostrarContraseña() {
         const passwordField = document.getElementById('passwordField');
         passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
     }
 
-    function recuperarContraseña() {
-        // Obtener el usuario del campo oculto o visible
-        const usuario = document.querySelector('input[name="usuario"]').value;
-
-        if (!usuario) {
-            alert("Primero introduce un usuario válido");
-            return;
+    // --- Configuración Inicial ---
+    document.addEventListener('DOMContentLoaded', function () {
+        if (hayListaInicial) {
+            // Estado inicial: Se muestra la lista
+            emailInputContainer.style.display = 'none'; // Ocultar input
+            contenedorSelect.style.display = 'block';     // Mostrar select
+            loginsAnterioresSelect.setAttribute('required', 'required'); // Select es requerido
+            emailInput.removeAttribute('required'); // Input no es requerido (está oculto)
+            // Poner el valor seleccionado (si lo hay) en el input oculto
+            actualizarEmailDesdeSelect();
+        } else {
+            // Estado inicial: No hay lista
+            if (emailInputContainer) emailInputContainer.style.display = 'block'; // Mostrar input
+            if (contenedorSelect) contenedorSelect.style.display = 'none';     // Ocultar select (si existiera)
+            if (emailInput) emailInput.setAttribute('required', 'required'); // Input es requerido
+            if (loginsAnterioresSelect) loginsAnterioresSelect.removeAttribute('required'); // Select no requerido
         }
-
-        // Codificar el parámetro para caracteres especiales
-        const usuarioCodificado = encodeURIComponent(usuario);
-
-        fetch(`/usuarios/recuperar-contraseña?usuario=${usuarioCodificado}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-                return response.text();
-            })
-            .then(password => {
-                alert(`Tu contraseña es: ${password}`);
-            })
-            .catch(error => {
-                alert(error.message);
-            });
-    }
+    });
 </script>
 </body>
 </html>

@@ -209,7 +209,6 @@ public class EmpleadoController {
     public String datosFinalesPost(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, RedirectAttributes redirectAttrs, HttpSession session, Model model) {
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
         // Mensaje que aparece en la ventana de alerta tras guardar datos
-        redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
 
         try {
             empleadoService.registrarEmpleado(empleadoRegistroDTO);

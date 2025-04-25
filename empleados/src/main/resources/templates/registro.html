@@ -19,12 +19,8 @@
 </div>
 
 <!-- El formulario usa el objeto 'usuarioRegistroDTO' para hacer binding de sus campos -->
-<form th:action="@{/usuarios/registro}" th:object="${usuarioRegistroDTO}" method="post">
-    <div>
-        <label for="nombreUsuario">Nombre de Usuario</label>
-        <input type="text" th:field="*{nombreUsuario}" id="nombreUsuario" placeholder="Escribe tu nombre de usuario" />
-        <div th:if="${#fields.hasErrors('nombreUsuario')}" th:errors="*{nombreUsuario}" class="error"></div>
-    </div>
+<form th:action="@{/usuarios/registro}" th:object="${usuarioRegistroDTO}" method="post"
+      onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo usuario?');">
     <div>
         <label for="email">Email</label>
         <input type="email" th:field="*{email}" id="email" placeholder="tuemail@dominio.com" />
@@ -37,7 +33,28 @@
     </div>
     <div>
         <button type="submit">Registrarse</button>
+        <button><a th:href="@{/usuarios/inicio-sesion}" style="color: black; text-decoration: none">Iniciar Sesión</a></button>
     </div>
 </form>
 </body>
+<script>
+    /**
+     * Muestra un diálogo de confirmación antes de enviar un formulario.
+     * Si el usuario hace clic en "Aceptar", el formulario se envía.
+     * Si hace clic en "Cancelar", el envío se detiene.
+     *
+     * @param formulario - El elemento del formulario que disparó el evento.
+     * @param mensaje - El mensaje de confirmación que se mostrará al usuario.
+     * @returns boolean - Devuelve true para permitir el envío, false para cancelarlo.
+     */
+    function confirmarAccionFormulario(formulario, mensaje) {
+        if (confirm(mensaje)) {
+            // Usuario confirmó, permitir el envío del formulario
+            return true;
+        } else {
+            // Usuario canceló, prevenir el envío del formulario
+            return false;
+        }
+    }
+</script>
 </html>

@@ -9,12 +9,12 @@ import lombok.Data;
  */
 @Data
 public class UsuarioRegistroDTO {
-
     /**
-     * Nombre de usuario. No puede estar vacío.
+     * Correo electrónico del usuario. Debe tener un formato válido.
      */
-    @NotBlank(message = "El nombre de usuario es obligatorio")
-    private String nombreUsuario;
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email debe tener un formato válido")
+    private String email;
 
     /**
      * Contraseña del usuario. No puede estar vacía.
@@ -22,10 +22,4 @@ public class UsuarioRegistroDTO {
     @NotBlank(message = "La contraseña es obligatoria")
     private String contrasena;
 
-    /**
-     * Correo electrónico del usuario. Debe tener un formato válido.
-     */
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email debe tener un formato válido")
-    private String email;
 }

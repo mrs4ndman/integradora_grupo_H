@@ -5,7 +5,6 @@
     <title>Resumen</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}">
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-
 </head>
 <body>
 
@@ -14,7 +13,8 @@
 
 <h2>Resumen de los Datos del Empleado</h2>
 
-<form th:action="@{/empleados/registro-finales}" method="post">
+<form th:action="@{/empleados/registro-finales}" method="post"
+      onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
 
 
     <h2>Empleado</h2>
@@ -40,6 +40,7 @@
 
     <p>Banco: <span th:text="${datos.cuentaCorriente.banco}"></span></p>
     <p>Cuenta Corriente: <span th:text="${datos.cuentaCorriente.cuentaCorriente}"></span></p>
+    <p>Arhchivo: <span th:text="${datos.archivoNombreOriginal}"></span></p>
 
     <br>
 
@@ -53,9 +54,19 @@
 <!--<a th:href="@{/empleados/logout}" class="btn">Volver al inicio</a>-->
 
 
-<script th:if="${mensaje}" th:inline="javascript" >
-    alert([[${mensaje}]]);
+<script th:inline="javascript" >
+    function confirmarAccionFormulario(formulario, mensaje) {
+        if (confirm(mensaje)) {
+            // Usuario confirmó, permitir el envío del formulario
+            alert("Datos guardados en Base de Datos")
+            return true;
+        } else {
+            // Usuario canceló, prevenir el envío del formulario
+            return false;
+        }
+    }
 </script>
+
 <script th:src="@{/js/script.js}"></script>
 
 </body>

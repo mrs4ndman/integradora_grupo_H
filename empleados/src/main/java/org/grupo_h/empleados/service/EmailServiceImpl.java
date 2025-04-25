@@ -16,7 +16,6 @@ public class EmailServiceImpl implements EmailService {
         public String enviarEmail(EmailDetalles detalles)
         {
             try {
-
                 // Creando un objeto de correo sencillo
                 SimpleMailMessage mailMessage
                         = new SimpleMailMessage();

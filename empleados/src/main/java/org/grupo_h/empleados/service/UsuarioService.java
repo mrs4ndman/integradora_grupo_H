@@ -9,7 +9,7 @@ public interface UsuarioService {
     Usuario registrarUsuario(UsuarioRegistroDTO usuarioDTO);
 
     // Métodos para manejar intentos de login
-    void procesarLoginFallido(String nombreUsuario);
+    void procesarLoginFallido(String email);
 
-    void procesarLoginExitoso(String nombreUsuario);
+    void procesarLoginExitoso(String email);
 }

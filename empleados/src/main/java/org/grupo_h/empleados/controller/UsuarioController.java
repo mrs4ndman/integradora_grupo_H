@@ -1,6 +1,8 @@
 package org.grupo_h.empleados.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.grupo_h.comun.entity.Usuario;
@@ -17,7 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Controlador para gestionar las operaciones relacionadas con los usuarios.
@@ -29,7 +31,7 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final UsuarioRepository usuarioRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private static final int MAX_INTENTOS_FALLIDOS = 2;
+    private static final int MAX_INTENTOS_FALLIDOS = 3;
 
     @Autowired
     public UsuarioController(UsuarioService usuarioService, UsuarioRepository usuarioRepository, BCryptPasswordEncoder passwordEncoder) {
@@ -89,9 +91,24 @@ public class UsuarioController {
      */
     @GetMapping("/inicio-sesion")
     public String mostrarFormularioUsuario(Model model,
+                                           HttpServletRequest request,
                                            @RequestParam(value = "error", required = false) String error,
                                            @RequestParam(value = "logout", required = false) String logout,
                                            @ModelAttribute("logoutReferer") String logoutReferer) {
+        List<String> previousLogins = new ArrayList<>();
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("loginsAnteriores".equals(cookie.getName())) {
+                    // Decodificar si es necesario (ej. Base64) y separar por comas
+                    String decodedValue = new String(java.util.Base64.getUrlDecoder().decode(cookie.getValue()));
+                    previousLogins = new ArrayList<>(Arrays.asList(decodedValue.split(",")));
+                    break;
+                }
+            }
+        }
+        model.addAttribute("loginsAnteriores", previousLogins);
+
         if (logout != null) {
             model.addAttribute("mensaje", "Has cerrado sesión exitosamente.");
             if (logoutReferer != null && !logoutReferer.isEmpty()) {
@@ -100,24 +117,24 @@ public class UsuarioController {
                 model.addAttribute("logoutRefererText", obtenerUrl(logoutReferer));
             }
         }
-        model.addAttribute("pedirUsuario", true);
+        model.addAttribute("pedirEmail", true);
         return "autenticacionPorPasos";
     }
 
     /**
-     * Procesa el nombre de usuario para el inicio de sesión.
+     * Procesa el email de usuario para el inicio de sesión.
      *
-     * @param nombreUsuario      Nombre de usuario introducido.
+     * @param email      Email de usuario introducido.
      * @param session            Sesión HTTP.
      * @param redirectAttributes Atributos para redirección.
      * @return Redirección al formulario de contraseña o de error.
      */
     @PostMapping("/inicio-sesion/usuario")
-    public String procesarUsuario(@RequestParam String nombreUsuario,
+    public String procesarUsuario(@RequestParam String email,
                                   HttpSession session,
                                   RedirectAttributes redirectAttributes) {
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty() || !usuarioOpt.get().isHabilitado()) {
             redirectAttributes.addFlashAttribute("error", "Usuario no encontrado o deshabilitado");
@@ -125,11 +142,11 @@ public class UsuarioController {
         }
 
         if (usuarioOpt.get().isCuentaBloqueada()) {
-            redirectAttributes.addFlashAttribute("error", "La cuenta " + nombreUsuario + " está bloqueada.");
+            redirectAttributes.addFlashAttribute("error", "La cuenta " + email + " está bloqueada.");
             return "redirect:/usuarios/inicio-sesion?error=true";
         }
 
-        session.setAttribute("usuarioParaLogin", nombreUsuario);
+        session.setAttribute("emailParaLogin", email);
         return "redirect:/usuarios/inicio-sesion/password";
     }
 
@@ -143,14 +160,14 @@ public class UsuarioController {
      */
     @GetMapping("/inicio-sesion/password")
     public String mostrarFormularioPassword(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String nombreUsuario = (String) session.getAttribute("usuarioParaLogin");
+        String email = (String) session.getAttribute("emailParaLogin");
 
-        if (nombreUsuario == null) {
-            redirectAttributes.addFlashAttribute("error", "Por favor, introduce primero tu nombre de usuario.");
+        if (email == null) {
+            redirectAttributes.addFlashAttribute("error", "Por favor, introduce primero tu email.");
             return "redirect:/usuarios/inicio-sesion";
         }
 
-        model.addAttribute("usuario", nombreUsuario);
+        model.addAttribute("email", email);
         model.addAttribute("pedirPassword", true);
         return "autenticacionPorPasos";
     }
@@ -167,40 +184,72 @@ public class UsuarioController {
     @PostMapping("/inicio-sesion/autenticar")
     public String autenticarManualConPassword(@RequestParam String contrasena,
                                               HttpServletRequest request,
+                                              HttpServletResponse response,
                                               HttpSession session,
                                               RedirectAttributes redirectAttributes) {
 
-        String nombreUsuario = (String) session.getAttribute("usuarioParaLogin");
+        String email = (String) session.getAttribute("emailParaLogin");
 
-        if (nombreUsuario == null) {
+        if (email == null) {
             redirectAttributes.addFlashAttribute("error", "Error de sesión. Por favor, inicia sesión de nuevo.");
             return "redirect:/usuarios/inicio-sesion";
         }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
         if (usuarioOpt.isEmpty()) {
-            session.removeAttribute("usuarioParaLogin");
-            redirectAttributes.addFlashAttribute("error", "Usuario no encontrado.");
+            session.removeAttribute("emailParaLogin");
+            redirectAttributes.addFlashAttribute("error", "Email no encontrado.");
             return "redirect:/usuarios/inicio-sesion?error=true";
         }
 
         Usuario usuario = usuarioOpt.get();
 
         if (!usuario.isHabilitado() || usuario.isCuentaBloqueada()) {
-            session.removeAttribute("usuarioParaLogin");
+            session.removeAttribute("emailParaLogin");
             redirectAttributes.addFlashAttribute("error", "La cuenta no está disponible.");
             return "redirect:/usuarios/inicio-sesion/password?error=true";
         }
 
         if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
+            // --- Inicio: Lógica de Cookies ---
+            Set<String> logins = new LinkedHashSet<>(); // Usar Set para evitar duplicados
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("loginsAnteriores".equals(cookie.getName())) {
+                        String decodedValue = new String(Base64.getUrlDecoder().decode(cookie.getValue()));
+                        logins.addAll(Arrays.asList(decodedValue.split(",")));
+                        break;
+                    }
+                }
+            }
+            logins.add(email); // Añadir el email actual
+
+            // Limitar el número de usuarios recordados si se desea (opcional)
+            // final int MAX_USERS = 5;
+            // if (logins.size() > MAX_USERS) {
+            //    logins = new LinkedHashSet<>(new ArrayList<>(logins).subList(logins.size() - MAX_USERS, logins.size()));
+            // }
+
+            String joinedLogins = String.join(",", logins);
+            String encodedValue = Base64.getUrlEncoder().withoutPadding().encodeToString(joinedLogins.getBytes());
+
+            Cookie loginCookie = new Cookie("loginsAnteriores", encodedValue);
+            loginCookie.setPath("/"); // Asegurar que la cookie esté disponible en todo el sitio
+            loginCookie.setMaxAge(60 * 60 * 24 * 30); // Ejemplo: 30 días de duración
+            loginCookie.setHttpOnly(true); // Por seguridad
+            // loginCookie.setSecure(true); // Descomentar si usas HTTPS
+            response.addCookie(loginCookie);
+            // --- Fin: Lógica de Cookies ---
+
             usuario.setSesionesTotales(usuario.getSesionesTotales() + 1);
             if (usuario.getIntentosFallidos() > 0) {
                 usuario.setIntentosFallidos(0);
             }
             usuarioRepository.save(usuario);
 
-            session.removeAttribute("usuarioParaLogin");
+            session.removeAttribute("emailParaLogin");
 
             Integer contadorActual = (Integer) session.getAttribute("contadorConexiones");
             int nuevoContador = (contadorActual == null) ? 1 : contadorActual + 1;
@@ -208,7 +257,7 @@ public class UsuarioController {
 
             redirectAttributes.addFlashAttribute("contadorConexionesFlash", nuevoContador);
 
-            session.setAttribute("usuarioAutenticado", usuario.getNombreUsuario());
+            session.setAttribute("emailAutenticado", usuario.getEmail());
             session.setAttribute("contadorConexiones", 1);
             session.setAttribute("userAgent", request.getHeader("User-Agent"));
 
@@ -228,6 +277,40 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/inicio-sesion/eliminar-usuario")
+    public ResponseEntity<?> eliminarUsuarioCookie(@RequestParam String emailAEliminar,
+                                                   HttpServletRequest request,
+                                                   HttpServletResponse response) {
+        Set<String> logins = new LinkedHashSet<>();
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("loginsAnteriores".equals(cookie.getName())) {
+                    String decodedValue = new String(Base64.getUrlDecoder().decode(cookie.getValue()));
+                    logins.addAll(Arrays.asList(decodedValue.split(",")));
+                    break;
+                }
+            }
+        }
+
+        boolean removed = logins.remove(emailAEliminar); // Intentar eliminar
+
+        if (removed) {
+            String joinedLogins = String.join(",", logins);
+            String encodedValue = Base64.getUrlEncoder().withoutPadding().encodeToString(joinedLogins.getBytes());
+
+            Cookie loginCookie = new Cookie("loginsAnteriores", encodedValue);
+            loginCookie.setPath("/");
+            loginCookie.setMaxAge(60 * 60 * 24 * 30); // Actualizar duración
+            loginCookie.setHttpOnly(true);
+            response.addCookie(loginCookie);
+            return ResponseEntity.ok().build(); // Éxito
+        } else {
+            // Opcional: devolver error si no se encontró
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     /**
      * Muestra la información del usuario autenticado.
      *
@@ -238,7 +321,7 @@ public class UsuarioController {
      */
     @GetMapping("/info")
     public String mostrarInformacionUsuario(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String nombreUsuario = (String) session.getAttribute("usuarioAutenticado");
+        String email = (String) session.getAttribute("emailAutenticado");
 
         Integer contadorSesion = null;
 
@@ -261,12 +344,12 @@ public class UsuarioController {
             }
         }
 
-        if (nombreUsuario == null) {
+        if (email == null) {
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para ver esta información.");
             return "redirect:/usuarios/inicio-sesion";
         }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isEmpty()) {
             session.invalidate();
             redirectAttributes.addFlashAttribute("error", "Error al recuperar datos de usuario.");
@@ -276,12 +359,12 @@ public class UsuarioController {
         Usuario usuario = usuarioOpt.get();
         String userAgent = (String) session.getAttribute("userAgent");
 
-        model.addAttribute("nombreUsuario", nombreUsuario);
+        model.addAttribute("email", email);
         model.addAttribute("totalLoginsUsuario", usuario.getSesionesTotales());
         model.addAttribute("loginsSesionActual", contadorSesion != null ? contadorSesion : 0);
         model.addAttribute("navegadorActual", userAgent != null ? userAgent : "No disponible");
 
-        return "infoUsuario";
+        return "areaPersonal";
     }
 
     /**
@@ -310,25 +393,25 @@ public class UsuarioController {
     /**
      * Recupera la contraseña de un usuario (¡Inseguro!).
      *
-     * @param usuario Nombre de usuario.
+     * @param email Email del usuario.
      * @return Respuesta con la contraseña o mensaje de error.
      */
     @GetMapping("/recuperar-contraseña")
     @ResponseBody
     public ResponseEntity<String> recuperarContrasenia(
-            @RequestParam(value = "usuario", required = false) String usuario) {
+            @RequestParam(value = "email", required = false) String email) {
 
-        if (usuario == null || usuario.isEmpty()) {
+        if (email == null || email.isEmpty()) {
             return ResponseEntity.badRequest().body("Falta el parámetro 'usuario'");
         }
 
-        Optional<Usuario> userOpt = usuarioRepository.findByNombreUsuario(usuario);
+        Optional<Usuario> userOpt = usuarioRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }
 
-        return ResponseEntity.ok(usuarioRepository.findByNombreUsuario(usuario).get().getContrasena());
+        return ResponseEntity.ok(usuarioRepository.findByEmail(email).get().getContrasena());
     }
 
     /**

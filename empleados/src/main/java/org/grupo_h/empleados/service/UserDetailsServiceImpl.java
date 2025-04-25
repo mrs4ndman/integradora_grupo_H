@@ -23,28 +23,28 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private UsuarioRepository usuarioRepository;
 
     /**
-     * Carga los detalles del usuario por su nombre de usuario.
+     * Carga los detalles del usuario por su email.
      *
-     * @param nombreUsuario Nombre de usuario a buscar.
+     * @param email Email a buscar.
      * @return UserDetails con los detalles del usuario.
      * @throws UsernameNotFoundException Si el usuario no se encuentra.
      * @throws DisabledException         Si la cuenta del usuario está deshabilitada.
      * @throws LockedException           Si la cuenta del usuario está bloqueada.
      */
     @Override
-    public UserDetails loadUserByUsername(String nombreUsuario) throws UsernameNotFoundException, DisabledException, LockedException {
-        Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + nombreUsuario));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException, DisabledException, LockedException {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado para el email: " + email));
 
         if (!usuario.isHabilitado()) {
-            throw new DisabledException("La cuenta del usuario está deshabilitada: " + nombreUsuario);
+            throw new DisabledException("La cuenta del usuario con email: "+ email + " está deshabilitada");
         }
 
         if (usuario.isCuentaBloqueada()) {
-            throw new LockedException("La cuenta del usuario está bloqueada: " + nombreUsuario);
+            throw new LockedException("La cuenta del usuario con email: "+ email + " está bloqueada");
         }
 
-        return new User(usuario.getNombreUsuario(),
+        return new User(usuario.getEmail(),
                 usuario.getContrasena(),
                 usuario.isHabilitado(),
                 true,
