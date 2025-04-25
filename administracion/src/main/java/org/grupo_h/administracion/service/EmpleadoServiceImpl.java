@@ -1,7 +1,7 @@
 package org.grupo_h.administracion.service;
 
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
-import org.grupo_h.administracion.repository.EmpleadoRepository;
+import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

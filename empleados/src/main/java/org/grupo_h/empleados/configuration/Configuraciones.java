@@ -42,6 +42,7 @@ public class Configuraciones {
                                 "/usuarios/**",
                                 "/empleados/**",
                                 "/sendMail",
+                                "/prueba",
                                 "/css/**", "/js/**", "/img/**").permitAll()
 
                         .anyRequest().authenticated()

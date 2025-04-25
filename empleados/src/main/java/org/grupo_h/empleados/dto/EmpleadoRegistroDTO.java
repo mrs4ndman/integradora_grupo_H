@@ -41,6 +41,11 @@ public class EmpleadoRegistroDTO {
     private LocalDate fechaNacimiento;
 
     /**
+     * Género del empleado. No requiere validación. Insertado en tabla por defecto
+     */
+    private String genero;
+
+    /**
      * Correo electrónico del empleado. Debe seguir un formato válido.
      */
     @NotBlank
@@ -49,6 +54,8 @@ public class EmpleadoRegistroDTO {
             message = "{Vaidacion.email.pattern}"
     )
     private String email;
+
+
 
     /**
      * Dirección del empleado.
