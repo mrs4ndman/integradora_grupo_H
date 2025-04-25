@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 @Entity
 public class TipoVia {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String codigoTipoVia;
     private String tipoVia;
 }

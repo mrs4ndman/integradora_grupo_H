@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
-import org.grupo_h.comun.entity.Genero;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;

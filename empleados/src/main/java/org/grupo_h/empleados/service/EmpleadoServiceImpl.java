@@ -1,16 +1,11 @@
 package org.grupo_h.empleados.service;
 
 import org.grupo_h.comun.entity.Empleado;
-import org.grupo_h.comun.entity.Genero;
-import org.grupo_h.comun.entity.auxiliar.CuentaCorriente;
-import org.grupo_h.comun.entity.auxiliar.Direccion;
-import org.grupo_h.empleados.dto.CuentaCorrienteDTO;
-import org.grupo_h.empleados.dto.DireccionDTO;
 import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
-import org.grupo_h.empleados.repository.EmpleadoRepository;
-import org.grupo_h.empleados.repository.GeneroRepository;
-import org.grupo_h.empleados.repository.UsuarioRepository;
+import org.grupo_h.comun.Repositories.EmpleadoRepository;
+import org.grupo_h.comun.Repositories.GeneroRepository;
+import org.grupo_h.comun.Repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -19,54 +19,55 @@ public class DireccionDTO {
      * Tipo de vía (calle, avenida, etc.). No puede estar vacío.
      */
     @NotBlank
-    private String tipoVia;
+    private String tipoViaDTO;
 
     /**
      * Nombre de la vía. No puede estar vacío.
      */
     @NotBlank
-    private String via;
+    private String nombreViaDTO;
 
     /**
      * Número de la dirección. Debe ser un valor positivo.
      */
     @NotNull
     @Positive(message = "{Validadcion.direccionDTO.numeroPositivo}")
-    private Integer numero;
+    private Integer numeroViaDTO;
 
     /**
-     * Piso del edificio. No puede ser nulo.
+     * Portal del edificio. No puede ser nulo.
      */
     @NotNull(message = "{Validadcion.direccionDTO.piso}")
-    private Integer piso;
+    private String portalDTO;
+
+    /**
+     * Planta del edificio. No puede ser nulo.
+     */
+    @NotNull(message = "{Validadcion.direccionDTO.planta}")
+    private String plantaDTO;
 
     /**
      * Puerta o letra del piso. No puede estar vacío.
      */
     @NotBlank(message = "{Validadcion.direccionDTO.puerta}")
-    private String puerta;
+    private String puertaDTO;
 
     /**
      * Localidad o ciudad. No puede estar vacío.
      */
     @NotBlank(message = "{Validadcion.direccionDTO.localidad}")
-    private String localidad;
+    private String localidadDTO;
+
+
+    /**
+     * Región, Comunidad Autonoma o Estado. No puede estar vacío.
+     */
+    @NotBlank(message = "{Validadcion.direccionDTO.region}")
+    private String regionDTO;
 
     /**
      * Código postal. No puede estar vacío.
      */
     @NotBlank(message = "{Validadcion.direccionDTO.codigoPostal}")
-    private String codigoPostal;
-
-    /**
-     * Región o provincia. No puede estar vacío.
-     */
-    @NotBlank(message = "{Validadcion.direccionDTO.region}")
-    private String region;
-
-    /**
-     * País. No puede estar vacío.
-     */
-    @NotBlank(message = "{Validadcion.direccionDTO.pais}")
-    private String pais;
+    private String codigoPostalDTO;
 }

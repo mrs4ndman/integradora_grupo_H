@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario de Prueba</title>
+</head>
+<body>
+<h1>Formulario de Prueba</h1>
+
+<form  method="get">
+  <!-- Select para Países -->
+  <div>
+    <label for="pais">Selecciona un país:</label>
+    <select id="pais" name="pais" required>
+      <option value="" selected disabled>-- Seleccione --</option>
+      <option th:each="p : ${pais}"
+              th:value="${p.codigoPais}"
+              th:text="${p.nombrePais}">
+      </option>
+    </select>
+  </div>
+
+  <!-- Radio Buttons para Géneros -->
+  <div>
+    <p>Selecciona tu género:</p>
+    <div th:each="genero : ${generos}">
+      <input type="radio"
+             th:id="${'genero_' + genero.codigoGenero}"
+             th:name="genero"
+             th:value="${genero.codigoGenero}">
+      <label th:for="${'genero_' + genero.codigoGenero}"
+             th:text="${genero.nombreGenero}"></label>
+    </div>
+  </div>
+
+  <button type="submit">Enviar</button>
+</form>
+</body>
+</html>
