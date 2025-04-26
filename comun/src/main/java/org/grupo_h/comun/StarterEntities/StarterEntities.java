@@ -176,9 +176,9 @@ public class StarterEntities {
     @PostConstruct
     public void initTipoTarjeta(){
         if(tipoTarjetaRepository.count() == 0){
-            TipoTarjetaCredito visa = TipoTarjetaCredito.of("VISA");
-            TipoTarjetaCredito americanExpress = TipoTarjetaCredito.of("AMERICAN EXPRESS");
-            TipoTarjetaCredito masterCard = TipoTarjetaCredito.of("MASTER CARD");
+            TipoTarjetaCredito visa = TipoTarjetaCredito.of("VISA","V");
+            TipoTarjetaCredito americanExpress = TipoTarjetaCredito.of("AMERICAN EXPRESS", "AM");
+            TipoTarjetaCredito masterCard = TipoTarjetaCredito.of("MASTER CARD", "MC");
             tipoTarjetaRepository.saveAll(List.of(visa, americanExpress, masterCard));
         }
     }

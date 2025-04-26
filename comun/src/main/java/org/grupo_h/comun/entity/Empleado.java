@@ -166,5 +166,10 @@ public class Empleado {
             joinColumns = @JoinColumn(name = "empleado_id"),
             inverseJoinColumns = @JoinColumn(name = "especialidades_empleado_id")
     )
-    private List<EspecialidadesEmpleado> especialidadesEmpleado;  // Lista de especialidades que tiene el empleado
+    private List<EspecialidadesEmpleado> especialidadesEmpleado;
+
+    /**
+     * True si el empleado está conforme con información suministrada a la empresa.
+     */
+    private Boolean aceptaInformacion;
 }
