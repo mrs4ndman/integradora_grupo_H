@@ -155,4 +155,16 @@ public class Empleado {
 
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TarjetaCredito> tarjetasCredito;
+
+    @ManyToOne
+    @JoinColumn(name = "departamento_id")
+    private Departamento departamento;
+
+    @ManyToMany
+    @JoinTable(
+            name = "empleado_especialidades_empleado",
+            joinColumns = @JoinColumn(name = "empleado_id"),
+            inverseJoinColumns = @JoinColumn(name = "especialidades_empleado_id")
+    )
+    private List<EspecialidadesEmpleado> especialidadesEmpleado;  // Lista de especialidades que tiene el empleado
 }

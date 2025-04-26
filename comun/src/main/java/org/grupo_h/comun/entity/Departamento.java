@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.grupo_h.comun.entity.auxiliar.Direccion;
 
 import java.util.UUID;
 
@@ -14,16 +13,19 @@ import java.util.UUID;
 @Entity
 public class Departamento {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(
-            name = "codigo_departamento",
-            unique = true,
-            nullable = false
-    )
-    private int codigoDepartamento;
+    @Column(nullable = false, unique = true)
+    private String codigo;
 
-    @Column(name = "departamento", nullable = false)
-    private String nombreDepartamento;
+    @Column(nullable = false, unique = true)
+    private String nombreDept;
+
+
+    // Constructor para crear departamentos
+    public Departamento(String codigo, String nombreDept) {
+        this.codigo = codigo;
+        this.nombreDept = nombreDept;
+    }
 }

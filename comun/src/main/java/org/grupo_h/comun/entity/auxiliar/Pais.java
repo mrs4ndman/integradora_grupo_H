@@ -13,8 +13,12 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Pais {
     @Id
-    @Column(name = "Cod_pais", length = 3, nullable = false)
+    @Column(name = "Cod_pais", length = 2, nullable = false)
     private String codigoPais;
-    @Column(name = "Nombre_Pais")
+    @Column(name = "Nombre_Pais",
+            unique = true)
     private String nombrePais;
+    @Column(name = "Prefijo_Pais",
+    unique = true)
+    private String prefijoPais;
 }
