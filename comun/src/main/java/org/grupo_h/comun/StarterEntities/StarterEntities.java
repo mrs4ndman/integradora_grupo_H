@@ -1,8 +1,10 @@
 package org.grupo_h.comun.StarterEntities;
 
 import jakarta.annotation.PostConstruct;
+import org.grupo_h.comun.entity.Parametros;
 import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.comun.repository.PaisRepository;
+import org.grupo_h.comun.repository.ParametrosRepository;
 import org.grupo_h.comun.repository.TipoViaRepository;
 import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.comun.entity.auxiliar.Pais;
@@ -21,6 +23,9 @@ public class StarterEntities {
 
     @Autowired
     private TipoViaRepository tipoViaRepository;
+
+    @Autowired
+    private ParametrosRepository parametrosRepository;
 
     @PostConstruct
     public void initGenero() {
@@ -49,6 +54,14 @@ public class StarterEntities {
             tipoViaRepository.save(new TipoVia("C", "Calle"));
             tipoViaRepository.save(new TipoVia("PS", "Paseo"));
             tipoViaRepository.save(new TipoVia("PA", "Pasaje"));
+        }
+    }
+
+    @PostConstruct
+    public void initParametros() {
+        if (parametrosRepository.count() == 0) {
+            parametrosRepository.save(new Parametros("MAX_INTENTOS_FALLIDOS", "3"));
+            parametrosRepository.save(new Parametros("DURACION_BLOQUEO", "15"));
         }
     }
 }

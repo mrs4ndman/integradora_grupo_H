@@ -8,18 +8,26 @@ import jakarta.validation.Valid;
 import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.empleados.dto.UsuarioRegistroDTO;
 import org.grupo_h.comun.repository.UsuarioRepository;
+import org.grupo_h.empleados.service.ParametrosService;
 import org.grupo_h.empleados.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controlador para gestionar las operaciones relacionadas con los usuarios.
@@ -30,13 +38,15 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final UsuarioRepository usuarioRepository;
+    private final ParametrosService parametrosService;
     private final BCryptPasswordEncoder passwordEncoder;
     private static final int MAX_INTENTOS_FALLIDOS = 3;
 
     @Autowired
-    public UsuarioController(UsuarioService usuarioService, UsuarioRepository usuarioRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UsuarioController(UsuarioService usuarioService, UsuarioRepository usuarioRepository, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder) {
         this.usuarioService = usuarioService;
         this.usuarioRepository = usuarioRepository;
+        this.parametrosService = parametrosService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -100,10 +110,23 @@ public class UsuarioController {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("loginsAnteriores".equals(cookie.getName())) {
-                    // Decodificar si es necesario (ej. Base64) y separar por comas
-                    String decodedValue = new String(java.util.Base64.getUrlDecoder().decode(cookie.getValue()));
-                    previousLogins = new ArrayList<>(Arrays.asList(decodedValue.split(",")));
-                    break;
+                    String cookieValue = cookie.getValue();
+                    // Comprobar que el valor de la cookie no sea nulo ni esté vacío antes de procesar
+                    if (cookieValue != null && !cookieValue.isEmpty()) {
+                        try {
+                            String decodedValue = new String(Base64.getUrlDecoder().decode(cookieValue));
+                            // Dividir Y FILTRAR cadenas vacías o nulas
+                            previousLogins = Arrays.stream(decodedValue.split(","))
+                                    .map(String::trim) // Opcional: quitar espacios blancos alrededor
+                                    .filter(email -> email != null && !email.isEmpty()) // <-- Filtrar vacíos
+                                    .collect(Collectors.toList()); // Recolectar en la lista
+                        } catch (IllegalArgumentException e) {
+                            // Manejar posible error en Base64 si la cookie está corrupta
+                            System.err.println("Error al decodificar cookie loginsAnteriores: " + e.getMessage());
+                            // Dejar previousLogins vacía
+                        }
+                    }
+                    break; // Encontrada la cookie, salir del bucle
                 }
             }
         }
@@ -117,6 +140,7 @@ public class UsuarioController {
                 model.addAttribute("logoutRefererText", obtenerUrl(logoutReferer));
             }
         }
+
         model.addAttribute("pedirEmail", true);
         return "autenticacionPorPasos";
     }
@@ -124,26 +148,95 @@ public class UsuarioController {
     /**
      * Procesa el email de usuario para el inicio de sesión.
      *
-     * @param email      Email de usuario introducido.
+     * @param email              Email de usuario introducido.
      * @param session            Sesión HTTP.
      * @param redirectAttributes Atributos para redirección.
      * @return Redirección al formulario de contraseña o de error.
      */
     @PostMapping("/inicio-sesion/usuario")
     public String procesarUsuario(@RequestParam String email,
+                                  HttpServletRequest request,
                                   HttpSession session,
                                   RedirectAttributes redirectAttributes) {
 
+        // --- Comprobación Remember Me ---
+        Cookie[] cookies = request.getCookies();
+        String rememberMeTokenValue = null;
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("remember-me-token".equals(cookie.getName())) {
+                    rememberMeTokenValue = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (rememberMeTokenValue != null && !rememberMeTokenValue.isEmpty()) {
+            System.out.println("Encontrada cookie remember-me: " + rememberMeTokenValue);
+            Optional<Usuario> usuarioOptByToken = usuarioRepository.findByRememberMeToken(rememberMeTokenValue);
+
+            if (usuarioOptByToken.isPresent()) {
+                Usuario usuarioRecordado = usuarioOptByToken.get();
+                System.out.println("Usuario encontrado por token: " + usuarioRecordado.getEmail());
+                if (usuarioRecordado.getEmail().equalsIgnoreCase(email) &&
+                        usuarioRecordado.getRememberMeTokenExpiry() != null &&
+                        usuarioRecordado.getRememberMeTokenExpiry().isAfter(LocalDateTime.now()) &&
+                        usuarioRecordado.isHabilitado() && !usuarioRecordado.isCuentaBloqueada() ) {
+
+                    System.out.println("Token válido para " + email + ". Re-autenticando.");
+                    session.setAttribute("emailAutenticado", usuarioRecordado.getEmail());
+                    Integer contadorActual = (Integer) session.getAttribute("contadorConexiones");
+                    int nuevoContador = (contadorActual == null) ? 1 : contadorActual + 1;
+                    session.setAttribute("contadorConexiones", nuevoContador);
+                    session.setAttribute("userAgent", request.getHeader("User-Agent"));
+                     usuarioRecordado.setSesionesTotales(usuarioRecordado.getSesionesTotales() + 1);
+                     usuarioRepository.save(usuarioRecordado);
+                    redirectAttributes.addFlashAttribute("contadorConexionesFlash", nuevoContador);
+
+                    return "redirect:/usuarios/info";
+                } else {
+                    System.out.println("Token inválido (expirado, email no coincide, cuenta no activa) para: " + email);
+                    // Token inválido, expirado, email no coincide o cuenta bloqueada/deshabilitada.
+                    if(usuarioRecordado.getRememberMeToken() != null){
+                        usuarioRecordado.setRememberMeToken(null);
+                        usuarioRecordado.setRememberMeTokenExpiry(null);
+                        usuarioRepository.save(usuarioRecordado);
+                    }
+                    Cookie removeCookie = new Cookie("remember-me-token", "");
+                    removeCookie.setPath("/");
+                    removeCookie.setMaxAge(0);
+                }
+            } else {
+                System.out.println("Token de cookie no encontrado en BD.");
+                Cookie removeCookie = new Cookie("remember-me-token", "");
+                removeCookie.setPath("/");
+                removeCookie.setMaxAge(0);
+            }
+        }
+        // --- Fin Comprobación Remember Me ---
+
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+
+        Usuario usuario = usuarioOpt.get();
 
         if (usuarioOpt.isEmpty() || !usuarioOpt.get().isHabilitado()) {
             redirectAttributes.addFlashAttribute("error", "Usuario no encontrado o deshabilitado");
             return "redirect:/usuarios/inicio-sesion?error=true";
         }
 
-        if (usuarioOpt.get().isCuentaBloqueada()) {
-            redirectAttributes.addFlashAttribute("error", "La cuenta " + email + " está bloqueada.");
-            return "redirect:/usuarios/inicio-sesion?error=true";
+        if (usuario.isCuentaBloqueada()) {
+            LocalDateTime horaDesbloqueo = usuario.getTiempoHastaDesbloqueo();
+            if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
+                // Todavía bloqueada: Mostrar mensaje específico
+                DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                        .withLocale(new Locale("es", "ES"));
+                String unlockTimeString = horaDesbloqueo.format(formatter);
+                String mensajeError = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
+                redirectAttributes.addFlashAttribute("error", mensajeError);
+                return "redirect:/usuarios/inicio-sesion?error=true";
+            } else {
+                usuarioService.desbloquearCuenta(email);
+            }
         }
 
         session.setAttribute("emailParaLogin", email);
@@ -187,7 +280,6 @@ public class UsuarioController {
                                               HttpServletResponse response,
                                               HttpSession session,
                                               RedirectAttributes redirectAttributes) {
-
         String email = (String) session.getAttribute("emailParaLogin");
 
         if (email == null) {
@@ -205,15 +297,34 @@ public class UsuarioController {
 
         Usuario usuario = usuarioOpt.get();
 
-        if (!usuario.isHabilitado() || usuario.isCuentaBloqueada()) {
+        boolean debeRedirigirPorErrorPrevio = false;
+        String mensajeErrorPrevio = null;
+        if (!usuario.isHabilitado()) {
+            mensajeErrorPrevio = "La cuenta no está disponible (deshabilitada).";
+            debeRedirigirPorErrorPrevio = true;
+        } else if (usuario.isCuentaBloqueada()) {
+            LocalDateTime horaDesbloqueo = usuario.getTiempoHastaDesbloqueo();
+            if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                        .withLocale(new Locale("es", "ES"));
+                String unlockTimeString = horaDesbloqueo.format(formatter);
+                mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
+                debeRedirigirPorErrorPrevio = true;
+            } else {
+                usuarioService.desbloquearCuenta(email);
+                usuario = usuarioRepository.findByEmail(email).orElse(usuario);
+            }
+        }
+
+        if (debeRedirigirPorErrorPrevio) {
             session.removeAttribute("emailParaLogin");
-            redirectAttributes.addFlashAttribute("error", "La cuenta no está disponible.");
-            return "redirect:/usuarios/inicio-sesion/password?error=true";
+            redirectAttributes.addFlashAttribute("error", mensajeErrorPrevio);
+            return "redirect:/usuarios/inicio-sesion?error=true";
         }
 
         if (passwordEncoder.matches(contrasena, usuario.getContrasena())) {
             // --- Inicio: Lógica de Cookies ---
-            Set<String> logins = new LinkedHashSet<>(); // Usar Set para evitar duplicados
+            Set<String> logins = new LinkedHashSet<>();
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
@@ -224,22 +335,15 @@ public class UsuarioController {
                     }
                 }
             }
-            logins.add(email); // Añadir el email actual
-
-            // Limitar el número de usuarios recordados si se desea (opcional)
-            // final int MAX_USERS = 5;
-            // if (logins.size() > MAX_USERS) {
-            //    logins = new LinkedHashSet<>(new ArrayList<>(logins).subList(logins.size() - MAX_USERS, logins.size()));
-            // }
+            logins.add(email);
 
             String joinedLogins = String.join(",", logins);
             String encodedValue = Base64.getUrlEncoder().withoutPadding().encodeToString(joinedLogins.getBytes());
 
             Cookie loginCookie = new Cookie("loginsAnteriores", encodedValue);
-            loginCookie.setPath("/"); // Asegurar que la cookie esté disponible en todo el sitio
-            loginCookie.setMaxAge(60 * 60 * 24 * 30); // Ejemplo: 30 días de duración
-            loginCookie.setHttpOnly(true); // Por seguridad
-            // loginCookie.setSecure(true); // Descomentar si usas HTTPS
+            loginCookie.setPath("/");
+            loginCookie.setMaxAge(60 * 60 * 24 * 30); //30 días de duración
+            loginCookie.setHttpOnly(true);
             response.addCookie(loginCookie);
             // --- Fin: Lógica de Cookies ---
 
@@ -261,19 +365,60 @@ public class UsuarioController {
             session.setAttribute("contadorConexiones", 1);
             session.setAttribute("userAgent", request.getHeader("User-Agent"));
 
+            // --- Lógica Remember Me ---
+            try {
+                String rememberMeTokenValue = UUID.randomUUID().toString();
+                // Duración de la cookie/token (14 días)
+                LocalDateTime rememberMeExpiry = LocalDateTime.now().plusDays(14);
+
+                usuario.setRememberMeToken(rememberMeTokenValue);
+                usuario.setRememberMeTokenExpiry(rememberMeExpiry);
+                usuarioRepository.save(usuario); // Guardar token en BD
+
+                Cookie rememberMeCookie = new Cookie("remember-me-token", rememberMeTokenValue);
+                rememberMeCookie.setPath("/");
+                rememberMeCookie.setMaxAge(14 * 24 * 60 * 60); // 14 días
+                rememberMeCookie.setHttpOnly(true);
+                response.addCookie(rememberMeCookie);
+                System.out.println("Cookie remember-me creada para: " + email);
+
+            } catch (Exception e) {
+                System.err.println("Error al crear cookie remember-me: " + e.getMessage());
+            }
+            // --- Fin Lógica Remember Me ---
+
             return "redirect:/usuarios/info";
         } else {
-            usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
-            if (usuario.getIntentosFallidos() >= MAX_INTENTOS_FALLIDOS) {
-                usuario.setCuentaBloqueada(true);
-                usuarioRepository.save(usuario);
-                redirectAttributes.addFlashAttribute("error", "Cuenta bloqueada.");
+            // Llama al servicio para manejar el fallo
+            usuarioService.procesarLoginFallido(email);
+            // Comprueba si la cuenta está ahora bloqueada para el mensaje de error
+            Usuario usuarioActualizado = usuarioRepository.findByEmail(email).orElse(usuario); // Recarga para obtener estado actualizado
+            String mensajeErrorFallido;
+            int maxIntentos = parametrosService.getMaxIntentosFallidos();
+            if (usuarioActualizado.isCuentaBloqueada()) {
+                // ¡LA CUENTA SE ACABA DE BLOQUEAR!
+                LocalDateTime horaDesbloqueo = usuarioActualizado.getTiempoHastaDesbloqueo();
+                if (horaDesbloqueo != null) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                            .withLocale(new Locale("es", "ES"));
+                    String unlockTimeString = horaDesbloqueo.format(formatter);
+                    mensajeErrorFallido = "Contraseña incorrecta. Cuenta bloqueada. Podrá intentar de nuevo después de las " + unlockTimeString;
+                } else {
+                    mensajeErrorFallido = "Contraseña incorrecta. Cuenta bloqueada."; // Fallback
+                }
+
+                redirectAttributes.addFlashAttribute("error", mensajeErrorFallido);
+                session.removeAttribute("emailParaLogin"); // Quitar email de la sesión
+                // Redirigir a la página de EMAIL (inicio-sesion)
+                return "redirect:/usuarios/inicio-sesion?error=true";
+
+            } else {
+                // LA CUENTA NO SE BLOQUEÓ (aún quedan intentos)
+                mensajeErrorFallido = "Contraseña incorrecta. Intentos restantes: " + (maxIntentos - usuarioActualizado.getIntentosFallidos());
+                redirectAttributes.addFlashAttribute("error", mensajeErrorFallido);
+                // Redirigir a la página de CONTRASEÑA (como antes)
                 return "redirect:/usuarios/inicio-sesion/password?error=true";
             }
-            usuarioRepository.save(usuario);
-
-            redirectAttributes.addFlashAttribute("error", "Contraseña incorrecta.");
-            return "redirect:/usuarios/inicio-sesion/password?error=true";
         }
     }
 
@@ -375,9 +520,28 @@ public class UsuarioController {
      * @return Redirección a la página de inicio de sesión.
      */
     @GetMapping("/logout")
-    public String logoutManual(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String logoutManual(HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
         HttpSession session = request.getSession(false);
         String referer = request.getHeader("Referer");
+
+        // --- Limpiar Remember Me ---
+        String email = (session != null) ? (String) session.getAttribute("emailAutenticado") : null;
+        if (email != null) {
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            if (usuarioOpt.isPresent()) {
+                Usuario usuario = usuarioOpt.get();
+                usuario.setRememberMeToken(null);
+                usuario.setRememberMeTokenExpiry(null);
+                usuarioRepository.save(usuario);
+                System.out.println("Token remember-me limpiado para: " + email);
+            }
+        }
+        // Borrar la cookie
+        Cookie removeCookie = new Cookie("remember-me-token", "");
+        removeCookie.setPath("/");
+        removeCookie.setMaxAge(0);
+        response.addCookie(removeCookie);
+        // --- Fin Limpiar Remember Me ---
 
         if (session != null) {
             session.invalidate();

@@ -20,4 +20,9 @@ public class Parametros {
 
     @Column(unique = true)
     private String valor;
+
+    public Parametros(String clave, String valor) {
+        this.clave = clave;
+        this.valor = valor;
+    }
 }

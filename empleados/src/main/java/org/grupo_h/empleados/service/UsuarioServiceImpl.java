@@ -7,6 +7,8 @@ import org.grupo_h.comun.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 /**
@@ -15,9 +17,8 @@ import java.util.Optional;
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private static final int MAX_INTENTOS_FALLIDOS = 3;
-
     private final UsuarioRepository usuarioRepository;
+    private final ParametrosService parametrosService;
     private final BCryptPasswordEncoder passwordEncoder;
 
     /**
@@ -26,8 +27,9 @@ public class UsuarioServiceImpl implements UsuarioService {
      * @param usuarioRepository Repositorio de usuarios.
      * @param passwordEncoder   Codificador de contraseñas.
      */
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.parametrosService = parametrosService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -62,16 +64,23 @@ public class UsuarioServiceImpl implements UsuarioService {
      * @param email Email que intentó iniciar sesión.
      */
     @Override
-    @Transactional
+    @Transactional // Usar @Transactional de Spring o Jakarta según configuración
     public void procesarLoginFallido(String email) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             if (usuario.isHabilitado() && !usuario.isCuentaBloqueada()) {
                 usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
-                if (usuario.getIntentosFallidos() >= MAX_INTENTOS_FALLIDOS) {
+
+                // Obtener valores desde el servicio
+                int maxIntentos = parametrosService.getMaxIntentosFallidos();
+                int duracionBloqueo = parametrosService.getDuracionBloqueoMinutos();
+
+                if (usuario.getIntentosFallidos() >= maxIntentos) { // Usar valor del servicio
                     usuario.setCuentaBloqueada(true);
-                    System.out.println("Cuenta bloqueada para usuario con email: " + email);
+                    LocalDateTime horaDesbloqueo = LocalDateTime.now().plus(duracionBloqueo, ChronoUnit.MINUTES); // Usar valor del servicio
+                    usuario.setTiempoHastaDesbloqueo(horaDesbloqueo);
+                    System.out.println("Cuenta bloqueada para usuario con email: " + email + ". Se desbloqueará a las: " + horaDesbloqueo);
                 }
                 usuarioRepository.save(usuario);
             }
@@ -89,8 +98,29 @@ public class UsuarioServiceImpl implements UsuarioService {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if (usuario.getIntentosFallidos() > 0) {
+            if (usuario.getIntentosFallidos() > 0 || usuario.isCuentaBloqueada()) {
                 usuario.setIntentosFallidos(0);
+                usuario.setTiempoHastaDesbloqueo(null);
+                usuario.setCuentaBloqueada(false);
+                usuarioRepository.save(usuario);
+            }
+        }
+    }
+
+    /**
+     * Desbloquea una cuenta de usuario reseteando los intentos fallidos y el tiempo de bloqueo.
+     * @param email Email del usuario a desbloquear.
+     */
+    @Override
+    @Transactional
+    public void desbloquearCuenta(String email) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            if(usuario.isCuentaBloqueada()){ // Solo si está bloqueada
+                usuario.setCuentaBloqueada(false);
+                usuario.setIntentosFallidos(0);
+                usuario.setTiempoHastaDesbloqueo(null); // Resetea el tiempo de bloqueo
                 usuarioRepository.save(usuario);
             }
         }

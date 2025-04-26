@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -28,9 +29,11 @@ public class Usuario {
     private String contrasena;
 
     /** Indica si la cuenta está bloqueada (por ejemplo, tras intentos fallidos de ingreso). */
+    @Column(nullable = false)
     private boolean cuentaBloqueada = false;
 
     /** Indica si la cuenta está habilitada. */
+    @Column(nullable = false)
     private boolean habilitado = true;
 
     /** Número de intentos fallidos de inicio de sesión. No puede ser nulo. */
@@ -40,4 +43,13 @@ public class Usuario {
     /** Número total de sesiones iniciadas. No puede ser nulo. */
     @Column(nullable = false)
     private int sesionesTotales = 0;
+
+    @Column
+    private LocalDateTime tiempoHastaDesbloqueo;
+
+    @Column(length = 100)
+    private String rememberMeToken;
+
+    @Column
+    private LocalDateTime rememberMeTokenExpiry;
 }

@@ -12,4 +12,6 @@ public interface UsuarioService {
     void procesarLoginFallido(String email);
 
     void procesarLoginExitoso(String email);
+
+    void desbloquearCuenta(String email);
 }
