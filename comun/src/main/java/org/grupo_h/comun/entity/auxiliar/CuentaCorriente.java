@@ -2,12 +2,14 @@ package org.grupo_h.comun.entity.auxiliar;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Clase que representa una cuenta corriente en el sistema.
  * Esta clase es embedible y puede ser utilizada como parte de otra entidad.
  */
 @Data
+@NoArgsConstructor
 @Entity
 public class CuentaCorriente {
 
@@ -22,16 +24,21 @@ public class CuentaCorriente {
      * Número de la cuenta corriente.
      * Este campo es obligatorio y no puede ser nulo.
      */
-    @Column(name = "IBAN_Cuenta_Corriente", nullable = false)
+    @Column(name = "Cuenta_Corriente",
+            nullable = false,
+            unique = true)
     private String cuentaCorriente;
 
     /**
-     * Nombre del banco asociado a la cuenta corriente.
-     * Este campo es obligatorio y no puede ser nulo.
+     * Entidad bancaria asociada a esta cuenta.
+     * Relación ManyToOne: Muchas cuentas pueden pertenecer a un mismo banco.
+     * - Clave foránea: banco_codigo_entidad_bancaria
+     * - Nombre explícito para la constraint FK
+     * - FetchType.LAZY para mejor rendimiento
      */
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "banco_codigo_entidad_bancaria",
-            foreignKey = @ForeignKey(name = "FK_ENTIDAD_BANCARIA"))
+            foreignKey = @ForeignKey(name = "FK_CUENTA_ENTIDAD_BANCARIA"))
     private EntidadBancaria banco;
 }
