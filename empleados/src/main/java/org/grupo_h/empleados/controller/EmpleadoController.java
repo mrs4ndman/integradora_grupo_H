@@ -2,11 +2,11 @@ package org.grupo_h.empleados.controller;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.comun.repository.PaisRepository;
 import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.grupo_h.comun.repository.EmpleadoRepository;
-import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.empleados.service.EmpleadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,7 +36,7 @@ public class EmpleadoController {
     @Autowired
     private final GeneroRepository generoRepository;
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, org.grupo_h.empleados.repository.GeneroRepository generoRepository) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
