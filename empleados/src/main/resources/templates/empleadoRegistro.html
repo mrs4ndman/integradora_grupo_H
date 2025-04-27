@@ -51,11 +51,6 @@
   <div th:if="${#fields.hasErrors('fechaNacimiento')}" th:errors="*{fechaNacimiento}" class="error"></div>
   <br><br>
 
-  <label for="email">Email:</label>
-  <input type="text" id="email" th:field="*{email}"  />
-  <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></div>
-  <br><br>
-
   <input type="button"
          th:value="#{Boton.vaciar}"
          onclick="vaciarFormulario()">

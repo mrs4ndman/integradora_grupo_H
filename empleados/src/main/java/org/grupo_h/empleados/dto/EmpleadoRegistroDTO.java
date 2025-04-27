@@ -3,6 +3,8 @@ package org.grupo_h.empleados.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.grupo_h.comun.entity.auxiliar.Genero;
+import org.grupo_h.empleados.validation.EdadCoherente; // Importa la anotación personalizada
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -13,6 +15,7 @@ import java.util.UUID;
  * DTO que representa los datos de registro de un empleado.
  */
 @Data
+@EdadCoherente // Añade la validación de clase
 public class EmpleadoRegistroDTO {
 
     /**
@@ -33,8 +36,9 @@ public class EmpleadoRegistroDTO {
     private String apellidos;
 
     /**
-     * Contenido del archivo adjunto.
+     * Contenido del archivo adjunto. Limitado a GIF, JPG o PNG de máximo 200KB.
      */
+    @Size(max = 204800, message = "{Validacion.fotografia.tamanio}")
     private byte[] fotografia;
 
     /**
@@ -44,28 +48,21 @@ public class EmpleadoRegistroDTO {
             regexp = "^([MFO])$",
             message = "{Validacion.generoSeleccionado.notBlank}"
     )
-    private String generoSeleccionado;
+    private String genero;
 
 
     /**
      * Fecha de nacimiento del empleado. Debe ser una fecha pasada.
      */
+    @NotNull(message = "{Validacion.fechaNac.vacio}")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     @Past(message = "{Validacion.fechaNac.Past}")
     private LocalDate fechaNacimiento;
 
 
+    @NotNull
+    @Positive(message = "{Validacion.edad.Positive}")
     private Integer edad;
-
-//    /**
-//     * Correo electrónico del empleado. Debe seguir un formato válido.
-//     */
-//    @NotBlank
-//    @Pattern(
-//            regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-//            message = "{Vaidacion.email.pattern}"
-//    )
-//    private String email;
 
     /**
      * País de nacimiento del empleado.
@@ -95,7 +92,7 @@ public class EmpleadoRegistroDTO {
      * Prefijo Internacional del teléfono móvil del empleado.
      */
     @NotNull
-    private String prefijoTelefono ="ES";
+    private String prefijoTelefono = "ES";
 
     /**
      * Número del teléfono móvil del empleado.
@@ -110,7 +107,7 @@ public class EmpleadoRegistroDTO {
      * Dirección del empleado.
      */
     @Valid
-    private DireccionDTO direccion;
+    private DireccionDTO direccionDTO;
 
     /**
      * Departamento del empleado.
@@ -128,13 +125,12 @@ public class EmpleadoRegistroDTO {
      * Cuenta corriente del empleado.
      */
     @Valid
-    private CuentaCorrienteDTO cuentaCorriente;
+    private CuentaCorrienteDTO cuentaCorrienteDTO;
 
     /**
      * Nombre original del archivo adjunto.
      */
+    @Pattern(regexp = ".*\\.(gif|jpg|jpeg|png)$", flags = Pattern.Flag.CASE_INSENSITIVE,
+            message = "{Validacion.fotografia.formato}")
     private String archivoNombreOriginal;
-
-    private Boolean aceptaInformacion;
-
 }

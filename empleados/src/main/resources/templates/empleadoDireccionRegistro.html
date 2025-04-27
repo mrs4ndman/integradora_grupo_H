@@ -13,53 +13,78 @@
 
 <h1>Formulario de Dirección</h1>
 <!--Error del Servidor se muestran aquí cuando no salen en Logs-->
-    <th:block th:text="${error}"/>
+<th:block th:text="${error}"/>
 
 <form th:action="@{/empleados/registro-direccion}" th:object="${empleadoRegistroDTO}" method="post" id="formulario">
 
     <label for="tipoVia">Tipo de vía:</label>
-    <input type="text" id="tipoVia" th:field="*{direccion.tipoVia}" />
-    <div th:if="${#fields.hasErrors('direccion.tipoVia')}" th:errors="*{direccion.tipoVia}" class="error"></div>
+    <input type="text" id="tipoVia" th:field="*{direccionDTO.tipoViaDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.tipoViaDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.tipoViaDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="via">Vía:</label>
-    <input type="text" id="via" th:field="*{direccion.via}" />
-    <div th:if="${#fields.hasErrors('direccion.via')}" th:errors="*{direccion.via}" class="error"></div>
+    <input type="text" id="via" th:field="*{direccionDTO.nombreViaDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.nombreViaDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.nombreViaDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="numero">Número:</label>
-    <input type="number" id="numero" th:field="*{direccion.numero}" />
-    <div th:if="${#fields.hasErrors('direccion.numero')}" th:errors="*{direccion.numero}" class="error"></div>
+    <input type="number" id="numero" th:field="*{direccionDTO.numeroViaDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.numeroViaDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.numeroViaDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="piso">Piso:</label>
-    <input type="number" id="piso" th:field="*{direccion.piso}" />
-    <div th:if="${#fields.hasErrors('direccion.piso')}" th:errors="*{direccion.piso}" class="error"></div>
+    <input type="number" id="piso" th:field="*{direccionDTO.plantaDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.plantaDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.plantaDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="puerta">Puerta:</label>
-    <input type="text" id="puerta" th:field="*{direccion.puerta}" />
-    <div th:if="${#fields.hasErrors('direccion.puerta')}" th:errors="*{direccion.puerta}" class="error"></div>
+    <input type="text" id="puerta" th:field="*{direccionDTO.puertaDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.puertaDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.puertaDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="localidad">Localidad:</label>
-    <input type="text" id="localidad" th:field="*{direccion.localidad}" />
-    <div th:if="${#fields.hasErrors('direccion.localidad')}" th:errors="*{direccion.localidad}" class="error"></div>
+    <input type="text" id="localidad" th:field="*{direccionDTO.localidadDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.localidadDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.localidadDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="codigoPostal">Código Postal:</label>
-    <input type="text" id="codigoPostal" th:field="*{direccion.codigoPostal}" />
-    <div th:if="${#fields.hasErrors('direccion.codigoPostal')}" th:errors="*{direccion.codigoPostal}" class="error"></div>
+    <input type="text" id="codigoPostal" th:field="*{direccionDTO.codigoPostalDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.codigoPostalDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.codigoPostalDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="region">Región:</label>
-    <input type="text" id="region" th:field="*{direccion.region}" />
-    <div th:if="${#fields.hasErrors('direccion.region')}" th:errors="*{direccion.region}" class="error"></div>
+    <input type="text" id="region" th:field="*{direccionDTO.regionDireccionPpalDTO}"/>
+    <div th:if="${#fields.hasErrors('direccionDTO.regionDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.regionDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <label for="pais">País:</label>
-    <input type="text" id="pais" th:field="*{direccion.pais}" />
-    <div th:if="${#fields.hasErrors('direccion.pais')}" th:errors="*{direccion.pais}" class="error"></div>
+    <input type="text" id="pais" th:field="*{direccionDTO.paisDireccionPpalDTO}"/>
+    <!-- <div th:if="${#fields.hasErrors('direccionDTO.paisDireccionPpalDTO')}" th:errors="*{direccionDTO.paisDireccionPpalDTO}" class="error"></div>
+    -->
+
+    <div>
+        <select>
+
+            <!-- <label th:for="${'pais_' + pais.codigoPais}" th:text="${pais.nombrePais}"><br>
+            -->
+            <!--  Muestra el nombre del género  </label> -->
+            <option
+                    th:each="pais : ${listaPaises}"
+                    th:field="*{direccionDTO.paisDireccionPpalDTO}"
+                    th:value="${pais.codigoPais}"
+                    th:id="${'genero_' + pais.codigoPais}"></option>
+        </select>
+    </div>
+    <div th:if="${#fields.hasErrors('direccionDTO.paisDireccionPpalDTO')}"
+         th:errors="*{direccionDTO.paisDireccionPpalDTO}" class="error"></div>
     <br><br>
 
     <input type="button"
@@ -67,7 +92,7 @@
            onclick="vaciarFormulario()">
     <br><br>
 
-<!--    <button type="submit">Siguiente</button>-->
+    <!--    <button type="submit">Siguiente</button>-->
     <input type="submit"
            th:value="#{Boton.siguiente}">
 </form>

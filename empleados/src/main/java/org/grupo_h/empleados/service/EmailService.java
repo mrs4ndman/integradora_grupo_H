@@ -4,4 +4,5 @@ import org.grupo_h.comun.entity.auxiliar.EmailDetalles;
 
 public interface EmailService {
     // Enviar un email sencillo
-    String enviarEmail(EmailDetalles details);}
+    String enviarEmail(EmailDetalles details);
+}

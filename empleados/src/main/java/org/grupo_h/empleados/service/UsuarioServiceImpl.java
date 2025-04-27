@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.grupo_h.empleados.dto.UsuarioRegistroDTO;
 import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.repository.UsuarioRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ParametrosService parametrosService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     /**
      * Constructor para inyectar las dependencias necesarias.
@@ -27,29 +29,31 @@ public class UsuarioServiceImpl implements UsuarioService {
      * @param usuarioRepository Repositorio de usuarios.
      * @param passwordEncoder   Codificador de contraseñas.
      */
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder) {
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder, ModelMapper modelMapper) {
         this.usuarioRepository = usuarioRepository;
         this.parametrosService = parametrosService;
         this.passwordEncoder = passwordEncoder;
+        this.modelMapper = modelMapper;
     }
 
     /**
      * Registra un nuevo usuario en el sistema.
      *
-     * @param usuarioDTO DTO con los datos del usuario a registrar.
+     * @param usuarioRegistroDTO DTO con los datos del usuario a registrar.
      * @return El usuario registrado.
      * @throws RuntimeException Si el nombre de usuario ya existe.
      */
     @Override
-    public Usuario registrarUsuario(UsuarioRegistroDTO usuarioDTO) {
-        if (usuarioRepository.findByEmail(usuarioDTO.getEmail()).isPresent()) {
+    public Usuario registrarUsuario(UsuarioRegistroDTO usuarioRegistroDTO) {
+        Usuario usuarioDelDTO = modelMapper.map(usuarioRegistroDTO, Usuario.class);
+        if (usuarioRepository.findByEmail(usuarioRegistroDTO.getEmail()).isPresent()) {
             throw new RuntimeException("El email ya existe");
         }
 
-        Usuario usuario = new Usuario();
 //        usuario.setNombreUsuario(usuarioDTO.getNombreUsuario());
-        usuario.setEmail(usuarioDTO.getEmail());
-        String encodedPassword = passwordEncoder.encode(usuarioDTO.getContrasena());
+        Usuario usuario = new Usuario();
+        usuario.setEmail(usuarioRegistroDTO.getEmail());
+        String encodedPassword = passwordEncoder.encode(usuarioRegistroDTO.getContrasena());
         usuario.setContrasena(encodedPassword);
         usuario.setHabilitado(true);
         usuario.setCuentaBloqueada(false);

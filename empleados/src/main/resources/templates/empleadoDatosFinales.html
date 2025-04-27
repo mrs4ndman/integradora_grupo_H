@@ -16,7 +16,7 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<form th:action="@{/empleados/registro-finales}" method="post"
+<form th:action="@{/empleados/registro-finales}" th:object="${empleadoRegistroDTO}" method="post"
       onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
 
 
@@ -27,19 +27,19 @@
     <p th:text="'Fecha de nacimiento: ' + *{fechaNacimiento}"></p>
 
     <h2>Dirección</h2>
-    <p th:text="'Tipo de vía: ' + *{direccion.tipoVia}"></p>
-    <p th:text="'Nombre de vía: ' + *{direccion.via}"></p>
-    <p th:text="'Número de vía: ' + *{direccion.numero}"></p>
-    <p th:text="'Planta: ' + *{direccion.piso}"></p>
-    <p th:text="'Puerta: ' + *{direccion.puerta}"></p>
-    <p th:text="'Localidad: ' + *{direccion.localidad}"></p>
-    <p th:text="'Código postal: ' + *{direccion.codigoPostal}"></p>
-    <p th:text="'Región: ' + *{direccion.region}"></p>
-    <p th:text="'País: ' + *{direccion.pais}"></p>
+    <p th:text="'Tipo de vía: ' + *{direccionDTO.tipoViaDireccionPpalDTO}"></p>
+    <p th:text="'Nombre de vía: ' + *{direccionDTO.nombreViaDireccionPpalDTO}"></p>
+    <p th:text="'Número de vía: ' + *{direccionDTO.numeroViaDireccionPpalDTO}"></p>
+    <p th:text="'Planta: ' + *{direccionDTO.plantaDireccionPpalDTO}"></p>
+    <p th:text="'Puerta: ' + *{direccionDTO.puertaDireccionPpalDTO}"></p>
+    <p th:text="'Localidad: ' + *{direccionDTO.localidadDireccionPpalDTO}"></p>
+    <p th:text="'Código postal: ' + *{direccionDTO.codigoPostalDireccionPpalDTO}"></p>
+    <p th:text="'Región: ' + *{direccionDTO.regionDireccionPpalDTO}"></p>
+    <p th:text="'País: ' + *{direccionDTO.paisDireccionPpalDTO}"></p>
 
     <h2>Datos Financieros</h2>
-    <p th:text="'Banco: ' + *{cuentaCorriente.banco}"></p>
-    <p th:text="'Cuenta Corriente: ' + *{cuentaCorriente.cuentaCorriente}"></p>
+    <p th:text="'Banco: ' + *{cuentaCorrienteDTO.banco}"></p>
+    <p th:text="'Cuenta Corriente: ' + *{cuentaCorrienteDTO.cuentaCorriente}"></p>
 
     <div>
         <input type="submit" th:value="#{Boton.guardar}">

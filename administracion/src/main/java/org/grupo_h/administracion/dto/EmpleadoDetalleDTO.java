@@ -26,10 +26,6 @@ public class EmpleadoDetalleDTO {
      */
     private String apellidos;
     /**
-     * Correo electrónico del empleado
-     */
-    private String email;
-    /**
      * Fecha de nacimiento del empleado
      */
     private LocalDate fechaNacimiento;

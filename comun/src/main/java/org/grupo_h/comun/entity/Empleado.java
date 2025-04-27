@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.grupo_h.comun.entity.auxiliar.*;
+import org.grupo_h.comun.entity.auxiliar.*; // Asegúrate que Genero está aquí
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,65 +23,47 @@ import java.util.UUID;
 )
 public class Empleado {
 
-    /**
-     * Identificador único del empleado.
-     */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /**
-     * Nombre del empleado. No puede ser nulo.
-     */
+    @OneToOne(optional = false)
+    @MapsId
+    @JoinColumn(name = "id")
+    private Usuario usuario;
+
     @Column(nullable = false)
     private String nombre;
 
-    /**
-     * Apellido del empleado. No puede ser nulo.
-     */
     @Column(nullable = false)
     private String apellidos;
 
-    /**
-     * Contenido del archivo asociado al empleado (Large Object).
-     */
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "fotografia", columnDefinition = "LONGBLOB")
     private byte[] fotografia;
 
     /**
-     * Género del empleado. Es un Enum alojado en entity/auxiliar
+     * Género del empleado. Relación ManyToOne con la entidad Genero.
+     * La columna 'codigo_genero' en la tabla Empleado almacenará la FK.
+     * MODIFICACIÓN: Renombrado de 'generoSeleccionado' a 'genero' para consistencia.
      */
-    @ManyToOne
-    @JoinColumn(name = "codigo_genero", nullable = false)
-    private Genero generoSeleccionado;
+    @ManyToOne(optional = false) // Asumiendo que el género es obligatorio
+    @JoinColumn(name = "codigo_genero", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_EMPLEADO_GENERO")) // Opcional: Nombre explícito FK
+    private Genero genero; // <-- CAMBIO DE NOMBRE AQUÍ
 
-    /**
-     * Correo electrónico del empleado. No puede ser nulo.
-     */
     @Column(nullable = false)
     private String email;
 
-    /**
-     * Fecha de nacimiento del empleado. No puede ser nula.
-     */
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
-    // Usuario asociado al empleado (comentado).
     // @OneToOne(mappedBy = "empleado")
-    // private Usuario usuario;
+    // private Usuario usuario; // Comentado, ya existe la relación arriba con @MapsId
 
-    /**
-     * Edad del empleado.
-     */
-    @Column(name = "Edad")
-    private Integer edad;
+    @Column(name = "edad")
+    private Integer edad; // Considerar calcularla en lugar de almacenarla si es posible
 
-    /**
-     * País de Nacimiento del empleado.
-     */
     @ManyToOne
     @JoinColumn(
             name = "pais_nacimiento",
@@ -89,68 +71,42 @@ public class Empleado {
     )
     private Pais paisNacimiento;
 
-    /**
-     * Comentario del empleado.
-     */
-    @Column(name = "Comentarios")
+    @Column(name = "comentarios")
     private String comentarios;
 
-    /**
-     * Tipo de Documento de Identidad del empleado.
-     */
     @ManyToOne
     @JoinColumn(name = "tipo_documento_cod_tipo_doc",
-                foreignKey = @ForeignKey(name = "FK_TIPO_DOCUMENTO_EMPLEADO")
+            foreignKey = @ForeignKey(name = "FK_TIPO_DOCUMENTO_EMPLEADO")
     )
     private TipoDocumento tipoDocumento;
 
-    /**
-     * Número del Documento de Identidad del empleado.
-     */
-    @Column(name = "Documento")
-    private String documento;
+    @Column(name = "contenido_documento")
+    private String contenidoDocumento;
 
-    /**
-     * Prefijo del teléfono móvil del empleado.
-     */
-    @Column(name = "Prefijo_Internacional_Telf")
+    @Column(name = "prefijo_internacional_telf")
     private String prefijoTelefono;
 
-    /**
-     * Teléfono móvil del empleado.
-     */
-    @Column(name = "Telf_Movil")
+    @Column(name = "telf_movil")
     private String telefonoMovil;
 
-    /**
-     * Dirección del empleado.
-     */
     @Embedded
     private Direccion direccion;
 
-    /**
-     * Fecha de alta del empleado en la base de datos.
-     */
     @Column(name = "fecha_alta_en_BD")
     private LocalDate fechaAltaEnBaseDeDatos = LocalDate.now();
 
-    /**
-     * Nombre original del archivo asociado al empleado.
-     */
     @Column(name = "archivo_nombre_original")
     private String archivoNombreOriginal;
-
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "cuenta_corriente_id",
             foreignKey = @ForeignKey(name = "FK_EMPLEADO_CUENTA_CORRIENTE"))
     private CuentaCorriente cuentaCorriente;
 
-
-    @Column(name="Salario", table = "datosEconomicos")
+    @Column(name="salario", table = "datosEconomicos")
     private Double salario;
 
-    @Column(name="Comision", table = "datosEconomicos")
+    @Column(name="comision", table = "datosEconomicos")
     private Double comision;
 
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -168,8 +124,5 @@ public class Empleado {
     )
     private List<EspecialidadesEmpleado> especialidadesEmpleado;
 
-    /**
-     * True si el empleado está conforme con información suministrada a la empresa.
-     */
     private Boolean aceptaInformacion;
 }

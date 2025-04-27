@@ -35,11 +35,13 @@ public class EmpleadoController {
 
     @Autowired
     private final GeneroRepository generoRepository;
+    private final PaisRepository paisRepository;
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
+        this.paisRepository = paisRepository;
     }
 
     /**
@@ -71,6 +73,7 @@ public class EmpleadoController {
                                             Model model) {
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
         model.addAttribute("generos", generoRepository.findAll());
+        model.addAttribute("listaPaises", paisRepository.findAll());
         return "empleadoRegistro";
     }
 
@@ -90,8 +93,10 @@ public class EmpleadoController {
             Model model) {
         if (result.hasErrors()) {
             model.addAttribute("generos", generoRepository.findAll());
+            System.out.println("Hay errores en /registro-datos");
             return "empleadoRegistro";
         }
+        System.out.println("Yendo al redirect");
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
         return "redirect:/empleados/registro-direccion";
     }
@@ -125,6 +130,7 @@ public class EmpleadoController {
             HttpSession session,
             Model model) {
         if (result.hasErrors()) {
+            System.out.println("Hay errores en /registro-direccion");
             return "empleadoDireccionRegistro";
         }
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
@@ -163,8 +169,8 @@ public class EmpleadoController {
             Model model) {
         EmpleadoRegistroDTO dtoSesion = getEmpleadoDTO(session);
 
-        if (empleadoRegistroDTO.getCuentaCorriente() != null) {
-            dtoSesion.setCuentaCorriente(empleadoRegistroDTO.getCuentaCorriente());
+        if (empleadoRegistroDTO.getCuentaCorrienteDTO() != null) {
+            dtoSesion.setCuentaCorrienteDTO(empleadoRegistroDTO.getCuentaCorrienteDTO());
         }
 
         if (archivoAdjunto != null && !archivoAdjunto.isEmpty()) {
@@ -233,21 +239,38 @@ public class EmpleadoController {
         return "redirect:/empleados/registro-finales";
     }
 
+
+    /**
+     * Le permite al usuario que tiene la sesion iniciada cambiar su contraseña
+     *
+     * @param model El modelo para pasar datos a la vista
+     * @return La vista del formulario de cambio de contraseña
+     */
+    // TODO: Implementar la restriccion de acceso a aqui sin iniciar sesion con el usuario
+    @GetMapping("/cambiar-contrasena")
+    public String mostrarFormularioCambioContrasena(Model model) {
+        return "cambiarContrasena";
+    }
+
     /**
      * Muestra los detalles de un empleado específico.
      *
-     * @param id    El ID del empleado.
-     * @param model El modelo para pasar datos a la vista.
+     * @param model   El modelo para pasar datos a la vista.
+     * @param session La sesion del navegador
      * @return La vista de detalles del empleado.
      */
-    @GetMapping("/detalle/{id}")
-    public String obtenerDetalleEmpleado(@PathVariable UUID id, Model model) {
-        Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.obtenerDetalleEmpleado(id);
-        if (empleadoOpt.isPresent()) {
-            model.addAttribute("empleado", empleadoOpt.get());
-            return "detalleEmpleado";
-        } else {
-            return "detalleEmpleado";
-        }
+    // TODO: Implementar la restriccion de acceso a aqui sin iniciar sesion con el usuario
+    @GetMapping("/detalle")
+    public String obtenerDetalleEmpleado(Model model, HttpSession session) {
+//        EmpleadoDetalleDTO empDTO = (EmpleadoDetalleDTO) session.getAttribute("empleadoDetalleDTO");
+//        UUID id = empDTO.getId();
+//        Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.obtenerDetalleEmpleado(id);
+//        if (empleadoOpt.isPresent()) {
+//            model.addAttribute("empleado", empleadoOpt.get());
+//            return "detalleEmpleado";
+//        } else {
+//            return "detalleEmpleado";
+//        }
+        return "";
     }
 }

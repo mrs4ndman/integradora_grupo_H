@@ -40,7 +40,6 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             detalleDTO.setId(empleado.getId());
             detalleDTO.setNombre(empleado.getNombre());
             detalleDTO.setApellidos(empleado.getApellidos());
-            detalleDTO.setEmail(empleado.getEmail());
             detalleDTO.setFechaNacimiento(empleado.getFechaNacimiento());
             detalleDTO.setDireccion(empleado.getDireccion());
             detalleDTO.setCuentaCorriente(empleado.getCuentaCorriente());

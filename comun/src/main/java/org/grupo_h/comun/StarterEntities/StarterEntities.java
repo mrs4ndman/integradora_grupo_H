@@ -2,21 +2,12 @@ package org.grupo_h.comun.StarterEntities;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
-import org.grupo_h.comun.entity.Departamento;
-import org.grupo_h.comun.entity.EspecialidadesEmpleado;
+import org.grupo_h.comun.entity.*;
 import org.grupo_h.comun.entity.auxiliar.*;
 import org.grupo_h.comun.repository.*;
-import org.grupo_h.comun.entity.Parametros;
-import org.grupo_h.comun.repository.GeneroRepository;
-import org.grupo_h.comun.repository.PaisRepository;
-import org.grupo_h.comun.repository.ParametrosRepository;
-import org.grupo_h.comun.repository.TipoViaRepository;
-import org.grupo_h.comun.entity.auxiliar.Genero;
-import org.grupo_h.comun.entity.auxiliar.Pais;
-import org.grupo_h.comun.entity.auxiliar.TipoVia;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
+//  import org.springframework.boot.CommandLineRunner;
+//  org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -149,24 +140,23 @@ public class StarterEntities {
             parametrosRepository.save(new Parametros("DURACION_BLOQUEO", "15"));
         }
     }
-}
 
     @PostConstruct
     public void initDepartamento() {
-            if (departamentoRepository.count() == 0) {
-                departamentoRepository.save(new Departamento("PREP", "Preparación de Pedidos"));
-                departamentoRepository.save(new Departamento("ALMAC", "Almacenaje"));
-                departamentoRepository.save(new Departamento("RECEP", "Recepción de Mercancías"));
-                departamentoRepository.save(new Departamento("VENTA", "Ventas"));
-                departamentoRepository.save(new Departamento("ADMIN", "Administración"));
-            }
-
+        if (departamentoRepository.count() == 0) {
+            departamentoRepository.save(new Departamento("PREP", "Preparación de Pedidos"));
+            departamentoRepository.save(new Departamento("ALMAC", "Almacenaje"));
+            departamentoRepository.save(new Departamento("RECEP", "Recepción de Mercancías"));
+            departamentoRepository.save(new Departamento("VENTA", "Ventas"));
+            departamentoRepository.save(new Departamento("ADMIN", "Administración"));
         }
+
+    }
 
     @Transactional
     @PostConstruct
-    public void initEspecialidadEmpleado(){
-        if(especialidadesEmpleadoRepository.count() == 0){
+    public void initEspecialidadEmpleado() {
+        if (especialidadesEmpleadoRepository.count() == 0) {
             EspecialidadesEmpleado especialidad = EspecialidadesEmpleado.of("Especialista en Gestión de Inventarios");
             especialidadesEmpleadoRepository.save(especialidad);
         }
@@ -174,13 +164,12 @@ public class StarterEntities {
 
     @Transactional
     @PostConstruct
-    public void initTipoTarjeta(){
-        if(tipoTarjetaRepository.count() == 0){
-            TipoTarjetaCredito visa = TipoTarjetaCredito.of("VISA","V");
+    public void initTipoTarjeta() {
+        if (tipoTarjetaRepository.count() == 0) {
+            TipoTarjetaCredito visa = TipoTarjetaCredito.of("VISA", "V");
             TipoTarjetaCredito americanExpress = TipoTarjetaCredito.of("AMERICAN EXPRESS", "AM");
             TipoTarjetaCredito masterCard = TipoTarjetaCredito.of("MASTER CARD", "MC");
             tipoTarjetaRepository.saveAll(List.of(visa, americanExpress, masterCard));
         }
     }
 }
-

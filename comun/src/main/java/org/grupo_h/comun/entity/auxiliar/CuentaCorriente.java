@@ -1,6 +1,7 @@
 package org.grupo_h.comun.entity.auxiliar;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,10 +22,10 @@ public class CuentaCorriente {
     private Long id;
 
     /**
-     * Número de la cuenta corriente.
+     * Número IBAN de la cuenta corriente.
      * Este campo es obligatorio y no puede ser nulo.
      */
-    @Column(name = "Cuenta_Corriente",
+    @Column(name = "cuenta_corriente",
             nullable = false,
             unique = true)
     private String cuentaCorriente;
@@ -36,7 +37,6 @@ public class CuentaCorriente {
      * - Nombre explícito para la constraint FK
      * - FetchType.LAZY para mejor rendimiento
      */
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "banco_codigo_entidad_bancaria",
             foreignKey = @ForeignKey(name = "FK_CUENTA_ENTIDAD_BANCARIA"))

@@ -20,55 +20,58 @@ public class DireccionDTO {
      * Tipo de vía (calle, avenida, etc.). No puede estar vacío.
      */
     @NotBlank
-    private String tipoViaDirreccionPpalDTO = "C";
+    private String tipoViaDireccionPpalDTO = "C";
 
     /**
      * Nombre de la vía. No puede estar vacío.
      */
     @NotBlank
-    private String nombreViaDirreccionPpalDTO;
+    private String nombreViaDireccionPpalDTO;
 
     /**
      * Número de la dirección. Debe ser un valor positivo.
      */
     @NotNull
     @Positive(message = "{Validadcion.direccionDTO.numeroPositivo}")
-    private Integer numeroViaDirreccionPpalDTO;
+    private Integer numeroViaDireccionPpalDTO;
 
     /**
      * Portal del edificio. No puede ser nulo.
      */
     @NotNull(message = "{Validadcion.direccionDTO.piso}")
-    private String portalDirreccionPpalDTO;
+    private String portalDireccionPpalDTO;
 
     /**
      * Planta del edificio. No puede ser nulo.
      */
     @NotNull(message = "{Validadcion.direccionDTO.planta}")
-    private String plantaDirreccionPpalDTO;
+    private String plantaDireccionPpalDTO;
 
     /**
      * Puerta o letra del piso. No puede estar vacío.
      */
     @NotBlank(message = "{Validadcion.direccionDTO.puerta}")
-    private String puertaDirreccionPpalDTO;
+    private String puertaDireccionPpalDTO;
 
     /**
      * Localidad o ciudad. No puede estar vacío.
      */
     @NotBlank(message = "{Validadcion.direccionDTO.localidad}")
-    private String localidadDirreccionPpalDTO;
+    private String localidadDireccionPpalDTO;
 
 
     /**
      * Región, Comunidad Autonoma o Estado. No puede estar vacío.
      */
 //    @NotBlank(message = "{Validadcion.direccionDTO.region}")
-    private String regionDirreccionPpalDTO;
+    private String regionDireccionPpalDTO;
 
     /**
      * Código postal. No puede estar vacío.
      */
     @NotBlank(message = "{Validadcion.direccionDTO.codigoPostal}")
-    private String codigoPostalDirreccionPpalDTO;
+    private String codigoPostalDireccionPpalDTO;
+
+    @NotBlank(message = "{Validacion.direccionDTO.pais}")
+    private String paisDireccionPpalDTO;
 }

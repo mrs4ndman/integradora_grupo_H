@@ -12,44 +12,61 @@ import lombok.NoArgsConstructor;
 @Embeddable
 public class Direccion {
 
-    /** Tipo de vía (calle, avenida, etc.). */
-
+    /**
+     * Tipo de vía (calle, avenida, etc.).
+     */
     @ManyToOne
-    @JoinColumn(name = "tipo_via_dirreccion_ppal_id",
-                referencedColumnName = "codigoTipoVia",
-                foreignKey = @ForeignKey(name = "FK_TIPOVIA_DIRECCION"))
-    private TipoVia tipoViaDirreccionPpal;
+    @JoinColumn(name = "tipo_via_direccion_ppal_id",
+            referencedColumnName = "codigoTipoVia",
+            foreignKey = @ForeignKey(name = "FK_TIPOVIA_DIRECCION"))
+    private TipoVia tipoViaDireccionPpal;
 
-    /** Nombre de la vía. */
-    @Column(name = "Nombre_via")
-    private String nombreViaDirreccionPpal;
+    /**
+     * Nombre de la vía.
+     */
+    @Column(name = "nombre_via")
+    private String nombreViaDireccionPpal;
 
-    /** Número de la dirección. */
+    /**
+     * Número de la dirección.
+     */
     @Column(name = "numero")
-    private int numeroViaDirreccionPpal;
+    private int numeroViaDireccionPpal;
 
-    /** Portal de la dirección. */
-    @Column(name = "Portal")
-    private String portalDirreccionPpal;
+    /**
+     * Portal de la dirección.
+     */
+    @Column(name = "portal")
+    private String portalDireccionPpal;
 
-    /** Planta de la dirección. */
-    @Column(name = "Planta")
-    private String plantaDirreccionPpal;
+    /**
+     * Planta de la dirección.
+     */
+    @Column(name = "planta")
+    private String plantaDireccionPpal;
 
-    /** Puerta de la dirección. */
-    @Column(name = "Puerta")
-    private String puertaDirreccionPpal;
+    /**
+     * Puerta de la dirección.
+     */
+    @Column(name = "puerta")
+    private String puertaDireccionPpal;
 
-    /** Localidad o ciudad. */
+    /**
+     * Localidad o ciudad.
+     */
     @Column(name = "localidad")
-    private String localidadDirreccionPpal;
+    private String localidadDireccionPpal;
 
-    /** Región/Comunidad Autónoma o Estado. */
+    /**
+     * Región/Comunidad Autónoma o Estado.
+     */
     @Column(name = "region")
-    private String regionDirreccionPpal;
+    private String regionDireccionPpal;
 
-    /** Código postal. */
-    @Column(name = "Cod_postal")
-    private String codigoPostalDirreccionPpal;
+    /**
+     * Código postal.
+     */
+    @Column(name = "cod_postal")
+    private String codigoPostalDireccionPpal;
 
 }

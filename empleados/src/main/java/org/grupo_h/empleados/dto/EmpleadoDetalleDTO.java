@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.grupo_h.comun.entity.auxiliar.CuentaCorriente;
 import org.grupo_h.comun.entity.auxiliar.Direccion;
+import org.grupo_h.comun.entity.auxiliar.Genero;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * DTO que representa los detalles de un empleado.
@@ -16,12 +16,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmpleadoDetalleDTO {
-
-    /**
-     * Identificador único del empleado.
-     */
-    private UUID id;
-
     /**
      * Nombre del empleado.
      */
@@ -31,11 +25,6 @@ public class EmpleadoDetalleDTO {
      * Apellido del empleado.
      */
     private String apellidos;
-
-    /**
-     * Correo electrónico del empleado.
-     */
-    private String email;
 
     /**
      * Fecha de nacimiento del empleado.
@@ -53,7 +42,7 @@ public class EmpleadoDetalleDTO {
     private CuentaCorriente cuentaCorriente;
 
     /**
-     * Fecha de alta del empleado en la base de datos.
+     * Género del empleado.
      */
-    private LocalDate fechaAltaEnBaseDeDatos;
+    private Genero genero;  // Cambiado a la entidad Genero
 }
