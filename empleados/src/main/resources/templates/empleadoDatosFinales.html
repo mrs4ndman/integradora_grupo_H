@@ -52,19 +52,6 @@
 </form>
 <!--<a th:href="@{/empleados/logout}" class="btn">Volver al inicio</a>-->
 
-<script th:inline="javascript" >
-    function confirmarAccionFormulario(formulario, mensaje) {
-        if (confirm(mensaje)) {
-            // Usuario confirmó, permitir el envío del formulario
-            alert("Datos guardados en Base de Datos")
-            return true;
-        } else {
-            // Usuario canceló, prevenir el envío del formulario
-            return false;
-        }
-    }
-</script>
-
 <script th:src="@{/js/script.js}"></script>
 
 </body>

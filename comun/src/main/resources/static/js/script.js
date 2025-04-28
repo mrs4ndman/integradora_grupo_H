@@ -1,3 +1,19 @@
+// *************** FUNCIONES COMUNES ***********************
+
+/**
+ * Muestra un diálogo de confirmación antes de realizar una acción.
+ * @param elemento - El elemento que disparó el evento.
+ * @param mensaje - El mensaje de confirmación.
+ * @returns boolean - true si el usuario confirma, false si cancela.
+ */
+function confirmarAccionFormulario(elemento, mensaje) {
+    if (confirm(mensaje)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // *************** FUNCIONES REGISTRO EMPLEADO ***********************
 
 // Vacía el formulario de datos pùlsando el botón vaciar
@@ -22,6 +38,37 @@ function vaciarFormulario() {
             element.selectedIndex = -1;  // Esto los deselecciona todos
         }
     });
+}
+
+// Validar contraseñas en registro
+function validarRegistro() {
+    const contrasena = document.getElementById('contrasena');
+    const confirmarContrasena = document.getElementById('confirmarContrasena');
+    const errorDiv = document.getElementById('passwordError');
+
+    if (contrasena.value !== confirmarContrasena.value) {
+        // Muestra el mensaje de error
+        if (errorDiv) {
+            errorDiv.style.display = 'block';
+        }
+        // Añade un borde rojo para indicar el error (opcional)
+        confirmarContrasena.style.borderColor = 'red';
+        contrasena.style.borderColor = 'red';
+        // Enfoca el campo de confirmación
+        confirmarContrasena.focus();
+        // Evita que el formulario se envíe
+        return false;
+    } else {
+        // Oculta el mensaje de error si las contraseñas coinciden
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+        // Restablece el borde (opcional)
+        confirmarContrasena.style.borderColor = '';
+        contrasena.style.borderColor = '';
+        // Permite que el formulario continúe (se llamará a confirmarAccionFormulario)
+        return true;
+    }
 }
 
 // Highlight de los botones del NavBar en Registro Empleados
