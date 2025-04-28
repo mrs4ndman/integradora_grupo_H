@@ -1,5 +1,6 @@
 package org.grupo_h.empleados.configuration;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.SimpleMailMessage;
@@ -77,4 +78,6 @@ public class Configuraciones {
                 "This is the test email template for your email:\n%s\n");
         return message;
     }
+
+
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Dirección</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+
+<!--NavBar-->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<h2>Formulario de Datos Económicos</h2>
+
+<form th:action="@{/empleados/registro-departamento}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" >
+
+    <div>
+        <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
+        <select th:field="*{departamentoDTO}" id="departamento">
+            <option th:each="d : ${departamentos}"
+                    th:value="${d.codigo}"
+                    th:text="${d.nombreDept}">
+            </option>
+        </select>
+        <div th:if="${#fields.hasErrors('departamentoDTO')}" th:errors="*{departamentoDTO}" class="error"></div>
+    </div>
+    <br><br>
+
+    <th:block th:text="#{Datos-departamento.especialidades}"/>
+    <div th:each="e : ${especialidades}" >
+        <input
+                type="checkbox"
+                th:field="*{especialidadesSeleccionadas}"
+                th:value="${e.especialidad}"
+                id="especialiades"/>
+        <label for="especialiades" th:text="${e.especialidad}">Afición</label>
+    </div>
+    <div th:each="err : ${#fields.errors('especialidadesSeleccionadas')}" th:text="${err}" class="error"/>
+
+    <input type="button"
+           th:value="#{Boton.vaciar}"
+           onclick="vaciarFormulario()">
+    <br><br>
+
+    <input type="submit"
+           th:value="#{Boton.siguiente}">
+
+</form>
+
+</body>
+</html>

@@ -1,7 +1,6 @@
 package org.grupo_h.comun.entity.auxiliar;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -37,6 +36,7 @@ public class CuentaCorriente {
      * - Nombre explícito para la constraint FK
      * - FetchType.LAZY para mejor rendimiento
      */
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "banco_codigo_entidad_bancaria",
             foreignKey = @ForeignKey(name = "FK_CUENTA_ENTIDAD_BANCARIA"))

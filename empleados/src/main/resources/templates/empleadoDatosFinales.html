@@ -38,8 +38,12 @@
     <p th:text="'País: ' + *{direccionDTO.paisDireccionPpalDTO}"></p>
 
     <h2>Datos Financieros</h2>
-    <p th:text="'Banco: ' + *{cuentaCorrienteDTO.banco}"></p>
-    <p th:text="'Cuenta Corriente: ' + *{cuentaCorrienteDTO.cuentaCorriente}"></p>
+
+    <p>Banco: <span th:text="${datos.cuentaCorriente.banco}"></span></p>
+    <p>Cuenta Corriente: <span th:text="${datos.cuentaCorriente.cuentaCorriente}"></span></p>
+    <p>Archivo: <span th:text="${datos.archivoNombreOriginal}"></span></p>
+
+    <br>
 
     <div>
         <input type="submit" th:value="#{Boton.guardar}">

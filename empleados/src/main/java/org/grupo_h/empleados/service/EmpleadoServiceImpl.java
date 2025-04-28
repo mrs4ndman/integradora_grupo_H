@@ -1,6 +1,7 @@
 package org.grupo_h.empleados.service;
 
 import org.grupo_h.comun.entity.Empleado;
+import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.grupo_h.comun.repository.EmpleadoRepository;
@@ -8,6 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.comun.repository.UsuarioRepository;
 import org.grupo_h.comun.entity.auxiliar.Genero;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,12 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         return empleadosRepository.save(empleado);
     }
 
+    /**
+     * Busca un empleado por su nombre.
+     *
+     * @param nombreEmpleado Nombre del empleado a buscar.
+     * @return Un Optional con el empleado encontrado, si existe.
+     */
     @Override
     public Optional<Empleado> findByNombreEmpleado(String nombreEmpleado) {
         return empleadosRepository.findByNombre(nombreEmpleado);

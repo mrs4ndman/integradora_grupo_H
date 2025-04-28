@@ -5,6 +5,11 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.empleados.validation.EdadCoherente; // Importa la anotación personalizada
+import org.grupo_h.comun.entity.auxiliar.Genero;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosDepartamento;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosPersonales;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosRegistroDireccion;
+import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.MinimoDosCheckbox;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -26,14 +31,31 @@ public class EmpleadoRegistroDTO {
     /**
      * Nombre del empleado. No puede estar vacío.
      */
-    @NotBlank
+    @NotBlank(groups = DatosPersonales.class)
     private String nombre;
 
     /**
      * Apellidos del empleado. No puede estar vacío.
      */
-    @NotBlank
+    @NotBlank(groups = DatosPersonales.class)
     private String apellidos;
+
+    /**
+     * Contenido del archivo adjunto.
+     */
+    @NotNull(groups = DatosPersonales.class)
+    @Size(max = 204800, message = "{Validacion.fotografia.tamanio}")
+    private byte[] fotografia;
+
+    /**
+     * Género del empleado. No requiere validación. Insertado en tabla por defecto
+     */
+//    @Pattern(
+//            regexp = "^([MFO])$",
+//            message = "{Validacion.generoSeleccionado.notBlank}"
+//    )
+    private Genero generoSeleccionado;
+
 
     /**
      * Contenido del archivo adjunto. Limitado a GIF, JPG o PNG de máximo 200KB.
@@ -56,7 +78,7 @@ public class EmpleadoRegistroDTO {
      */
     @NotNull(message = "{Validacion.fechaNac.vacio}")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @Past(message = "{Validacion.fechaNac.Past}")
+    @Past(message = "{Validacion.fechaNac.Past}", groups = DatosPersonales.class)
     private LocalDate fechaNacimiento;
 
 
@@ -67,13 +89,13 @@ public class EmpleadoRegistroDTO {
     /**
      * País de nacimiento del empleado.
      */
-    @NotNull
+    @NotNull(groups = DatosPersonales.class)
     private String paisNacimiento = "ES";
 
     /**
      * Comentario del empleado.
      */
-    @NotNull
+    @NotNull(groups = DatosPersonales.class)
     private String comentarios;
 
     /**
@@ -125,6 +147,8 @@ public class EmpleadoRegistroDTO {
      * Cuenta corriente del empleado.
      */
     @Valid
+    private CuentaCorrienteDTO cuentaCorriente;
+
     private CuentaCorrienteDTO cuentaCorrienteDTO;
 
     /**
@@ -133,4 +157,7 @@ public class EmpleadoRegistroDTO {
     @Pattern(regexp = ".*\\.(gif|jpg|jpeg|png)$", flags = Pattern.Flag.CASE_INSENSITIVE,
             message = "{Validacion.fotografia.formato}")
     private String archivoNombreOriginal;
+
+    private Boolean aceptaInformacion;
+
 }

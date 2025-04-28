@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosPersonales;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosRegistroDireccion;
 
 /**
  * DTO que representa los datos de una dirección.
@@ -31,7 +33,7 @@ public class DireccionDTO {
     /**
      * Número de la dirección. Debe ser un valor positivo.
      */
-    @NotNull
+    @NotNull(groups = DatosRegistroDireccion.class)
     @Positive(message = "{Validadcion.direccionDTO.numeroPositivo}")
     private Integer numeroViaDireccionPpalDTO;
 
