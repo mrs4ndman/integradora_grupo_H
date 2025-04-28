@@ -32,13 +32,13 @@ IBAN → NL41RABO7998733292 | ES2000757587483499321899
 
 
 ## ADMINISTRACIÓN
-- [ ] Crear booleano en entidad de Usuario para validar entradas
+- [x] Crear entidad similar a Usuario en Administración
 
-- [ ] Endpoint de acceso con relación al booleano
+- [x] Endpoint de acceso con relación a la entidad
 
 - [ ] Endpoint y vista que gestione el bloqueo y desbloqueo de usuarios
 
-- [ ] Consulta parametrizada de empleados, con resultados paginados y ordenados por diferentes campos - Administración - MVC
+- [ ] Consulta parametrizada de empleados, con resultados paginados y ordenados por diferentes campos
 
 - [ ]
 

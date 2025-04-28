@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticación</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #f8f9fa;
+            color: #000000;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .error-message {
+            color: red;
+            margin: 10px 0;
+        }
+
+        .user-agent-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <form th:if="${pedirEmail}"
+          id="formEmail"
+          th:action="@{/administrador/inicio-sesion/administrador}"
+          method="post">
+        <h1>Iniciar Sesión</h1>
+
+        <div th:if="${not #lists.isEmpty(loginsAnteriores)}" id="contenedorSelect" style="display: block;">
+            <div class="mb-3">
+                <label for="loginsAnterioresSelect">Elige tu administrador:</label>
+                <select id="loginsAnterioresSelect" required>
+                    <option value="" disabled selected>-- Selecciona tu email --</option>
+                    <th:block th:each="loginEmail : ${loginsAnteriores}">
+                        <option th:value="${loginEmail}" th:text="${loginEmail}"></option>
+                    </th:block>
+                </select>
+            </div>
+            <div>
+                <button type="button" onclick="eliminarUsuarioSeleccionado()">Eliminar Seleccionado</button>
+                <button type="button" onclick="mostrarInputManual()">Introducir email manualmente</button>
+            </div>
+        </div>
+
+        <div id="emailInputContainer"
+             th:style="${not #lists.isEmpty(loginsAnteriores)} ? 'display: none;' : 'display: block;'">
+            <label for="email">Email del administrador:</label>
+            <input type="text" id="email" name="email">
+            <button th:if="${not #lists.isEmpty(loginsAnteriores)}" type="button" onclick="mostrarListaUsuarios()">Volver a la lista de administradores</button>
+        </div>
+
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+        <div th:if="${mensaje}" class="success-message" th:text="${mensaje}"></div>
+
+        <div th:if="${showLogoutReferer}">
+            <p>Has cerrado sesión desde: <a th:href="${logoutRefererUrl}" th:text="${logoutRefererText}"></a></p>
+        </div>
+
+        <button type="submit">Siguiente</button>
+
+        <div>
+            <a th:href="@{/administrador/registro}">Registrar Administrador</a>
+        </div>
+    </form>
+
+    <form th:if="${pedirPassword}"
+          th:action="@{/administrador/inicio-sesion/autenticar}"
+          method="post">
+        <h1>Bienvenido, <span th:text="${email}">Email</span></h1>
+        <input type="hidden" name="email" th:value="${email}">
+        <div>
+            <label for="contrasena">Contraseña</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+        </div>
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+        <button type="submit">Ingresar</button>
+        <a href="#" onclick="recuperarContraseña()" style="display: block; margin: 10px 0;">¿Olvidaste tu
+            contraseña?</a>
+    </form>
+
+</div>
+<script>
+    // Referencias a los elementos del DOM
+    const formEmail = document.getElementById('formEmail'); // Formulario
+    const contenedorSelect = document.getElementById('contenedorSelect');
+    const loginsAnterioresSelect = document.getElementById('loginsAnterioresSelect');
+    const emailInputContainer = document.getElementById('emailInputContainer');
+    const emailInput = document.getElementById('email'); // El input de email único
+
+    // Variable para saber si la lista existe inicialmente
+    const hayListaInicial = contenedorSelect != null; // Comprobar si el contenedor del select existe
+
+    // Función para mostrar el input manual
+    function mostrarInputManual() {
+        if (contenedorSelect) {
+            contenedorSelect.style.display = 'none';
+            if (loginsAnterioresSelect) loginsAnterioresSelect.removeAttribute('required'); // Ya no es requerido
+        }
+        if (emailInputContainer) {
+            emailInputContainer.style.display = 'block';
+            if (emailInput) {
+                emailInput.setAttribute('required', 'required'); // Ahora este es requerido
+                emailInput.value = ''; // Limpiar valor previo (del select)
+                emailInput.focus();
+            }
+        }
+        // Asegurarse que el select no tenga valor seleccionado
+        if (loginsAnterioresSelect) loginsAnterioresSelect.value = '';
+    }
+
+    function mostrarListaUsuarios() {
+        if (emailInputContainer) {
+            emailInputContainer.style.display = 'none';
+            if (emailInput) emailInput.removeAttribute('required');
+        }
+        if (contenedorSelect) {
+            contenedorSelect.style.display = 'block';
+            if (loginsAnterioresSelect) {
+                loginsAnterioresSelect.setAttribute('required', 'required');
+                // Opcional: Reseleccionar el valor que estaba o el placeholder
+                loginsAnterioresSelect.value = ''; // Vuelve al placeholder "-- Selecciona tu email --"
+                actualizarEmailDesdeSelect(); // Actualiza el input oculto (lo pondrá vacío)
+            }
+        }
+    }
+
+    // Función para actualizar el valor del input oculto cuando cambia el select
+    function actualizarEmailDesdeSelect() {
+        if (loginsAnterioresSelect && emailInput) {
+            emailInput.value = loginsAnterioresSelect.value;
+        }
+    }
+
+    // --- Event Listeners ---
+
+    // Actualizar input cuando cambia el select (si el select existe)
+    if (loginsAnterioresSelect) {
+        loginsAnterioresSelect.addEventListener('change', actualizarEmailDesdeSelect);
+    }
+
+    // --- Funciones de Botones ---
+
+    // Función eliminar (revisada para asegurar que funciona)
+    function eliminarUsuarioSeleccionado() {
+        const select = document.getElementById('loginsAnterioresSelect'); // Re-obtener por si acaso
+        if (!select || !select.value) {
+            alert("Por favor, selecciona un administrador de la lista para eliminar.");
+            return;
+        }
+        const emailAEliminar = select.value;
+
+        if (confirm('¿Estás seguro de que quieres eliminar "' + emailAEliminar + '" de la lista de administradores recordados?')) {
+            fetch('/administrador/inicio-sesion/eliminar-administrador', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    // CSRF token si es necesario
+                },
+                body: 'emailAEliminar=' + encodeURIComponent(emailAEliminar)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Usuario eliminado.');
+                        window.location.reload(); // Recargar siempre para refrescar lista
+                    } else {
+                        response.text().then(text => { // Leer cuerpo de la respuesta para más info
+                            console.error("Error al eliminar:", response.status, text);
+                            alert('Error al eliminar el administrador: ' + (text || response.statusText));
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en fetch eliminarUsuario:', error);
+                    alert('Error de red al intentar eliminar el administrador.');
+                });
+        }
+    }
+
+
+    // Función recuperar contraseña (usa siempre el input#email)
+    function recuperarContraseña() {
+        const currentEmail = emailInput ? emailInput.value : null;
+        if (currentEmail) {
+            if (confirm('Se enviarán instrucciones para restablecer la contraseña a ' + currentEmail + '. ¿Continuar?')) {
+                window.location.href = '/administrador/solicitar-recuperacion?email=' + encodeURIComponent(currentEmail);
+            }
+        } else {
+            alert("Por favor, selecciona o introduce un email válido antes de intentar recuperar la contraseña.");
+        }
+        return false; // Prevenir comportamiento por defecto del enlace
+    }
+
+    function mostrarContraseña() {
+        const passwordField = document.getElementById('passwordField');
+        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
+
+    // --- Configuración Inicial ---
+    document.addEventListener('DOMContentLoaded', function () {
+        if (hayListaInicial) {
+            // Estado inicial: Se muestra la lista
+            emailInputContainer.style.display = 'none'; // Ocultar input
+            contenedorSelect.style.display = 'block';     // Mostrar select
+            loginsAnterioresSelect.setAttribute('required', 'required'); // Select es requerido
+            emailInput.removeAttribute('required'); // Input no es requerido (está oculto)
+            // Poner el valor seleccionado (si lo hay) en el input oculto
+            actualizarEmailDesdeSelect();
+        } else {
+            // Estado inicial: No hay lista
+            if (emailInputContainer) emailInputContainer.style.display = 'block'; // Mostrar input
+            if (contenedorSelect) contenedorSelect.style.display = 'none';     // Ocultar select (si existiera)
+            if (emailInput) emailInput.setAttribute('required', 'required'); // Input es requerido
+            if (loginsAnterioresSelect) loginsAnterioresSelect.removeAttribute('required'); // Select no requerido
+        }
+    });
+</script>
+</body>
+</html>

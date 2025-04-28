@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Administrador</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<h1>Registro de Administrador</h1>
+
+<!-- Se muestra un mensaje de éxito si lo hay -->
+<div th:if="${param.success}">
+    <p style="color: green;">¡Registro exitoso!</p>
+</div>
+
+<!-- Se muestra un mensaje de error si lo hay -->
+<div th:if="${error != null}">
+    <p style="color: red;" th:text="${error}"></p>
+</div>
+
+<!-- El formulario usa el objeto 'administradorRegistroDTO' para hacer binding de sus campos -->
+<form th:action="@{/administrador/registro}" th:object="${administradorRegistroDTO}" method="post"
+      onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo administrador?');">
+    <div>
+        <label for="email">Email</label>
+        <input type="email" th:field="*{email}" id="email" placeholder="tuemail@dominio.com" />
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></div>
+    </div>
+    <div>
+        <label for="contrasena">Contraseña</label>
+        <input type="password" th:field="*{contrasena}" id="contrasena" />
+        <div th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}" class="error"></div>
+    </div>
+    <div>
+        <button type="submit">Registrarse</button>
+        <button><a th:href="@{/administrador/inicio-sesion}" style="color: black; text-decoration: none">Iniciar Sesión</a></button>
+    </div>
+</form>
+</body>
+<script>
+    /**
+     * Muestra un diálogo de confirmación antes de enviar un formulario.
+     * Si el administrador hace clic en "Aceptar", el formulario se envía.
+     * Si hace clic en "Cancelar", el envío se detiene.
+     *
+     * @param formulario - El elemento del formulario que disparó el evento.
+     * @param mensaje - El mensaje de confirmación que se mostrará al administrador.
+     * @returns boolean - Devuelve true para permitir el envío, false para cancelarlo.
+     */
+    function confirmarAccionFormulario(formulario, mensaje) {
+        if (confirm(mensaje)) {
+            // Usuario confirmó, permitir el envío del formulario
+            return true;
+        } else {
+            // Usuario canceló, prevenir el envío del formulario
+            return false;
+        }
+    }
+</script>
+</html>
