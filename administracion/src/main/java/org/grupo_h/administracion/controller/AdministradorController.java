@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
+import org.grupo_h.administracion.service.EmpleadoService;
 import org.grupo_h.comun.entity.Administrador;
 import org.grupo_h.administracion.dto.AdministradorRegistroDTO;
 import org.grupo_h.administracion.service.ParametrosService;
@@ -35,56 +37,19 @@ public class AdministradorController {
 
     private final AdministradorService administradorService;
     private final AdministradorRepository administradorRepository;
+    private final EmpleadoService empleadoService;
     private final ParametrosService parametrosService;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public AdministradorController(AdministradorService administradorService, AdministradorRepository administradorRepository, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder) {
+    public AdministradorController(AdministradorService administradorService, AdministradorRepository administradorRepository, EmpleadoService empleadoService, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder) {
         this.administradorService = administradorService;
         this.administradorRepository = administradorRepository;
+        this.empleadoService = empleadoService;
         this.parametrosService = parametrosService;
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Muestra el formulario de registro de administradores.
-     *
-     * @param model Modelo para pasar datos a la vista.
-     * @return Nombre de la vista de registro.
-     */
-    @GetMapping("/registro")
-    public String mostrarFormularioRegistro(Model model) {
-        model.addAttribute("administradorRegistroDTO", new AdministradorRegistroDTO());
-        return "registro";
-    }
-
-    /**
-     * Procesa el formulario de registro de administrador.
-     *
-     * @param administradorRegistroDTO DTO con los datos del formulario.
-     * @param result                   Resultado de la validación.
-     * @param model                    Modelo para pasar datos a la vista.
-     * @return Redirección a la vista de registro con parámetro de éxito o error.
-     */
-    @PostMapping("/registro")
-    public String registrarAdministrador(
-            @Valid @ModelAttribute("administradorRegistroDTO") AdministradorRegistroDTO administradorRegistroDTO,
-            BindingResult result,
-            Model model) {
-
-        if (result.hasErrors()) {
-            return "registro";
-        }
-
-        try {
-            administradorService.registrarAdministrador(administradorRegistroDTO);
-        } catch (RuntimeException ex) {
-            model.addAttribute("error", ex.getMessage());
-            return "registro";
-        }
-
-        return "redirect:/administrador/registro?success";
-    }
 
     /**
      * Muestra el formulario de inicio de sesión.
@@ -160,7 +125,7 @@ public class AdministradorController {
         String rememberMeTokenValue = null;
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("remember-me-token".equals(cookie.getName())) {
+                if ("remember-me-token-admin".equals(cookie.getName())) {
                     rememberMeTokenValue = cookie.getValue();
                     break;
                 }
@@ -168,7 +133,7 @@ public class AdministradorController {
         }
 
         if (rememberMeTokenValue != null && !rememberMeTokenValue.isEmpty()) {
-            System.out.println("Encontrada cookie remember-me: " + rememberMeTokenValue);
+            System.out.println("Encontrada cookie remember-me-admin: " + rememberMeTokenValue);
             Optional<Administrador> administradorOptByToken = administradorRepository.findByRememberMeToken(rememberMeTokenValue);
 
             if (administradorOptByToken.isPresent()) {
@@ -198,13 +163,13 @@ public class AdministradorController {
                         administradorRecordado.setRememberMeTokenExpiry(null);
                         administradorRepository.save(administradorRecordado);
                     }
-                    Cookie removeCookie = new Cookie("remember-me-token", "");
+                    Cookie removeCookie = new Cookie("remember-me-token-admin", "");
                     removeCookie.setPath("/");
                     removeCookie.setMaxAge(0);
                 }
             } else {
                 System.out.println("Token de cookie no encontrado en BD.");
-                Cookie removeCookie = new Cookie("remember-me-token", "");
+                Cookie removeCookie = new Cookie("remember-me-token-admin", "");
                 removeCookie.setPath("/");
                 removeCookie.setMaxAge(0);
             }
@@ -213,12 +178,12 @@ public class AdministradorController {
 
         Optional<Administrador> administradorOpt = administradorRepository.findByEmail(email);
 
-        Administrador administrador = administradorOpt.get();
-
         if (administradorOpt.isEmpty() || !administradorOpt.get().isHabilitado()) {
             redirectAttributes.addFlashAttribute("error", "Administrador no encontrado o deshabilitado");
             return "redirect:/administrador/inicio-sesion?error=true";
         }
+
+        Administrador administrador = administradorOpt.get();
 
         if (administrador.isCuentaBloqueada()) {
             LocalDateTime horaDesbloqueo = administrador.getTiempoHastaDesbloqueo();
@@ -371,15 +336,15 @@ public class AdministradorController {
                 administrador.setRememberMeTokenExpiry(rememberMeExpiry);
                 administradorRepository.save(administrador); // Guardar token en BD
 
-                Cookie rememberMeCookie = new Cookie("remember-me-token", rememberMeTokenValue);
+                Cookie rememberMeCookie = new Cookie("remember-me-token-admin", rememberMeTokenValue);
                 rememberMeCookie.setPath("/");
                 rememberMeCookie.setMaxAge(14 * 24 * 60 * 60); // 14 días
                 rememberMeCookie.setHttpOnly(true);
                 response.addCookie(rememberMeCookie);
-                System.out.println("Cookie remember-me creada para: " + email);
+                System.out.println("Cookie remember-me-admin creada para: " + email);
 
             } catch (Exception e) {
-                System.err.println("Error al crear cookie remember-me: " + e.getMessage());
+                System.err.println("Error al crear cookie remember-me-admin: " + e.getMessage());
             }
             // --- Fin Lógica Remember Me ---
 
@@ -585,5 +550,26 @@ public class AdministradorController {
             return "";
         }
         return url;
+    }
+
+/* ------------------------ CAMBIO A DETALLE ----------------------------- */
+    /**
+     * Obtiene y muestra el detalle de un empleado específico.
+     *
+     * @param id    Identificador único del empleado a consultar
+     * @param model Modelo para transferir datos a la vista
+     * @return Nombre de la vista a renderizar (detalleEmpleado)
+     */
+    // TODO: REFACTOR
+    @GetMapping("/detalle/{id}")
+    public String obtenerDetalleEmpleado(@PathVariable UUID id, Model model) {
+        Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.obtenerDetalleEmpleado(id);
+        if (empleadoOpt.isPresent()) {
+            model.addAttribute("empleado", empleadoOpt.get());
+            return "detalleEmpleado"; // Plantilla Thymeleaf
+        } else {
+            // TODO: Crear una pagina de error
+            return "detalleEmpleado"; // Página de error
+        }
     }
 }

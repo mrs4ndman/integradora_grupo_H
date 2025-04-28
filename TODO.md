@@ -40,6 +40,6 @@ IBAN → NL41RABO7998733292 | ES2000757587483499321899
 
 - [ ] Consulta parametrizada de empleados, con resultados paginados y ordenados por diferentes campos
 
-- [ ]
+- [ ] Links a estas 2 funcionalidades
 
 

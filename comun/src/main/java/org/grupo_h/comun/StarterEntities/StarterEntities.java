@@ -13,6 +13,7 @@ import org.grupo_h.comun.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 //  import org.springframework.boot.CommandLineRunner;
 //  org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -49,6 +50,9 @@ public class StarterEntities {
 
     @Autowired
     private TipoTarjetaRepository tipoTarjetaRepository;
+
+    @Autowired
+    private AdministradorRepository administradorRepository;
 
     @PostConstruct
     public void initGenero() {
@@ -175,6 +179,29 @@ public class StarterEntities {
             TipoTarjetaCredito americanExpress = TipoTarjetaCredito.of("AMERICAN EXPRESS", "AM");
             TipoTarjetaCredito masterCard = TipoTarjetaCredito.of("MASTER CARD", "MC");
             tipoTarjetaRepository.saveAll(List.of(visa, americanExpress, masterCard));
+        }
+    }
+
+    @Transactional
+    @PostConstruct
+    public void initAdministrador() {
+        if (administradorRepository.count() == 0) {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+            Administrador admin1 = new Administrador();
+            admin1.setEmail("pablo@pablo.com");
+            admin1.setContrasena(passwordEncoder.encode("pablo"));
+            administradorRepository.save(admin1);
+
+            Administrador admin2 = new Administrador();
+            admin2.setEmail("josea@josea.com");
+            admin2.setContrasena(passwordEncoder.encode("josea"));
+            administradorRepository.save(admin2);
+
+            Administrador admin3 = new Administrador();
+            admin3.setEmail("juanm@juanm.com");
+            admin3.setContrasena(passwordEncoder.encode("juanm"));
+            administradorRepository.save(admin3);
         }
     }
 }

@@ -5,14 +5,14 @@
     <title>Área personal</title>
 </head>
 <body>
-<h1>Área personal: <span th:text="${email}"></span></h1>
+<h1>Área personal del admin: <span th:text="${email}"></span></h1>
 
 <div>
     <h2>Contadores de Autenticación</h2>
     <ul>
         <li>
             <strong>Total de autenticaciones válidas para este administrador:</strong>
-            <span th:text="${totalLoginsUsuario}">0</span>
+            <span th:text="${totalLoginsAdministrador}">0</span>
             (Independiente del navegador)
         </li>
         <li>
@@ -23,13 +23,16 @@
 </div>
 
 <div>
+    <h2>Accesos a funcionalidades</h2>
+    <a th:href="@{/administrador/}"></a>
+</div>
+
+<div>
     <h2>Información del Cliente Actual</h2>
     <p>Navegador (User-Agent): <span th:text="${navegadorActual}"></span></p>
 </div>
 
 <hr>
-<p>
-    <a th:href="@{/empleados/registro-datos}">Ir a Registro de Empleado</a> </p>
 <p>
     <a th:href="@{/administrador/logout}">Cerrar sesión</a>
 </p>
