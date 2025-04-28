@@ -3,6 +3,11 @@ package org.grupo_h.empleados.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.grupo_h.comun.entity.auxiliar.Genero;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosDepartamento;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosPersonales;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosRegistroDireccion;
+import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.MinimoDosCheckbox;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -23,88 +28,55 @@ public class EmpleadoRegistroDTO {
     /**
      * Nombre del empleado. No puede estar vacío.
      */
-    @NotBlank
+    @NotBlank(groups = DatosPersonales.class)
     private String nombre;
 
     /**
      * Apellidos del empleado. No puede estar vacío.
      */
-    @NotBlank
+    @NotBlank(groups = DatosPersonales.class)
     private String apellidos;
 
     /**
      * Contenido del archivo adjunto.
      */
+    @NotNull(groups = DatosPersonales.class)
     private byte[] fotografia;
 
     /**
      * Género del empleado. No requiere validación. Insertado en tabla por defecto
      */
-    @Pattern(
-            regexp = "^([MFO])$",
-            message = "{Validacion.generoSeleccionado.notBlank}"
-    )
-    private String generoSeleccionado;
+//    @Pattern(
+//            regexp = "^([MFO])$",
+//            message = "{Validacion.generoSeleccionado.notBlank}"
+//    )
+    private Genero generoSeleccionado;
 
 
     /**
      * Fecha de nacimiento del empleado. Debe ser una fecha pasada.
      */
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @Past(message = "{Validacion.fechaNac.Past}")
+    @Past(message = "{Validacion.fechaNac.Past}", groups = DatosPersonales.class)
     private LocalDate fechaNacimiento;
 
-
+    /**
+     * Edad del empleado.
+     */
     private Integer edad;
 
-//    /**
-//     * Correo electrónico del empleado. Debe seguir un formato válido.
-//     */
-//    @NotBlank
-//    @Pattern(
-//            regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-//            message = "{Vaidacion.email.pattern}"
-//    )
-//    private String email;
 
     /**
      * País de nacimiento del empleado.
      */
-    @NotNull
+    @NotNull(groups = DatosPersonales.class)
     private String paisNacimiento = "ES";
 
     /**
      * Comentario del empleado.
      */
-    @NotNull
+    @NotNull(groups = DatosPersonales.class)
     private String comentarios;
-
-    /**
-     * Tipo de Documento del empleado.
-     */
-    @NotNull
-    private String tipoDocumento = "DNI";
-
-    /**
-     * Número del Documento del empleado.
-     */
-    @NotNull
-    private String numeroDocumento;
-
-    /**
-     * Prefijo Internacional del teléfono móvil del empleado.
-     */
-    @NotNull
-    private String prefijoTelefono ="ES";
-
-    /**
-     * Número del teléfono móvil del empleado.
-     */
-    @Size(min = 9, message = "{Vaidacion.telefono.Size}")
-    @Pattern(regexp = "^[0-9]+$",
-            message = "{Validacion.telefono.digitos}")
-    @NotBlank
-    private String telefonoMovil;
 
     /**
      * Dirección del empleado.
@@ -113,15 +85,46 @@ public class EmpleadoRegistroDTO {
     private DireccionDTO direccion;
 
     /**
+     * Tipo de Documento del empleado.
+     */
+    @NotNull(groups = DatosRegistroDireccion.class)
+    private String tipoDocumento = "DNI";
+
+    /**
+     * Número del Documento del empleado.
+     */
+    @NotNull(groups = DatosRegistroDireccion.class)
+    private String numeroDocumento;
+
+    /**
+     * Prefijo Internacional del teléfono móvil del empleado.
+     */
+    @NotNull(groups = DatosRegistroDireccion.class)
+    private String prefijoTelefono ="+34";
+
+    /**
+     * Número del teléfono móvil del empleado.
+     */
+    @Size(min = 9, message = "{Vaidacion.telefono.Size}", groups = DatosRegistroDireccion.class)
+    @Pattern(regexp = "^[0-9]+$",
+            message = "{Validacion.telefono.digitos}",
+            groups = DatosRegistroDireccion.class)
+    @NotBlank
+    private String telefonoMovil;
+
+
+
+    /**
      * Departamento del empleado.
      */
-    @NotNull
+    @NotNull(groups = DatosDepartamento.class)
     private String DepartamentoDTO;
 
     /**
      * Especialidades del empleado.
      */
-    @Size(min = 2)
+    @MinimoDosCheckbox(groups = DatosDepartamento.class)
+    @NotNull(groups = DatosDepartamento.class)
     private List<String> especialidadesSeleccionadas;
 
     /**

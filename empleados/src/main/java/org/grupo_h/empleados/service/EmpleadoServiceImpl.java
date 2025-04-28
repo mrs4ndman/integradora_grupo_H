@@ -1,11 +1,13 @@
 package org.grupo_h.empleados.service;
 
 import org.grupo_h.comun.entity.Empleado;
+import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.comun.repository.UsuarioRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final UsuarioRepository usuarioRepository;
     @Autowired
     private final GeneroRepository generoRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
     /**
      * Constructor para inyectar las dependencias necesarias.
@@ -40,11 +44,11 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     /**
      * Registra un nuevo empleado en el sistema.
      *
-     * @param empleadoDTO DTO con los datos del empleado a registrar.
+     * @param empleadoRegistroDTO DTO con los datos del empleado a registrar.
      * @return El empleado registrado.
      */
-//    @Override
-//    public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
+    @Override
+    public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoRegistroDTO) {
 //        DireccionDTO direccionDTO = empleadoDTO.getDireccion();
 //
 //        Direccion direccion = new Direccion();
@@ -86,29 +90,38 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 //            empleado.setFotografia(null);
 //            empleado.setArchivoNombreOriginal(null);
 //        }
-//        // Valida el género si existe
+////      Valida el género si existe
 //        Genero genero = (Genero) generoRepository.findByCodigoGenero(empleadoDTO.getGenero())
 //                .orElseThrow(() -> new IllegalArgumentException("Invalid gender code"));
-//
-//        // Mapea de DTO a Entity
-//        Empleado empleado = modelMapper.map(empleadoDTO, Empleado.class);
-//        empleado.setGenero(genero);
-//
-//        // Maneja la foto si es necesario
+
+        // Mapea de DTO a Entity
+        Empleado empleado = convierteDTOAEntidad(empleadoRegistroDTO);
+
+        // Maneja la foto si es necesario
 //        if (empleadoDTO.getFotografia() != null && empleadoDTO.getFotografia().length > 0) {
 //            empleado.setFotografia(empleadoDTO.getFotografia());
 //            empleado.setArchivoNombreOriginal(empleadoDTO.getArchivoNombreOriginal());
-//
-//
-//
-//            return empleadosRepository.save(empleado);
-//    }
+//        }
 
-    @Override
-    public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
-        return null;
+        return empleadosRepository.save(empleado);
+
     }
 
+
+    private EmpleadoRegistroDTO convierteEntidadADTO(Empleado empleado){
+        EmpleadoRegistroDTO empleadoRegistroDTO = new EmpleadoRegistroDTO();
+        return modelMapper.map(empleado, EmpleadoRegistroDTO.class);
+    }
+
+    private Empleado convierteDTOAEntidad(EmpleadoRegistroDTO empleadoRegistroDTO){
+        Empleado empleado = new Empleado();
+        return modelMapper.map(empleadoRegistroDTO, Empleado.class);
+    }
+    
+    
+    
+    
+//    Métodos detalle Empleado
     /**
      * Busca un empleado por su nombre.
      *
@@ -141,4 +154,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             return detalleDTO;
         });
     }
+    
+    
+    
+    
 }

@@ -16,7 +16,7 @@ public class EspecialidadesEmpleado {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private Long id;
 
     @Column(name="Especialidad",
             nullable = false)

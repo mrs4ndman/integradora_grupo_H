@@ -39,7 +39,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'org.fusesource.jansi:jansi:2.4.0'
-    implementation 'org.modelmapper:modelmapper:3.2.0'
 }
 
 tasks.named('test') {
