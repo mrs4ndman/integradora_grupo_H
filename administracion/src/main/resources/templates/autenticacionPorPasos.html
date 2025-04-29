@@ -76,12 +76,12 @@
           method="post">
         <h1>Iniciar Sesión</h1>
 
-        <div th:if="${not #lists.isEmpty(loginsAnteriores)}" id="contenedorSelect" style="display: block;">
+        <div th:if="${not #lists.isEmpty(loginsAnterioresAdmin)}" id="contenedorSelect" style="display: block;">
             <div class="mb-3">
                 <label for="loginsAnterioresSelect">Elige tu administrador:</label>
                 <select id="loginsAnterioresSelect" required>
                     <option value="" disabled selected>-- Selecciona tu email --</option>
-                    <th:block th:each="loginEmail : ${loginsAnteriores}">
+                    <th:block th:each="loginEmail : ${loginsAnterioresAdmin}">
                         <option th:value="${loginEmail}" th:text="${loginEmail}"></option>
                     </th:block>
                 </select>
@@ -93,10 +93,10 @@
         </div>
 
         <div id="emailInputContainer"
-             th:style="${not #lists.isEmpty(loginsAnteriores)} ? 'display: none;' : 'display: block;'">
+             th:style="${not #lists.isEmpty(loginsAnterioresAdmin)} ? 'display: none;' : 'display: block;'">
             <label for="email">Email del administrador:</label>
             <input type="text" id="email" name="email">
-            <button th:if="${not #lists.isEmpty(loginsAnteriores)}" type="button" onclick="mostrarListaUsuarios()">Volver a la lista de administradores</button>
+            <button th:if="${not #lists.isEmpty(loginsAnterioresAdmin)}" type="button" onclick="mostrarListaUsuarios()">Volver a la lista de administradores</button>
         </div>
 
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
@@ -107,10 +107,6 @@
         </div>
 
         <button type="submit">Siguiente</button>
-
-        <div>
-            <a th:href="@{/administrador/registro}">Registrar Administrador</a>
-        </div>
     </form>
 
     <form th:if="${pedirPassword}"

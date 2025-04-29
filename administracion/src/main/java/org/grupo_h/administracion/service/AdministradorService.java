@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface AdministradorService {
-    Administrador registrarAdministrador(AdministradorRegistroDTO administradorDTO);
-
     // Métodos para manejar intentos de login
     void procesarLoginFallido(String email);
 

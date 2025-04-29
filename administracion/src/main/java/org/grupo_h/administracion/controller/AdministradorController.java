@@ -4,21 +4,22 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
+import org.grupo_h.administracion.dto.UsuariosForm;
 import org.grupo_h.administracion.service.EmpleadoService;
+import org.grupo_h.administracion.service.UsuarioService;
 import org.grupo_h.comun.entity.Administrador;
-import org.grupo_h.administracion.dto.AdministradorRegistroDTO;
 import org.grupo_h.administracion.service.ParametrosService;
 import org.grupo_h.administracion.service.AdministradorService;
+import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.repository.AdministradorRepository;
+import org.grupo_h.comun.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -40,14 +41,24 @@ public class AdministradorController {
     private final EmpleadoService empleadoService;
     private final ParametrosService parametrosService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
     @Autowired
-    public AdministradorController(AdministradorService administradorService, AdministradorRepository administradorRepository, EmpleadoService empleadoService, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder) {
+    public AdministradorController(AdministradorService administradorService,
+                                   AdministradorRepository administradorRepository,
+                                   EmpleadoService empleadoService,
+                                   ParametrosService parametrosService,
+                                   BCryptPasswordEncoder passwordEncoder,
+                                   UsuarioRepository usuarioRepository,
+                                   UsuarioService usuarioService) {
         this.administradorService = administradorService;
         this.administradorRepository = administradorRepository;
         this.empleadoService = empleadoService;
         this.parametrosService = parametrosService;
         this.passwordEncoder = passwordEncoder;
+        this.usuarioRepository = usuarioRepository;
+        this.usuarioService = usuarioService;
     }
 
 
@@ -70,7 +81,7 @@ public class AdministradorController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("loginsAnteriores".equals(cookie.getName())) {
+                if ("loginsAnterioresAdmin".equals(cookie.getName())) {
                     String cookieValue = cookie.getValue();
                     // Comprobar que el valor de la cookie no sea nulo ni esté vacío antes de procesar
                     if (cookieValue != null && !cookieValue.isEmpty()) {
@@ -83,7 +94,7 @@ public class AdministradorController {
                                     .collect(Collectors.toList()); // Recolectar en la lista
                         } catch (IllegalArgumentException e) {
                             // Manejar posible error en Base64 si la cookie está corrupta
-                            System.err.println("Error al decodificar cookie loginsAnteriores: " + e.getMessage());
+                            System.err.println("Error al decodificar cookie loginsAnterioresAdmin: " + e.getMessage());
                             // Dejar previousLogins vacía
                         }
                     }
@@ -91,7 +102,7 @@ public class AdministradorController {
                 }
             }
         }
-        model.addAttribute("loginsAnteriores", previousLogins);
+        model.addAttribute("loginsAnterioresAdmin", previousLogins);
 
         if (logout != null) {
             model.addAttribute("mensaje", "Has cerrado sesión exitosamente.");
@@ -133,7 +144,7 @@ public class AdministradorController {
         }
 
         if (rememberMeTokenValue != null && !rememberMeTokenValue.isEmpty()) {
-            System.out.println("Encontrada cookie remember-me-admin: " + rememberMeTokenValue);
+            System.out.println("Encontrada cookie remember-me-token-admin: " + rememberMeTokenValue);
             Optional<Administrador> administradorOptByToken = administradorRepository.findByRememberMeToken(rememberMeTokenValue);
 
             if (administradorOptByToken.isPresent()) {
@@ -145,11 +156,11 @@ public class AdministradorController {
                         administradorRecordado.isHabilitado() && !administradorRecordado.isCuentaBloqueada()) {
 
                     System.out.println("Token válido para " + email + ". Re-autenticando.");
-                    session.setAttribute("emailAutenticado", administradorRecordado.getEmail());
-                    Integer contadorActual = (Integer) session.getAttribute("contadorConexiones");
+                    session.setAttribute("emailAutenticadoAdmin", administradorRecordado.getEmail());
+                    Integer contadorActual = (Integer) session.getAttribute("contadorConexionesAdmin");
                     int nuevoContador = (contadorActual == null) ? 1 : contadorActual + 1;
-                    session.setAttribute("contadorConexiones", nuevoContador);
-                    session.setAttribute("userAgent", request.getHeader("User-Agent"));
+                    session.setAttribute("contadorConexionesAdmin", nuevoContador);
+                    session.setAttribute("userAgentAdmin", request.getHeader("User-Agent"));
                     administradorRecordado.setSesionesTotales(administradorRecordado.getSesionesTotales() + 1);
                     administradorRepository.save(administradorRecordado);
                     redirectAttributes.addFlashAttribute("contadorConexionesFlash", nuevoContador);
@@ -200,7 +211,7 @@ public class AdministradorController {
             }
         }
 
-        session.setAttribute("emailParaLogin", email);
+        session.setAttribute("emailParaLoginAdmin", email);
         return "redirect:/administrador/inicio-sesion/password";
     }
 
@@ -214,7 +225,7 @@ public class AdministradorController {
      */
     @GetMapping("/inicio-sesion/password")
     public String mostrarFormularioPassword(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String email = (String) session.getAttribute("emailParaLogin");
+        String email = (String) session.getAttribute("emailParaLoginAdmin");
 
         if (email == null) {
             redirectAttributes.addFlashAttribute("error", "Por favor, introduce primero tu email.");
@@ -241,7 +252,7 @@ public class AdministradorController {
                                               HttpServletResponse response,
                                               HttpSession session,
                                               RedirectAttributes redirectAttributes) {
-        String email = (String) session.getAttribute("emailParaLogin");
+        String email = (String) session.getAttribute("emailParaLoginAdmin");
 
         if (email == null) {
             redirectAttributes.addFlashAttribute("error", "Error de sesión. Por favor, inicia sesión de nuevo.");
@@ -251,7 +262,7 @@ public class AdministradorController {
         Optional<Administrador> administradorOpt = administradorRepository.findByEmail(email);
 
         if (administradorOpt.isEmpty()) {
-            session.removeAttribute("emailParaLogin");
+            session.removeAttribute("emailParaLoginAdmin");
             redirectAttributes.addFlashAttribute("error", "Email no encontrado.");
             return "redirect:/administrador/inicio-sesion?error=true";
         }
@@ -278,7 +289,7 @@ public class AdministradorController {
         }
 
         if (debeRedirigirPorErrorPrevio) {
-            session.removeAttribute("emailParaLogin");
+            session.removeAttribute("emailParaLoginAdmin");
             redirectAttributes.addFlashAttribute("error", mensajeErrorPrevio);
             return "redirect:/administrador/inicio-sesion?error=true";
         }
@@ -289,7 +300,7 @@ public class AdministradorController {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
-                    if ("loginsAnteriores".equals(cookie.getName())) {
+                    if ("loginsAnterioresAdmin".equals(cookie.getName())) {
                         String decodedValue = new String(Base64.getUrlDecoder().decode(cookie.getValue()));
                         logins.addAll(Arrays.asList(decodedValue.split(",")));
                         break;
@@ -301,7 +312,7 @@ public class AdministradorController {
             String joinedLogins = String.join(",", logins);
             String encodedValue = Base64.getUrlEncoder().withoutPadding().encodeToString(joinedLogins.getBytes());
 
-            Cookie loginCookie = new Cookie("loginsAnteriores", encodedValue);
+            Cookie loginCookie = new Cookie("loginsAnterioresAdmin", encodedValue);
             loginCookie.setPath("/");
             loginCookie.setMaxAge(60 * 60 * 24 * 30); //30 días de duración
             loginCookie.setHttpOnly(true);
@@ -314,17 +325,17 @@ public class AdministradorController {
             }
             administradorRepository.save(administrador);
 
-            session.removeAttribute("emailParaLogin");
+            session.removeAttribute("emailParaLoginAdmin");
 
-            Integer contadorActual = (Integer) session.getAttribute("contadorConexiones");
+            Integer contadorActual = (Integer) session.getAttribute("contadorConexionesAdmin");
             int nuevoContador = (contadorActual == null) ? 1 : contadorActual + 1;
-            session.setAttribute("contadorConexiones", nuevoContador);
+            session.setAttribute("contadorConexionesAdmin", nuevoContador);
 
             redirectAttributes.addFlashAttribute("contadorConexionesFlash", nuevoContador);
 
-            session.setAttribute("emailAutenticado", administrador.getEmail());
-            session.setAttribute("contadorConexiones", 1);
-            session.setAttribute("userAgent", request.getHeader("User-Agent"));
+            session.setAttribute("emailAutenticadoAdmin", administrador.getEmail());
+            session.setAttribute("contadorConexionesAdmin", 1);
+            session.setAttribute("userAgentAdmin", request.getHeader("User-Agent"));
 
             // --- Lógica Remember Me ---
             try {
@@ -341,10 +352,10 @@ public class AdministradorController {
                 rememberMeCookie.setMaxAge(14 * 24 * 60 * 60); // 14 días
                 rememberMeCookie.setHttpOnly(true);
                 response.addCookie(rememberMeCookie);
-                System.out.println("Cookie remember-me-admin creada para: " + email);
+                System.out.println("Cookie remember-me-token-admin creada para: " + email);
 
             } catch (Exception e) {
-                System.err.println("Error al crear cookie remember-me-admin: " + e.getMessage());
+                System.err.println("Error al crear cookie remember-me-token-admin: " + e.getMessage());
             }
             // --- Fin Lógica Remember Me ---
 
@@ -369,7 +380,7 @@ public class AdministradorController {
                 }
 
                 redirectAttributes.addFlashAttribute("error", mensajeErrorFallido);
-                session.removeAttribute("emailParaLogin"); // Quitar email de la sesión
+                session.removeAttribute("emailParaLoginAdmin"); // Quitar email de la sesión
                 // Redirigir a la página de EMAIL (inicio-sesion)
                 return "redirect:/administrador/inicio-sesion?error=true";
 
@@ -391,7 +402,7 @@ public class AdministradorController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("loginsAnteriores".equals(cookie.getName())) {
+                if ("loginsAnterioresAdmin".equals(cookie.getName())) {
                     String decodedValue = new String(Base64.getUrlDecoder().decode(cookie.getValue()));
                     logins.addAll(Arrays.asList(decodedValue.split(",")));
                     break;
@@ -405,7 +416,7 @@ public class AdministradorController {
             String joinedLogins = String.join(",", logins);
             String encodedValue = Base64.getUrlEncoder().withoutPadding().encodeToString(joinedLogins.getBytes());
 
-            Cookie loginCookie = new Cookie("loginsAnteriores", encodedValue);
+            Cookie loginCookie = new Cookie("loginsAnterioresAdmin", encodedValue);
             loginCookie.setPath("/");
             loginCookie.setMaxAge(60 * 60 * 24 * 30); // Actualizar duración
             loginCookie.setHttpOnly(true);
@@ -427,7 +438,7 @@ public class AdministradorController {
      */
     @GetMapping("/info")
     public String mostrarInformacionAdministrador(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String email = (String) session.getAttribute("emailAutenticado");
+        String email = (String) session.getAttribute("emailAutenticadoAdmin");
 
         Integer contadorSesion = null;
 
@@ -435,16 +446,16 @@ public class AdministradorController {
             try {
                 contadorSesion = (Integer) model.getAttribute("contadorConexionesFlash");
                 if (contadorSesion != null) {
-                    session.setAttribute("contadorConexiones", contadorSesion);
+                    session.setAttribute("contadorConexionesAdmin", contadorSesion);
                 }
             } catch (Exception e) {
-                Object contadorObj = session.getAttribute("contadorConexiones");
+                Object contadorObj = session.getAttribute("contadorConexionesAdmin");
                 if (contadorObj instanceof Integer) {
                     contadorSesion = (Integer) contadorObj;
                 }
             }
         } else {
-            Object contadorObj = session.getAttribute("contadorConexiones");
+            Object contadorObj = session.getAttribute("contadorConexionesAdmin");
             if (contadorObj instanceof Integer) {
                 contadorSesion = (Integer) contadorObj;
             }
@@ -458,17 +469,17 @@ public class AdministradorController {
         Optional<Administrador> administradorOpt = administradorRepository.findByEmail(email);
         if (administradorOpt.isEmpty()) {
             session.invalidate();
-            redirectAttributes.addFlashAttribute("error", "Error al recuperar datos de administrador.");
+            redirectAttributes.addFlashAttribute("error", "Error al recuperar datos del administrador.");
             return "redirect:/administrador/inicio-sesion";
         }
 
         Administrador administrador = administradorOpt.get();
-        String userAgent = (String) session.getAttribute("userAgent");
+        String userAgentAdmin = (String) session.getAttribute("userAgentAdmin");
 
         model.addAttribute("email", email);
         model.addAttribute("totalLoginsAdministrador", administrador.getSesionesTotales());
-        model.addAttribute("loginsSesionActual", contadorSesion != null ? contadorSesion : 0);
-        model.addAttribute("navegadorActual", userAgent != null ? userAgent : "No disponible");
+        model.addAttribute("loginsSesionActualAdmin", contadorSesion != null ? contadorSesion : 0);
+        model.addAttribute("navegadorActualAdmin", userAgentAdmin != null ? userAgentAdmin : "No disponible");
 
         return "areaPersonal";
     }
@@ -486,7 +497,7 @@ public class AdministradorController {
         String referer = request.getHeader("Referer");
 
         // --- Limpiar Remember Me ---
-        String email = (session != null) ? (String) session.getAttribute("emailAutenticado") : null;
+        String email = (session != null) ? (String) session.getAttribute("emailAutenticadoAdmin") : null;
         if (email != null) {
             Optional<Administrador> administradorOpt = administradorRepository.findByEmail(email);
             if (administradorOpt.isPresent()) {
@@ -494,11 +505,11 @@ public class AdministradorController {
                 administrador.setRememberMeToken(null);
                 administrador.setRememberMeTokenExpiry(null);
                 administradorRepository.save(administrador);
-                System.out.println("Token remember-me limpiado para: " + email);
+                System.out.println("Token remember-me-token-admin limpiado para: " + email);
             }
         }
         // Borrar la cookie
-        Cookie removeCookie = new Cookie("remember-me-token", "");
+        Cookie removeCookie = new Cookie("remember-me-token-admin", "");
         removeCookie.setPath("/");
         removeCookie.setMaxAge(0);
         response.addCookie(removeCookie);
@@ -552,7 +563,8 @@ public class AdministradorController {
         return url;
     }
 
-/* ------------------------ CAMBIO A DETALLE ----------------------------- */
+    /* ------------------------ CAMBIO A DETALLE ----------------------------- */
+
     /**
      * Obtiene y muestra el detalle de un empleado específico.
      *
@@ -572,4 +584,34 @@ public class AdministradorController {
             return "detalleEmpleado"; // Página de error
         }
     }
+
+    /* ------------------------ CAMBIO A BLOQUEO / DESBLOQUEO ----------------------------- */
+    @GetMapping("/desbloqueo-usuarios")
+    public String desbloqueoUsuariosGet(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String email = (String) session.getAttribute("emailAutenticadoAdmin");
+
+        if (email == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta funcionalidad.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+
+        List<Usuario> usuariosActuales = usuarioService.obtenerTodosUsuarios();
+        System.out.println(usuariosActuales);
+        UsuariosForm form = new UsuariosForm();
+        form.setUsuariosActuales(usuariosActuales);
+        model.addAttribute("usuariosForm", form);
+
+        return "desbloqueoUsuarios";
+    }
+
+    @PostMapping("/guardarCambios")
+    public String guardarCambios(
+            @ModelAttribute("usuariosForm") UsuariosForm usuariosForm) {
+        // Extraemos la lista del wrapper
+        List<Usuario> lista = usuariosForm.getUsuariosActuales();
+        // Llamamos al servicio con la lista real
+        usuarioService.actualizarUsuarios(lista);
+        return "redirect:/administrador/desbloqueo-usuarios";
+    }
+
 }
