@@ -28,7 +28,7 @@ public class EmpleadoRegistroDTO {
     /**
      * Identificador único del empleado.
      */
-    private UUID UsuarioId;
+    private UUID id;
 
     /**
      * Nombre del empleado. No puede estar vacío.

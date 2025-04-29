@@ -14,4 +14,7 @@ public interface UsuarioService {
     void procesarLoginExitoso(String email);
 
     void desbloquearCuenta(String email);
+
+    boolean actualizarPassword(String email, String nuevaPassword);
+
 }

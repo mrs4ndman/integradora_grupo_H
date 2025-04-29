@@ -128,6 +128,22 @@ function validarRegistro() {
     }
 }
 
+// Highlight de los botones del NavBar en Registro Empleados
+document.addEventListener("DOMContentLoaded", function() {
+    let links = document.querySelectorAll("nav ul li a");
+    let currentPath = window.location.pathname;
+    console.log(currentPath)
+
+    links.forEach(link => {
+        window.onload;
+        let linkPath = new URL(link.href, window.location.origin).pathname;
+        console.log(link)
+        // Activa la clase si la URL coincide exactamente o si el currentPath comienza con linkPath
+        if (currentPath === linkPath || currentPath.startsWith(linkPath)) {
+            link.classList.add("active");
+        }
+    });
+});
 
 
 
