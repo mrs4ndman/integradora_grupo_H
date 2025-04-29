@@ -46,25 +46,17 @@ public class EmpleadoRegistroDTO {
      * Contenido del archivo adjunto.
      */
     @NotNull(groups = DatosPersonales.class)
-    @Size(max = 204800,
-            message = "{Validacion.fotografia.tamanio}",
-            groups = DatosPersonales.class)
-//    @Pattern(regexp = ".*\\.(gif|jpg|jpeg|png)$", flags = Pattern.Flag.CASE_INSENSITIVE,
-//            message = "{Validacion.fotografia.formato}",
-//            groups = DatosPersonales.class)
+    @Size(max = 204800, message = "{Validacion.fotografia.tamanio}")
     private byte[] fotografia;
 
-//    /**
-//     * Género del empleado. No requiere validación. Insertado en tabla por defecto
-//     */
-////    @Pattern(
-////            regexp = "^([MFO])$",
-////            message = "{Validacion.generoSeleccionado.notBlank}",
-////            groups = DatosPersonales.class
-////    )
-//    private Genero generoSeleccionado;
-
-
+    /**
+     * Género del empleado. No requiere validación. Insertado en tabla por defecto
+     */
+//    @Pattern(
+//            regexp = "^([MFO])$",
+//            message = "{Validacion.generoSeleccionado.notBlank}"
+//    )
+    private Genero generoSeleccionado;
 
     /**
      * Género del empleado. No requiere validación. Insertado en tabla por defecto
