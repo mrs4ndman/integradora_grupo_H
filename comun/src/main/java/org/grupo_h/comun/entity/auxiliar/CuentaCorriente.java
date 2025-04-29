@@ -10,15 +10,15 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
-@Entity
+@Embeddable
 public class CuentaCorriente {
 
-    /**
-     * Id de la cuenta corriente.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+//    /**
+//     * Id de la cuenta corriente.
+//     */
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long id;
 
     /**
      * Número IBAN de la cuenta corriente.
@@ -40,5 +40,7 @@ public class CuentaCorriente {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "banco_codigo_entidad_bancaria",
             foreignKey = @ForeignKey(name = "FK_CUENTA_ENTIDAD_BANCARIA"))
-    private EntidadBancaria banco;
+    private EntidadBancaria entidadBancaria;
+
+
 }

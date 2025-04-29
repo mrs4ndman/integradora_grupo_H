@@ -39,7 +39,7 @@ public class EmpleadoDetalleDTO {
     /**
      * Cuenta corriente del empleado.
      */
-    private CuentaCorriente cuentaCorriente;
+    private String cuentaCorriente;
 
     /**
      * Género del empleado.

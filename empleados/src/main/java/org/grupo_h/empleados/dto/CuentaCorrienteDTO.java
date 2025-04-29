@@ -1,5 +1,6 @@
 package org.grupo_h.empleados.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -13,14 +14,14 @@ public class CuentaCorrienteDTO {
     /**
      * Número de la cuenta corriente. Debe tener exactamente 20 caracteres.
      */
-    @NotNull
-    @Pattern(regexp = "^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$",
-            message = "{Validacion.cuentaCorriente.iban}")
-    private String cuentaCorriente;
+    @NotBlank(message = "{Validacion.numeroCuenta.NotBlank}")
+    @Pattern(regexp = "^[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}$",
+            message = "{Validacion.numeroCuenta.IBAN}")
+    private String cuentaCorrienteDTO;
 
     /**
      * Nombre del banco asociado a la cuenta corriente. No puede ser nulo.
      */
-    @NotNull
-    private String banco;
+    @NotNull(message = "{Validacion.entidadBancaria.NotNull}")
+    private Long entidadBancaria;
 }

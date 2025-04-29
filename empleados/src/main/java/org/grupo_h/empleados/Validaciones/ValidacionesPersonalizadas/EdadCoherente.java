@@ -1,4 +1,4 @@
-package org.grupo_h.empleados.validation;
+package org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

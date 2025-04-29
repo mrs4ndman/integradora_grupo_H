@@ -3,6 +3,7 @@ package org.grupo_h.comun.entity.auxiliar;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,5 @@ public class Pais {
     @Column(name = "Prefijo_Pais",
     unique = true)
     private String prefijoPais;
+
 }

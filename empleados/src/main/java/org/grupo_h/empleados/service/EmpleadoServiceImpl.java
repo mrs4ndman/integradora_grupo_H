@@ -1,9 +1,9 @@
 package org.grupo_h.empleados.service;
 
+import org.grupo_h.comun.entity.DatosEconomicos;
 import org.grupo_h.comun.entity.Empleado;
-import org.grupo_h.comun.entity.auxiliar.Genero;
-import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
-import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
+import org.grupo_h.comun.entity.auxiliar.*;
+import org.grupo_h.empleados.dto.*;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.modelmapper.ModelMapper;
 import org.grupo_h.comun.repository.GeneroRepository;
@@ -41,14 +41,30 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
         Empleado empleado = modelMapper.map(empleadoDTO, Empleado.class);
 
-        // Buscar el Género por su código y asignarlo al empleado
-        Genero genero = (Genero) generoRepository.findByCodigoGenero(empleadoDTO.getGenero())
-                .orElseThrow(() -> new IllegalArgumentException("Género no encontrado: " + empleadoDTO.getGenero()));
-        empleado.setGenero(genero);
+//        Direccion direccion = new Direccion();
+//        DireccionDTO direccionDTO = new DireccionDTO();
+//        direccion = modelMapper.map(direccionDTO, Direccion.class);
+//
+//        empleado.setDireccion(direccion);
+//
+//        CuentaCorriente cuentaCorriente = new CuentaCorriente();
+//        cuentaCorriente = modelMapper.map(cuentaCorriente, CuentaCorriente.class);
+//
+//        DatosEconomicos datosEconomicos = new DatosEconomicos();
+//        datosEconomicos.setCuentaCorriente(cuentaCorriente);
+//
+//        empleado.setDatosEconomicos(datosEconomicos);
+//
+//        TarjetaCredito tarjetaCredito = new TarjetaCredito();
+//        TarjetaCreditoDTO tarjetaCreditoDTO = new TarjetaCreditoDTO();
+//        tarjetaCredito = modelMapper.map(empleadoDTO, TarjetaCredito.class);
+
 
         // Persistir el empleado
         return empleadosRepository.save(empleado);
     }
+
+
 
     /**
      * Busca un empleado por su nombre.
@@ -70,7 +86,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                     detalleDTO.setApellidos(empleado.getApellidos());
                     detalleDTO.setFechaNacimiento(empleado.getFechaNacimiento());
                     detalleDTO.setDireccion(empleado.getDireccion());
-                    detalleDTO.setCuentaCorriente(empleado.getCuentaCorriente());
+//                    detalleDTO.setCuentaCorriente(empleado.getDatosEconomicos().getCuentaCorriente());
 
                     // Mapear el género
                     if (empleado.getGenero() != null) {

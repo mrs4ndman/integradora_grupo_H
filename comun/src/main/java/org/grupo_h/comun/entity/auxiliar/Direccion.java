@@ -31,7 +31,7 @@ public class Direccion {
      * Número de la dirección.
      */
     @Column(name = "numero")
-    private int numeroViaDireccionPpal;
+    private Integer numeroViaDireccionPpal;
 
     /**
      * Portal de la dirección.
@@ -43,7 +43,7 @@ public class Direccion {
      * Planta de la dirección.
      */
     @Column(name = "planta")
-    private String plantaDireccionPpal;
+    private Integer plantaDireccionPpal;
 
     /**
      * Puerta de la dirección.

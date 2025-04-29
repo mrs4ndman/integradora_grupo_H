@@ -19,16 +19,8 @@ public class GeneroServiceImpl implements GeneroService {
     // Evitar tener que Castear generoRepository en el controlador
     @Override
     public List<Genero> obtenerGeneros() {
-        List<Genero> generos = new ArrayList<>();
-        generoRepository.findAll().forEach(generos::add); // Convertir Iterable a List
-        return generos;
+        return generoRepository.findAll();
     }
 
-    // Implementación del método para asignar el primer género si el campo generoSeleccionado es nulo
-    @Override
-    public void asignarPrimerGeneroSiEsNulo(EmpleadoRegistroDTO empleadoRegistroDTO, List<Genero> generos) {
-        if (empleadoRegistroDTO.getGeneroSeleccionado() == null && !generos.isEmpty()) {
-            empleadoRegistroDTO.setGeneroSeleccionado(generos.get(0)); // Asignar el primer objeto Genero
-        }
-    }
+
 }

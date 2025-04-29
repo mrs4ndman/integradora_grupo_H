@@ -36,8 +36,8 @@ public class StarterEntities {
     @Autowired
     private TipoDocumentoRepository tipoDocumentoRepository;
 
-    @Autowired
-    private CuentaCorrienteRepository cuentaCorrienteRepository;
+//    @Autowired
+//    private CuentaCorrienteRepository cuentaCorrienteRepository;
 
     @Autowired
     private EntidadBancariaRepository entidadBancariaRepository;
@@ -166,8 +166,10 @@ public class StarterEntities {
     @PostConstruct
     public void initEspecialidadEmpleado() {
         if (especialidadesEmpleadoRepository.count() == 0) {
-            EspecialidadesEmpleado especialidad = EspecialidadesEmpleado.of("Especialista en Gestión de Inventarios");
-            especialidadesEmpleadoRepository.save(especialidad);
+            EspecialidadesEmpleado especialidad1 = EspecialidadesEmpleado.of("Especialista en Gestión de Inventarios");
+            EspecialidadesEmpleado especialidad2 = EspecialidadesEmpleado.of("Especialista en IT");
+            EspecialidadesEmpleado especialidad3 = EspecialidadesEmpleado.of("Especialista en Logística");
+            especialidadesEmpleadoRepository.saveAll(List.of(especialidad1, especialidad2, especialidad3));
         }
     }
 
@@ -204,4 +206,6 @@ public class StarterEntities {
             administradorRepository.save(admin3);
         }
     }
+
+
 }

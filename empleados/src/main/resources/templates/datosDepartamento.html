@@ -8,45 +8,57 @@
 </head>
 <body>
 
-<!--NavBar-->
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+    <!--NavBar-->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<h2>Formulario de Datos Económicos</h2>
+    <h2 th:text="#{Titulo.datosDepartamento}"/>
 
-<form th:action="@{/empleados/registro-departamento}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" >
+    <form th:action="@{/empleados/registro-departamento}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" >
 
-    <div>
-        <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
-        <select th:field="*{departamentoDTO}" id="departamento">
-            <option th:each="d : ${departamentos}"
-                    th:value="${d.codigo}"
-                    th:text="${d.nombreDept}">
-            </option>
-        </select>
-        <div th:if="${#fields.hasErrors('departamentoDTO')}" th:errors="*{departamentoDTO}" class="error"></div>
-    </div>
-    <br><br>
+        <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+        </div>
 
-    <th:block th:text="#{Datos-departamento.especialidades}"/>
-    <div th:each="e : ${especialidades}" >
-        <input
-                type="checkbox"
-                th:field="*{especialidadesSeleccionadas}"
-                th:value="${e.especialidad}"
-                id="especialiades"/>
-        <label for="especialiades" th:text="${e.especialidad}">Afición</label>
-    </div>
-    <div th:each="err : ${#fields.errors('especialidadesSeleccionadas')}" th:text="${err}" class="error"/>
+        <div>
+            <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
+            <select th:field="*{departamentoDTO}" id="departamento">
+                <option th:each="d : ${departamentos}"
+                        th:value="${d.codigo}"
+                        th:text="${d.nombreDept}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('departamentoDTO')}" th:errors="*{departamentoDTO}" class="error"></div>
+        </div>
+        <br><br>
 
-    <input type="button"
-           th:value="#{Boton.vaciar}"
-           onclick="vaciarFormulario()">
-    <br><br>
+        <th:block th:text="#{Datos-departamento.especialidades}"/>
+        <div th:each="e : ${especialidades}" >
+            <input
+                    type="checkbox"
+                    th:field="*{especialidadesSeleccionadasDTO}"
+                    th:value="${e.especialidad}"
+                    id="especialiades"/>
+            <label for="especialiades" th:text="${e.especialidad}">Afición</label>
+        </div>
+        <div th:each="err : ${#fields.errors('especialidadesSeleccionadasDTO')}" th:text="${err}" class="error"/>
 
-    <input type="submit"
-           th:value="#{Boton.siguiente}">
+        <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()">
+        <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()">
 
-</form>
+        <input type="button"
+               th:value="#{Boton.resetear}"
+               onclick="resetFormulario()">
+        <br><br>
 
+        <input type="button"
+               th:value="#{Boton.vaciar}"
+               onclick="vaciarFormulario()">
+        <br><br>
+
+        <input type="submit"
+               th:value="#{Boton.siguiente}">
+    </form>
+    <script th:src="@{/js/script.js}"></script>
 </body>
 </html>

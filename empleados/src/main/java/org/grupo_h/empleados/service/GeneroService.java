@@ -9,5 +9,5 @@ import java.util.List;
 @Service
 public interface GeneroService {
     List<Genero> obtenerGeneros();
-    void asignarPrimerGeneroSiEsNulo(EmpleadoRegistroDTO empleadoRegistroDTO, List<Genero> generos);
+//    void asignarPrimerGeneroSiEsNulo(EmpleadoRegistroDTO empleadoRegistroDTO, List<Genero> generos);
 }

@@ -40,6 +40,63 @@ function vaciarFormulario() {
     });
 }
 
+// Resetea el Formulario
+function resetFormulario() {
+    // Resetea el formulario
+    document.getElementById("formulario").reset();
+}
+
+
+// Highlight de los botones del NavBar en Registro Empleados
+document.addEventListener("DOMContentLoaded", function() {
+    let links = document.querySelectorAll("nav ul li a");
+    let currentPath = window.location.pathname;
+    console.log(currentPath)
+
+    links.forEach(link => {
+        window.onload;
+        let linkPath = new URL(link.href, window.location.origin).pathname;
+        console.log(link)
+        // Activa la clase si la URL coincide exactamente o si el currentPath comienza con linkPath
+        if (currentPath === linkPath || currentPath.startsWith(linkPath)) {
+            link.classList.add("active");
+        }
+    });
+});
+
+
+// ### BOTONES ###
+
+// Selecciona todos los géneros
+function seleccionaTodosCheckboxes() {
+    document.querySelectorAll('#especialiades').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+// Deselecciona todos los géneros
+function deseleccionaTodosCheckboxes() {
+    document.querySelectorAll('#especialiades').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
+function selectPrimerGenero() {
+    const radios = document.querySelectorAll('#genero');
+    if (radios.length > 0) {
+        radios[0].checked = true;
+    }
+}
+
+function deseleccionaTodosGeneros() {
+    document.querySelectorAll('#genero').forEach(radio => {
+        radio.checked = false;
+    });
+}
+
+
+
+
+// *************** FUNCIONES REGISTRO USUARIO ***********************
 // Validar contraseñas en registro
 function validarRegistro() {
     const contrasena = document.getElementById('contrasena');
@@ -71,22 +128,6 @@ function validarRegistro() {
     }
 }
 
-// Highlight de los botones del NavBar en Registro Empleados
-document.addEventListener("DOMContentLoaded", function() {
-    let links = document.querySelectorAll("nav ul li a");
-    let currentPath = window.location.pathname;
-    console.log(currentPath)
-
-    links.forEach(link => {
-        window.onload;
-        let linkPath = new URL(link.href, window.location.origin).pathname;
-        console.log(link)
-        // Activa la clase si la URL coincide exactamente o si el currentPath comienza con linkPath
-        if (currentPath === linkPath || currentPath.startsWith(linkPath)) {
-            link.classList.add("active");
-        }
-    });
-});
 
 
 

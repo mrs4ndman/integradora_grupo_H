@@ -24,8 +24,8 @@ public class Usuario {
      * Relación inversa: un Usuario puede no tener Empleado asociado,
      * por eso optional=true (valor por defecto).
      */
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private Empleado empleado;
+//    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+//    private Empleado empleado;
 
     /** Correo electrónico del usuario. No puede ser nulo. */
     @Column(nullable = false, unique = true)

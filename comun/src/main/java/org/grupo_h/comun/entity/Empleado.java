@@ -26,10 +26,10 @@ public class Empleado {
     @Id
     private UUID id;
 
-    @OneToOne(optional = false)
-    @MapsId
-    @JoinColumn(name = "id")
-    private Usuario usuario;
+//    @OneToOne(optional = false)
+//    @MapsId
+//    @JoinColumn(name = "id")
+//    private Usuario usuario;
 
     @Column(nullable = false)
     private String nombre;
@@ -98,20 +98,6 @@ public class Empleado {
     @Column(name = "archivo_nombre_original")
     private String archivoNombreOriginal;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "cuenta_corriente_id",
-            foreignKey = @ForeignKey(name = "FK_EMPLEADO_CUENTA_CORRIENTE"))
-    private CuentaCorriente cuentaCorriente;
-
-    @Column(name="salario", table = "datosEconomicos")
-    private Double salario;
-
-    @Column(name="comision", table = "datosEconomicos")
-    private Double comision;
-
-    @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<TarjetaCredito> tarjetasCredito;
-
     @ManyToOne
     @JoinColumn(name = "departamento_id")
     private Departamento departamento;
@@ -123,6 +109,32 @@ public class Empleado {
             inverseJoinColumns = @JoinColumn(name = "especialidades_empleado_id")
     )
     private List<EspecialidadesEmpleado> especialidadesEmpleado;
+
+
+
+
+
+    @Embedded
+    private DatosEconomicos datosEconomicos;
+
+
+
+    @ElementCollection
+    @CollectionTable(
+            name = "datosEconomicos",
+            joinColumns = @JoinColumn(name = "empleado_id"),
+            foreignKey = @ForeignKey(name = "FK_TARJETAS_EMPLEADO")
+    )
+    @AttributeOverrides({
+            @AttributeOverride(name = "tipoTarjetaId", column = @Column(name = "tarjeta_tipo_id")),
+            @AttributeOverride(name = "numeroTarjeta", column = @Column(name = "tarjeta_numero")),
+            @AttributeOverride(name = "mesCaducidad", column = @Column(name = "tarjeta_mes_cad")),
+            @AttributeOverride(name = "anioCaducidad", column = @Column(name = "tarjeta_anio_cad")),
+            @AttributeOverride(name = "cvc", column = @Column(name = "tarjeta_cvc"))
+    })
+    @OrderColumn(name = "tarjeta_orden")
+    private List<TarjetaCredito> tarjetasCredito;
+
 
     private Boolean aceptaInformacion;
 }

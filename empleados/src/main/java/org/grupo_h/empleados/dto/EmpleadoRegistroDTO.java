@@ -4,12 +4,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.grupo_h.comun.entity.auxiliar.Genero;
-import org.grupo_h.empleados.validation.EdadCoherente; // Importa la anotación personalizada
-import org.grupo_h.comun.entity.auxiliar.Genero;
+import org.grupo_h.comun.repository.GeneroRepository;
+import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.DniValido;
+import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.EdadCoherente; // Importa la anotación personalizada
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosDepartamento;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosPersonales;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosRegistroDireccion;
 import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.MinimoDosCheckbox;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -20,55 +22,57 @@ import java.util.UUID;
  * DTO que representa los datos de registro de un empleado.
  */
 @Data
-@EdadCoherente // Añade la validación de clase
+@EdadCoherente(groups = DatosPersonales.class) // Añade la validación de clase
 public class EmpleadoRegistroDTO {
 
     /**
      * Identificador único del empleado.
      */
-    private UUID id;
+    private UUID UsuarioId;
 
     /**
      * Nombre del empleado. No puede estar vacío.
      */
     @NotBlank(groups = DatosPersonales.class)
-    private String nombre;
+    private String nombreDTO;
 
     /**
      * Apellidos del empleado. No puede estar vacío.
      */
     @NotBlank(groups = DatosPersonales.class)
-    private String apellidos;
+    private String apellidosDTO;
 
     /**
      * Contenido del archivo adjunto.
      */
     @NotNull(groups = DatosPersonales.class)
-    @Size(max = 204800, message = "{Validacion.fotografia.tamanio}")
+    @Size(max = 204800,
+            message = "{Validacion.fotografia.tamanio}",
+            groups = DatosPersonales.class)
+//    @Pattern(regexp = ".*\\.(gif|jpg|jpeg|png)$", flags = Pattern.Flag.CASE_INSENSITIVE,
+//            message = "{Validacion.fotografia.formato}",
+//            groups = DatosPersonales.class)
     private byte[] fotografia;
 
-    /**
-     * Género del empleado. No requiere validación. Insertado en tabla por defecto
-     */
-//    @Pattern(
-//            regexp = "^([MFO])$",
-//            message = "{Validacion.generoSeleccionado.notBlank}"
-//    )
-    private Genero generoSeleccionado;
+//    /**
+//     * Género del empleado. No requiere validación. Insertado en tabla por defecto
+//     */
+////    @Pattern(
+////            regexp = "^([MFO])$",
+////            message = "{Validacion.generoSeleccionado.notBlank}",
+////            groups = DatosPersonales.class
+////    )
+//    private Genero generoSeleccionado;
 
 
-    /**
-     * Contenido del archivo adjunto. Limitado a GIF, JPG o PNG de máximo 200KB.
-     */
-    @Size(max = 204800, message = "{Validacion.fotografia.tamanio}")
-    private byte[] fotografia;
 
     /**
      * Género del empleado. No requiere validación. Insertado en tabla por defecto
      */
     @Pattern(
             regexp = "^([MFO])$",
-            message = "{Validacion.generoSeleccionado.notBlank}"
+            message = "{Validacion.generoSeleccionado.notBlank}",
+            groups = DatosPersonales.class
     )
     private String genero;
 
@@ -83,7 +87,7 @@ public class EmpleadoRegistroDTO {
 
 
     @NotNull
-    @Positive(message = "{Validacion.edad.Positive}")
+    @Positive(message = "{Validacion.edad.Positive}", groups = DatosPersonales.class)
     private Integer edad;
 
     /**
@@ -101,28 +105,30 @@ public class EmpleadoRegistroDTO {
     /**
      * Tipo de Documento del empleado.
      */
-    @NotNull
+    @NotNull(groups = DatosRegistroDireccion.class)
     private String tipoDocumento = "DNI";
 
     /**
      * Número del Documento del empleado.
      */
-    @NotNull
+    @DniValido(groups = DatosRegistroDireccion.class)
+    @NotNull(groups = DatosRegistroDireccion.class)
     private String numeroDocumento;
 
     /**
      * Prefijo Internacional del teléfono móvil del empleado.
      */
-    @NotNull
-    private String prefijoTelefono = "ES";
+    @NotNull(groups = DatosRegistroDireccion.class)
+    private String prefijoTelefono = "+34";
 
     /**
      * Número del teléfono móvil del empleado.
      */
-    @Size(min = 9, message = "{Vaidacion.telefono.Size}")
+    @Size(min = 9, message = "{Vaidacion.telefono.Size}",groups = DatosRegistroDireccion.class)
     @Pattern(regexp = "^[0-9]+$",
-            message = "{Validacion.telefono.digitos}")
-    @NotBlank
+            message = "{Validacion.telefono.digitos}",
+            groups = DatosRegistroDireccion.class)
+    @NotBlank(groups = DatosRegistroDireccion.class)
     private String telefonoMovil;
 
     /**
@@ -134,30 +140,25 @@ public class EmpleadoRegistroDTO {
     /**
      * Departamento del empleado.
      */
-    @NotNull
+    @NotNull(groups = DatosDepartamento.class)
     private String DepartamentoDTO;
 
     /**
      * Especialidades del empleado.
      */
-    @Size(min = 2)
-    private List<String> especialidadesSeleccionadas;
+    @MinimoDosCheckbox(groups = DatosDepartamento.class)
+    private List<String> especialidadesSeleccionadasDTO;
 
-    /**
-     * Cuenta corriente del empleado.
-     */
     @Valid
-    private CuentaCorrienteDTO cuentaCorriente;
+    private DatosEconomicosDTO datosEconomicosDTO;
 
-    private CuentaCorrienteDTO cuentaCorrienteDTO;
-
-    /**
-     * Nombre original del archivo adjunto.
-     */
-    @Pattern(regexp = ".*\\.(gif|jpg|jpeg|png)$", flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "{Validacion.fotografia.formato}")
-    private String archivoNombreOriginal;
-
-    private Boolean aceptaInformacion;
+    //    /**
+//     * Nombre original del archivo adjunto.
+//     */
+//
+//    private String archivoNombreOriginal;
+    @NotNull
+    @AssertTrue(message = "{Validacion.Consentimiento.true}")
+    private Boolean aceptaInformacionDTO;
 
 }

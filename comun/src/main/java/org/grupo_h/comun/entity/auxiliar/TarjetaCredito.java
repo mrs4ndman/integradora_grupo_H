@@ -9,34 +9,28 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Entity
+@Embeddable
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TarjetaCredito {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Column(name = "tipo_tarjeta_id" )
+    private Long tipoTarjetaId;
 
-    @OneToOne
-    @JoinColumn(name = "tipo_tipo")
-    private TipoTarjetaCredito tipo;
-
-    @Column(length = 20)
+    @Column(name = "numero_tarjeta")
     private String numeroTarjeta;
 
-    @Column(name = "Mes_Caducidad")
-    private String MesCaducidad;
+    @Column(name = "mes_caducidad")
+    private String mesCaducidad;
 
-    @Column(name = "Año_Caducidad")
+    @Column(name = "anio_caducidad")
     private String anioCaducidad;
 
-    @Column(name = "CVC")
+    @Column(name = "cvc")
     private String cvc;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "empleado_id", nullable = false)
-    private Empleado empleado;
+    @Transient
+    private TipoTarjetaCredito tipo; // Solo para lógica de negocio
 
 }

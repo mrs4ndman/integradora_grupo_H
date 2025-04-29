@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Service
 public interface EmpleadoService {
-    Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO);
+    Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) throws Exception;
 
     Optional<Empleado> findByNombreEmpleado(String nombreEmpleado);
 

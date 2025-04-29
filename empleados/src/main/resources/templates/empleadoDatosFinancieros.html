@@ -7,48 +7,116 @@
 </head>
 <body>
 
-<!--NavBar-->
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+    <!--NavBar-->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<h2>Formulario de Registro de Datos Financieros del Empleado</h2>
+    <h2 th:text="#{Titulo.datosFinancieros}"/>
 
-<!-- Se muestra un mensaje de éxito si lo hay -->
-<div th:if="${param.success}">
-    <p style="color: green;">¡Registro exitoso!</p>
-</div>
+    <!-- Se muestra un mensaje de éxito si lo hay -->
+    <div th:if="${param.success}">
+        <p style="color: green;">¡Registro exitoso!</p>
+    </div>
 
-<!-- Se muestra un mensaje de error si lo hay -->
-<div th:if="${error != null}">
-    <p style="color: red;" th:text="${error}"></p>
-</div>
+    <!-- Se muestra un mensaje de error si lo hay -->
+    <div th:if="${error != null}">
+        <p style="color: red;" th:text="${error}"></p>
+    </div>
 
-<form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" enctype="multipart/form-data">
-    <label for="banco">Banco:</label>
-    <input type="text" id="banco" th:field="*{cuentaCorrienteDTO.banco}"  />
-    <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.banco')}" th:errors="*{cuentaCorrienteDTO.banco}" class="error"></div>
-    <br><br>
+    <form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" enctype="multipart/form-data">
 
-    <label for="cuentaCorriente">Cuenta Corriente:</label>
-    <input type="text" id="cuentaCorriente" th:field="*{cuentaCorrienteDTO.cuentaCorriente}"  />
-    <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.cuentaCorriente')}" th:errors="*{cuentaCorrienteDTO.cuentaCorriente}" class="error"></div>
-    <br><br>
-
-    <label for="archivoAdjunto">Adjuntar documento:</label>
-    <input type="file" id="archivoAdjunto" name="archivoAdjunto" />
-    <br><br>
-
-    <input type="button"
-           th:value="#{Boton.vaciar}"
-           onclick="vaciarFormulario()">
-    <br><br>
-
-<!--    <button type="submit">Siguiente</button>-->
-    <input type="submit"
-           th:value="#{Boton.siguiente}">
-</form>
+        <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+        </div>
 
 
-<script th:src="@{/js/script.js}"></script>
+        <div>
+            <label for="entidadBancaria" th:text="#{Datos.Economicos.entidad }"></label>
+            <select th:field="*{datosEconomicosDTO.cuentaCorrienteDTO.entidadBancaria}" id="entidadBancaria">
+                <option th:each="e : ${entidades}"
+                        th:value="${e.codigoEntidadBancaria}"
+                        th:text="${e.nombreEntidadBancaria}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('datosEconomicosDTO.cuentaCorrienteDTO.entidadBancaria')}"
+                 th:errors="*{datosEconomicosDTO.cuentaCorrienteDTO.entidadBancaria}" class="error"></div>
+        </div>
+        <br><br>
+
+        <label for="cuentaCorriente" th:text="#{Datos.Economicos.cuenta}"/>
+        <input type="text" id="cuentaCorriente" th:field="*{datosEconomicosDTO.cuentaCorrienteDTO.cuentaCorrienteDTO}"  />
+        <div th:if="${#fields.hasErrors('datosEconomicosDTO.cuentaCorrienteDTO.cuentaCorrienteDTO')}"
+             th:errors="*{datosEconomicosDTO.cuentaCorrienteDTO.cuentaCorrienteDTO}" class="error"></div>
+        <br><br>
+
+        <label for="salario" th:text="#{Datos.Economicos.Salario}"/>
+        <input type="text" id="salario" th:field="*{datosEconomicosDTO.salarioDTO}"  />
+        <div th:if="${#fields.hasErrors('datosEconomicosDTO.salarioDTO')}"
+             th:errors="*{datosEconomicosDTO.salarioDTO}" class="error"></div>
+        <br><br>
+
+        <label for="comision" th:text="#{Datos.Economicos.Comision}"/>
+        <input type="text" id="comision" th:field="*{datosEconomicosDTO.comisionDTO}"  />
+        <div th:if="${#fields.hasErrors('datosEconomicosDTO.comisionDTO')}"
+             th:errors="*{datosEconomicosDTO.comisionDTO}" class="error"></div>
+        <br><br>
+
+        <h2 th:text="#{Titulo.tarjetaCredito}"/>
+
+        <div>
+            <label for="tipoTarjeta" th:text="#{Datos.Economicos.tipoTarjeta }"></label>
+            <select th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.tipoTarjetaCreditoDTO}" id="tipoTarjeta">
+                <option th:each="t : ${tiposTarjeta}"
+                        th:value="${t.codigoTipoTarjetaCredito}"
+                        th:text="${t.tipoTarjetaCredito}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.tipoTarjetaCreditoDTO')}"
+                 th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.tipoTarjetaCreditoDTO}" class="error"></div>
+        </div>
+        <br><br>
+
+        <label for="numeroTarjetaCredito" th:text="#{Datos.Economicos.numeroTarjetaCredito}"/>
+        <input type="text" id="numeroTarjetaCredito" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.numeroTarjetaCreditoDTO}"  />
+        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.numeroTarjetaCreditoDTO')}"
+             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.numeroTarjetaCreditoDTO}" class="error"></div>
+        <br><br>
+
+        <label for="mesCaducidadTarjetaCredito" th:text="#{Datos.Economicos.mesCaducidad}"/>
+        <input type="text" id="mesCaducidadTarjetaCredito" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.mesCaducidadTarjetaCreditoDTO}"  />
+        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.mesCaducidadTarjetaCreditoDTO')}"
+             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.mesCaducidadTarjetaCreditoDTO}" class="error"></div>
+        <br><br>
+
+        <label for="anioCaducidadTarjetaCredito" th:text="#{Datos.Economicos.anioCaducidad}"/>
+        <input type="text" id="anioCaducidadTarjetaCredito" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.anioCaducidadTarjetaCreditoDTO}"  />
+        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.anioCaducidadTarjetaCreditoDTO')}"
+             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.anioCaducidadTarjetaCreditoDTO}" class="error"></div>
+        <br><br>
+
+        <label for="cvc" th:text="#{Datos.Economicos.cvc}"/>
+        <input type="text" id="cvc" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.CVCDTO}"  />
+        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.CVCDTO')}"
+             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.CVCDTO}" class="error"></div>
+        <br><br>
+
+
+        <input type="button"
+               th:value="#{Boton.resetear}"
+               onclick="resetFormulario()">
+        <br><br>
+
+        <input type="button"
+               th:value="#{Boton.vaciar}"
+               onclick="vaciarFormulario()">
+        <br><br>
+
+        <input type="submit"
+               th:value="#{Boton.siguiente}">
+    </form>
+
+
+    <script th:src="@{/js/script.js}"></script>
 
 </body>
 </html>
