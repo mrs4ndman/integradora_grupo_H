@@ -90,6 +90,7 @@
                 <button type="button" onclick="eliminarUsuarioSeleccionado()">Eliminar Seleccionado</button>
                 <button type="button" onclick="mostrarInputManual()">Introducir email manualmente</button>
             </div>
+            <br>
         </div>
 
         <div id="emailInputContainer"
@@ -124,11 +125,42 @@
         </div>
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
         <button type="submit">Ingresar</button>
-        <a href="#" onclick="recuperarContraseña()" style="display: block; margin: 10px 0;">¿Olvidaste tu
+        <a href="/usuarios/cambiar-password" style="display: block; margin: 10px 0;">¿Olvidaste tu
             contraseña?</a>
     </form>
 
+    <div th:if="${resetearPassword}">
+        <h3>Cambiar Contraseña Directamente</h3>
+        <p>Introduce tu nueva contraseña.</p>
+        <form th:action="@{/usuarios/cambiar-password}" method="post" th:object="${reseteoContraseñaData}">
+            <div>
+                <label for="nuevaContraseña">Nueva Contraseña:</label>
+                <input type="password" id="nuevaContraseña"
+                       th:field="*{nuevaContraseña}"  required autofocus="autofocus"
+                       th:errorclass="is-invalid"/>
+                <div class="error-message" th:if="${#fields.hasErrors('nuevaContraseña')}" th:errors="*{nuevaContraseña}">
+                Error en la contraseña
+            </div>
+            </div>
+            <div>
+                <label for="confirmarNuevaContraseña">Confirmar Nueva Contraseña:</label>
+                <input type="password" id="confirmarNuevaContraseña"
+                       th:field="*{confirmarNuevaContraseña}" required
+                       th:errorclass="is-invalid"/>
+                <div class="error-message" th:if="${#fields.hasErrors('confirmarNuevaContraseña')}" th:errors="*{confirmarNuevaContraseña}">
+            Error en la confirmación
+            </div>
+            </div>
+            <div th:if="${error}" class="error-message" th:text="${error}"></div>
+            <button type="submit">Guardar Nueva Contraseña</button>
+        </form>
+        <div>
+            <a th:href="@{/usuarios/inicio-sesion}">Cancelar</a>
+        </div>
+    </div>
+
 </div>
+<script th:src="@{/js/script.js}"></script>
 <script>
     // Referencias a los elementos del DOM
     const formEmail = document.getElementById('formEmail'); // Formulario

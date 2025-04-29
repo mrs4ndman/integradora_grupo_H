@@ -129,4 +129,25 @@ public class UsuarioServiceImpl implements UsuarioService {
             }
         }
     }
+
+    @Override
+    public boolean actualizarPassword(String email, String nuevaPassword) {
+        if (email == null || email.isEmpty() || nuevaPassword == null || nuevaPassword.isEmpty()) {
+            return false;
+        }
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            try {
+                usuario.setContrasena(passwordEncoder.encode(nuevaPassword));
+                usuarioRepository.save(usuario);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
 }

@@ -40,36 +40,66 @@ function vaciarFormulario() {
     });
 }
 
-// Validar contraseñas en registro
-function validarRegistro() {
-    const contrasena = document.getElementById('contrasena');
-    const confirmarContrasena = document.getElementById('confirmarContrasena');
-    const errorDiv = document.getElementById('passwordError');
+// // Validar contraseñas en registro
+// function validarRegistro() {
+//     const contrasena = document.getElementById('contrasena');
+//     const confirmarContrasena = document.getElementById('confirmarContrasena');
+//     const errorDiv = document.getElementById('passwordError');
+//
+//     if (contrasena.value !== confirmarContrasena.value) {
+//         // Muestra el mensaje de error
+//         if (errorDiv) {
+//             errorDiv.style.display = 'block';
+//         }
+//         // Añade un borde rojo para indicar el error (opcional)
+//         confirmarContrasena.style.borderColor = 'red';
+//         contrasena.style.borderColor = 'red';
+//         // Enfoca el campo de confirmación
+//         confirmarContrasena.focus();
+//         // Evita que el formulario se envíe
+//         return false;
+//     } else {
+//         // Oculta el mensaje de error si las contraseñas coinciden
+//         if (errorDiv) {
+//             errorDiv.style.display = 'none';
+//         }
+//         // Restablece el borde (opcional)
+//         confirmarContrasena.style.borderColor = '';
+//         contrasena.style.borderColor = '';
+//         // Permite que el formulario continúe (se llamará a confirmarAccionFormulario)
+//         return true;
+//     }
+// }
 
-    if (contrasena.value !== confirmarContrasena.value) {
-        // Muestra el mensaje de error
-        if (errorDiv) {
-            errorDiv.style.display = 'block';
-        }
-        // Añade un borde rojo para indicar el error (opcional)
-        confirmarContrasena.style.borderColor = 'red';
-        contrasena.style.borderColor = 'red';
-        // Enfoca el campo de confirmación
-        confirmarContrasena.focus();
-        // Evita que el formulario se envíe
-        return false;
-    } else {
-        // Oculta el mensaje de error si las contraseñas coinciden
-        if (errorDiv) {
-            errorDiv.style.display = 'none';
-        }
-        // Restablece el borde (opcional)
-        confirmarContrasena.style.borderColor = '';
-        contrasena.style.borderColor = '';
-        // Permite que el formulario continúe (se llamará a confirmarAccionFormulario)
-        return true;
-    }
-}
+// function validarContraseña() {
+//     const contrasena = document.getElementById('contraseña');
+//     const confirmarContrasena = document.getElementById('confirmarContraseña');
+//     const errorDiv = document.getElementById('passwordError');
+//
+//     if (contrasena.value !== confirmarContrasena.value) {
+//         // Muestra el mensaje de error
+//         if (errorDiv) {
+//             errorDiv.style.display = 'block';
+//         }
+//         // Añade un borde rojo para indicar el error (opcional)
+//         confirmarContrasena.style.borderColor = 'red';
+//         contrasena.style.borderColor = 'red';
+//         // Enfoca el campo de confirmación
+//         confirmarContrasena.focus();
+//         // Evita que el formulario se envíe
+//         return false;
+//     } else {
+//         // Oculta el mensaje de error si las contraseñas coinciden
+//         if (errorDiv) {
+//             errorDiv.style.display = 'none';
+//         }
+//         // Restablece el borde (opcional)
+//         confirmarContrasena.style.borderColor = '';
+//         contrasena.style.borderColor = '';
+//         // Permite que el formulario continúe (se llamará a confirmarAccionFormulario)
+//         return true;
+//     }
+// }
 
 // Highlight de los botones del NavBar en Registro Empleados
 document.addEventListener("DOMContentLoaded", function() {

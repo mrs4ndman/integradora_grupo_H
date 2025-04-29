@@ -56,13 +56,6 @@ public class EmpleadoRegistroDTO {
 //    )
     private Genero generoSeleccionado;
 
-
-    /**
-     * Contenido del archivo adjunto. Limitado a GIF, JPG o PNG de máximo 200KB.
-     */
-    @Size(max = 204800, message = "{Validacion.fotografia.tamanio}")
-    private byte[] fotografia;
-
     /**
      * Género del empleado. No requiere validación. Insertado en tabla por defecto
      */
