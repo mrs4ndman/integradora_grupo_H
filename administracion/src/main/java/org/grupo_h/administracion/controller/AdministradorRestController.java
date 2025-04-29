@@ -31,19 +31,4 @@ public class AdministradorRestController {
         this.administradorService = administradorService;
     }
 
-    /**
-     * Registra un nuevo administrador.
-     *
-     * @param administradorDTO DTO con los datos del administrador a registrar.
-     * @return Respuesta con el administrador creado o un mensaje de error.
-     */
-    @PostMapping("/registro")
-    public ResponseEntity<?> registrarAdministrador(@Validated @RequestBody AdministradorRegistroDTO administradorDTO) {
-        try {
-            Administrador administradorCreado = administradorService.registrarAdministrador(administradorDTO);
-            return new ResponseEntity<>(administradorCreado, HttpStatus.CREATED);
-        } catch (RuntimeException ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
 }

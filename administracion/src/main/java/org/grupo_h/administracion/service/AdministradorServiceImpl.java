@@ -37,32 +37,6 @@ public class AdministradorServiceImpl implements AdministradorService {
     }
 
     /**
-     * Registra un nuevo administrador en el sistema.
-     *
-     * @param administradorRegistroDTO DTO con los datos del administrador a registrar.
-     * @return El administrador registrado.
-     * @throws RuntimeException Si el nombre de administrador ya existe.
-     */
-    @Override
-    public Administrador registrarAdministrador(AdministradorRegistroDTO administradorRegistroDTO) {
-        Administrador administradorDelDTO = modelMapper.map(administradorRegistroDTO, Administrador.class);
-        if (administradorRepository.findByEmail(administradorRegistroDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("El email ya existe");
-        }
-
-//        administrador.setNombreAdministrador(administradorDTO.getNombreAdministrador());
-        Administrador administrador = new Administrador();
-        administrador.setEmail(administradorRegistroDTO.getEmail());
-        String encodedPassword = passwordEncoder.encode(administradorRegistroDTO.getContrasena());
-        administrador.setContrasena(encodedPassword);
-        administrador.setHabilitado(true);
-        administrador.setCuentaBloqueada(false);
-        administrador.setIntentosFallidos(0);
-
-        return administradorRepository.save(administrador);
-    }
-
-    /**
      * Procesa un intento de inicio de sesión fallido.
      *
      * @param email Email que intentó iniciar sesión.

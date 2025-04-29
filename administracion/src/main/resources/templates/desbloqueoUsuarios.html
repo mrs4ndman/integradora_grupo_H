@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios</title>
+</head>
+<body>
+<div>
+    <h1>Gestión de Usuarios</h1>
+    <form th:action="@{/administrador/guardarCambios}"
+          th:object="${usuariosForm}"
+          method="post">
+        <table>
+            <thead>
+            <tr><th>Email</th><th>Bloqueada</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="usuario, stat : *{usuariosActuales}">
+                <!-- campo oculto para id -->
+                <input type="hidden"
+                       th:field="*{usuariosActuales[__${stat.index}__].id}" />
+
+                <td th:text="*{usuariosActuales[__${stat.index}__].email}"></td>
+                <td>
+                    <input type="checkbox"
+                           th:field="*{usuariosActuales[__${stat.index}__].cuentaBloqueada}" />
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <button type="submit">Guardar Cambios</button>
+    </form>
+</div>
+</body>
+</html>
