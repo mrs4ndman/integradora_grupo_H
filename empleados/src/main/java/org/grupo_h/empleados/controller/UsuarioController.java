@@ -6,17 +6,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.grupo_h.comun.entity.Usuario;
+import org.grupo_h.empleados.dto.ReseteoContrasenaDTO;
 import org.grupo_h.empleados.dto.UsuarioRegistroDTO;
 import org.grupo_h.comun.repository.UsuarioRepository;
 import org.grupo_h.empleados.service.ParametrosService;
 import org.grupo_h.empleados.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -82,7 +79,8 @@ public class UsuarioController {
 
         try {
             usuarioService.registrarUsuario(usuarioRegistroDTO);
-        } catch (RuntimeException ex) {
+        } catch (Exception ex) {
+            result.reject("registroError", "No se pudo completar el registro: " + ex.getMessage());
             model.addAttribute("error", ex.getMessage());
             return "registro";
         }
@@ -217,9 +215,14 @@ public class UsuarioController {
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
+        if (usuarioOpt.isEmpty()){
+            redirectAttributes.addFlashAttribute("error", "Usuario no encontrado");
+            return "redirect:/usuarios/inicio-sesion?error=true";
+        }
+
         Usuario usuario = usuarioOpt.get();
 
-        if (usuarioOpt.isEmpty() || !usuarioOpt.get().isHabilitado()) {
+        if (!usuarioOpt.get().isHabilitado()) {
             redirectAttributes.addFlashAttribute("error", "Usuario no encontrado o deshabilitado");
             return "redirect:/usuarios/inicio-sesion?error=true";
         }
@@ -238,6 +241,7 @@ public class UsuarioController {
                 usuarioService.desbloquearCuenta(email);
             }
         }
+
 
         session.setAttribute("emailParaLogin", email);
         return "redirect:/usuarios/inicio-sesion/password";
@@ -554,28 +558,63 @@ public class UsuarioController {
         return "redirect:/usuarios/inicio-sesion?logout=true";
     }
 
-    /**
-     * Recupera la contraseña de un usuario (¡Inseguro!).
-     *
-     * @param email Email del usuario.
-     * @return Respuesta con la contraseña o mensaje de error.
-     */
-    @GetMapping("/recuperar-contraseña")
-    @ResponseBody
-    public ResponseEntity<String> recuperarContrasenia(
-            @RequestParam(value = "email", required = false) String email) {
+    @GetMapping("/cambiar-password")
+    public String mostrarFormularioCambioDirecto(HttpSession session, RedirectAttributes redirectAttributes, Model model) {
+        String emailEnSesion = (String) session.getAttribute("emailParaLogin");
 
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body("Falta el parámetro 'usuario'");
+        // Verifica si el usuario fue identificado previamente en el intento de login
+        if (emailEnSesion == null || emailEnSesion.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Proceso inválido. Por favor, empieza de nuevo desde el inicio de sesión.");
+            return "redirect:/usuarios/inicio-sesion";
         }
 
-        Optional<Usuario> userOpt = usuarioRepository.findByEmail(email);
-
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        if (!model.containsAttribute("reseteoContraseñaData")) {
+            model.addAttribute("reseteoContraseñaData", new ReseteoContrasenaDTO());
         }
 
-        return ResponseEntity.ok(usuarioRepository.findByEmail(email).get().getContrasena());
+        model.addAttribute("resetearPassword", true);
+        model.addAttribute("emailParaLogin", emailEnSesion);
+        return "autenticacionPorPasos";
+    }
+
+    @PostMapping("/cambiar-password")
+    public String procesarCambioDirecto(
+            @Valid @ModelAttribute("reseteoContraseñaData") ReseteoContrasenaDTO reseteoContraseñaData,
+            BindingResult result,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        String emailEnSesion = (String) session.getAttribute("emailParaLogin");
+
+        if (emailEnSesion == null || emailEnSesion.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Error inesperado. Por favor, inicia sesión de nuevo.");
+            session.removeAttribute("emailParaLogin");
+            return "redirect:/usuarios/inicio-sesion";
+        }
+
+//        session.removeAttribute("emailParaLogin");
+
+        // 3. VERIFICAR RESULTADOS DE VALIDACIÓN del DTO
+        if (result.hasErrors()) {
+            // Guardar los errores y el DTO en Flash para mostrarlos en la vista
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.reseteoContraseñaData", result);
+            redirectAttributes.addFlashAttribute("reseteoContraseñaData", reseteoContraseñaData);
+//            redirectAttributes.addFlashAttribute("error", "La contraseña introducida no cumple los requisitos.");
+            return "redirect:/usuarios/cambiar-password";
+        }
+
+        // 4. Si la validación es OK, proceder a actualizar
+        // Obtener la contraseña validada del DTO
+        String nuevaPasswordValidada = reseteoContraseñaData.getNuevaContraseña();
+
+        boolean actualizado = usuarioService.actualizarPassword(emailEnSesion, nuevaPasswordValidada);
+
+        if (actualizado) {
+            redirectAttributes.addFlashAttribute("mensaje", "Contraseña actualizada correctamente. Ya puedes iniciar sesión.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "No se pudo actualizar la contraseña. Inténtalo de nuevo.");
+        }
+        return "redirect:/usuarios/inicio-sesion";
     }
 
     /**

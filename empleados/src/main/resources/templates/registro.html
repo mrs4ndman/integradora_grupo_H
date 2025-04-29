@@ -4,9 +4,71 @@
     <meta charset="UTF-8">
     <title>Registro de Usuario</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #f8f9fa;
+            color: #000000;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .error-message {
+            color: red;
+            margin: 10px 0;
+        }
+
+        .user-agent-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+        }
+    </style>
 </head>
+
 <body>
-<h1>Registro de Usuario</h1>
 
 <!-- Se muestra un mensaje de éxito si lo hay -->
 <div th:if="${param.success}">
@@ -18,13 +80,12 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<div id="passwordError" style="color: red; display: none;">
-    Las contraseñas no coinciden.
-</div>
 
 <!-- El formulario usa el objeto 'usuarioRegistroDTO' para hacer binding de sus campos -->
 <form th:action="@{/usuarios/registro}" th:object="${usuarioRegistroDTO}" method="post"
-      onsubmit="if(!validarRegistro()) { return false; } return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo usuario?');">
+      onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo usuario?');">
+    <h1>Registro de Usuario</h1>
+
     <div>
         <label for="email">Email</label>
         <input type="email" th:field="*{email}" id="email" placeholder="tuemail@dominio.com" />
@@ -38,6 +99,7 @@
     <div>
         <label for="confirmarContrasena">Confirmar Contraseña</label>
         <input type="password" id="confirmarContrasena" name="confirmarContrasena" required/>
+        <div th:if="${#fields.hasErrors('confirmarContrasena')}" th:errors="*{confirmarContrasena}" class="error"></div>
     </div>
     <div>
         <button type="submit">Registrarse</button>
