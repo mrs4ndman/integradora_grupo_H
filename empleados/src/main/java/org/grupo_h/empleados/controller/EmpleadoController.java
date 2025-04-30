@@ -5,10 +5,7 @@ package org.grupo_h.empleados.controller;
 import jakarta.servlet.http.HttpSession;
 import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.comun.repository.*;
-import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosDepartamento;
-import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosFinancieros;
-import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosPersonales;
-import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosRegistroDireccion;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.*;
 import org.grupo_h.empleados.dto.*;
 import org.grupo_h.empleados.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,10 +75,10 @@ public class EmpleadoController {
      * Crea o recupera un objeto EmpleadoRegistroDTO de la sesión.
      *
      * @param session La sesión HTTP actual.
-     * @return El objeto EmpleadoDto.
+     * @return El objeto EmpleadoRegistroDTO.
      */
     @ModelAttribute("empleadoRegistroDTO")
-    private EmpleadoRegistroDTO getEmpleadoDTO(HttpSession session) {
+    private EmpleadoRegistroDTO getEmpleadoRegistroDTO(HttpSession session) {
         EmpleadoRegistroDTO empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
         if (empleadoRegistroDTO == null) {
             empleadoRegistroDTO = new EmpleadoRegistroDTO();
@@ -120,8 +117,8 @@ public class EmpleadoController {
 //        List<Genero> gen = generoService.obtenerGeneros();
 
             List<Genero> generos = generoService.obtenerGeneros();
-            if (empleadoRegistroDTO.getGenero() == null && !generos.isEmpty()) {
-                empleadoRegistroDTO.setGenero(generos.get(0).getCodigoGenero()); // Set first as default
+            if (empleadoRegistroDTO.getGeneroSeleccionadoDTO() == null && !generos.isEmpty()) {
+                empleadoRegistroDTO.getGeneroSeleccionadoDTO(); // Set first as default
             }
 
 
@@ -301,7 +298,8 @@ public class EmpleadoController {
                 BindingResult result,
                 HttpSession session,
                 Model model) {
-            EmpleadoRegistroDTO dtoSesion = getEmpleadoDTO(session);
+            // ModelAttribute instanciado arriba
+            EmpleadoRegistroDTO dtoSesion = getEmpleadoRegistroDTO(session);
 
             model.addAttribute("entidades", entidadBancariaRepository.findAll());
             model.addAttribute("tiposTarjeta", tipoTarjetaService.listarTipoTarjetaCredito());
@@ -339,28 +337,40 @@ public class EmpleadoController {
         @GetMapping("/registro-finales")
         public String datosFinalesGet(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session, Model model) {
             empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
-            if (empleadoRegistroDTO == null) {
-                empleadoRegistroDTO = new EmpleadoRegistroDTO();
-            }
 
-            // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
-            if (empleadoRegistroDTO.getDireccionDTO() == null) {
-                empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
-            }
-
-            if (empleadoRegistroDTO.getDatosEconomicosDTO() == null) {
-                DatosEconomicosDTO datosEconomicos = new DatosEconomicosDTO();
-                datosEconomicos.setCuentaCorrienteDTO(new CuentaCorrienteDTO());
-                datosEconomicos.setTarjetaCreditoDTO(new TarjetaCreditoDTO());
-                empleadoRegistroDTO.setDatosEconomicosDTO(datosEconomicos);
-            } else {
-                if (empleadoRegistroDTO.getDatosEconomicosDTO().getCuentaCorrienteDTO() == null) {
-                    empleadoRegistroDTO.getDatosEconomicosDTO().setCuentaCorrienteDTO(new CuentaCorrienteDTO());
-                }
-                if (empleadoRegistroDTO.getDatosEconomicosDTO().getTarjetaCreditoDTO() == null) {
-                    empleadoRegistroDTO.getDatosEconomicosDTO().setTarjetaCreditoDTO(new TarjetaCreditoDTO());
-                }
-            }
+//            TarjetaCreditoDTO tarjetaCreditoDTO = null;
+//
+//            if (empleadoRegistroDTO == null) {
+//                empleadoRegistroDTO = new EmpleadoRegistroDTO();
+//            }
+//
+//            // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
+//            if (empleadoRegistroDTO.getDireccionDTO() == null) {
+//                empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
+//            }
+//
+//            if (empleadoRegistroDTO.getDatosEconomicosDTO() == null) {
+//                DatosEconomicosDTO datosEconomicos = new DatosEconomicosDTO();
+//                datosEconomicos.setCuentaCorrienteDTO(new CuentaCorrienteDTO());
+//                empleadoRegistroDTO.setDatosEconomicosDTO(datosEconomicos);
+//
+//                TipoTarjetaCreditoDTO tipoTarjetaCreditoDTO = new TipoTarjetaCreditoDTO();
+//                tarjetaCreditoDTO = new TarjetaCreditoDTO();
+//                tarjetaCreditoDTO.setTipoTarjetaCreditoDTO(tipoTarjetaCreditoDTO);
+//
+//            } else {
+//                if (empleadoRegistroDTO.getDatosEconomicosDTO().getCuentaCorrienteDTO() == null) {
+//                    empleadoRegistroDTO.getDatosEconomicosDTO().setCuentaCorrienteDTO(new CuentaCorrienteDTO());
+//                }
+//                if (empleadoRegistroDTO.getTarjetasCreditoDTO() == null) {
+//                    // Crear una nueva tarjeta de crédito en lugar de usar la variable que podría ser nula
+//                    List<TarjetaCreditoDTO> nuevasTarjetas = new ArrayList<>();
+//                    TarjetaCreditoDTO nuevaTarjeta = new TarjetaCreditoDTO();
+//                    nuevaTarjeta.setTipoTarjetaCreditoDTO(new TipoTarjetaCreditoDTO());
+//                    nuevasTarjetas.add(nuevaTarjeta);
+//                    empleadoRegistroDTO.setTarjetasCreditoDTO(nuevasTarjetas);
+//                }
+//            }
             model.addAttribute("datos", empleadoRegistroDTO);
 //        if (empleadoRegistroDTO.getArchivoNombreOriginal() != null && !empleadoRegistroDTO.getArchivoNombreOriginal().isEmpty()) {
 //            model.addAttribute("nombreArchivo", empleadoRegistroDTO.getArchivoNombreOriginal());
@@ -378,8 +388,19 @@ public class EmpleadoController {
          * @return Redirección a la vista de resumen o al formulario en caso de error.
          */
         @PostMapping("/registro-finales")
-        public String datosFinalesPost(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, RedirectAttributes redirectAttrs, HttpSession session, Model model) {
+        public String datosFinalesPost(@Validated(DatosFinales.class) @ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
+                                       BindingResult result,
+                                       RedirectAttributes redirectAttrs,
+                                       HttpSession session,
+                                       Model model) {
             EmpleadoRegistroDTO dtoSesion = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
+
+            if (result.hasErrors()) {
+                // Imprimir los errores para depurar
+                result.getAllErrors().forEach(error -> System.out.println(error.toString()));
+                return "empleadoDatosFinales";
+            }
+
             // Mensaje que aparece en la ventana de alerta tras guardar datos
             redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
 

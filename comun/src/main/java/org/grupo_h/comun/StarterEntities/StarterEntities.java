@@ -109,27 +109,27 @@ public class StarterEntities {
                         });
 
                 EntidadBancaria santander = new EntidadBancaria();
-                santander.setSiglasEntidad("SAN");
-                santander.setNombreEntidadBancaria("Banco Santander");
-                santander.setCodigoEntidadBancaria("0049");
+                santander.setSiglas("SAN");
+                santander.setNombre("Banco Santander");
+                santander.setCodigoEntidad("0049");
                 santander.setPais(espana);
 
                 EntidadBancaria bbva = new EntidadBancaria();
-                bbva.setCodigoEntidadBancaria("0812");
-                bbva.setNombreEntidadBancaria("Banco Bilbao Vizcaya Argentaria");
-                bbva.setSiglasEntidad("BBVA");
+                bbva.setCodigoEntidad("0812");
+                bbva.setNombre("Banco Bilbao Vizcaya Argentaria");
+                bbva.setSiglas("BBVA");
                 bbva.setPais(espana);
 
                 EntidadBancaria caixabank = new EntidadBancaria();
-                caixabank.setCodigoEntidadBancaria("2100");
-                caixabank.setNombreEntidadBancaria("Caixabank");
-                caixabank.setSiglasEntidad("CABK");
+                caixabank.setCodigoEntidad("2100");
+                caixabank.setNombre("Caixabank");
+                caixabank.setSiglas("CABK");
                 caixabank.setPais(espana);
 
                 EntidadBancaria sabadell = new EntidadBancaria();
-                sabadell.setCodigoEntidadBancaria("0081");
-                sabadell.setNombreEntidadBancaria("Sabadell");
-                sabadell.setSiglasEntidad("SABE");
+                sabadell.setCodigoEntidad("0081");
+                sabadell.setNombre("Sabadell");
+                sabadell.setSiglas("SABE");
                 sabadell.setPais(espana);
 
                 entidadBancariaRepository.saveAll(List.of(santander, bbva, caixabank, sabadell));

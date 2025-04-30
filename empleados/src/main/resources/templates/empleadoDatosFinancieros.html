@@ -32,72 +32,72 @@
 
         <div>
             <label for="entidadBancaria" th:text="#{Datos.Economicos.entidad }"></label>
-            <select th:field="*{datosEconomicosDTO.cuentaCorrienteDTO.entidadBancaria}" id="entidadBancaria">
+            <select th:field="*{cuentaCorrienteDTO.entidadBancaria}" id="entidadBancaria">
                 <option th:each="e : ${entidades}"
-                        th:value="${e.codigoEntidadBancaria}"
-                        th:text="${e.nombreEntidadBancaria}">
+                        th:value="${e.codigoEntidad}"
+                        th:text="${e.nombre}">
                 </option>
             </select>
-            <div th:if="${#fields.hasErrors('datosEconomicosDTO.cuentaCorrienteDTO.entidadBancaria')}"
-                 th:errors="*{datosEconomicosDTO.cuentaCorrienteDTO.entidadBancaria}" class="error"></div>
+            <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.entidadBancaria')}"
+                 th:errors="*{cuentaCorrienteDTO.entidadBancaria}" class="error"></div>
         </div>
         <br><br>
 
         <label for="cuentaCorriente" th:text="#{Datos.Economicos.cuenta}"/>
-        <input type="text" id="cuentaCorriente" th:field="*{datosEconomicosDTO.cuentaCorrienteDTO.cuentaCorrienteDTO}"  />
-        <div th:if="${#fields.hasErrors('datosEconomicosDTO.cuentaCorrienteDTO.cuentaCorrienteDTO')}"
-             th:errors="*{datosEconomicosDTO.cuentaCorrienteDTO.cuentaCorrienteDTO}" class="error"></div>
+        <input type="text" id="cuentaCorriente" th:field="*{cuentaCorrienteDTO.numeroCuentaDTO}"  />
+        <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.numeroCuentaDTO')}"
+             th:errors="*{cuentaCorrienteDTO.numeroCuentaDTO}" class="error"></div>
         <br><br>
 
         <label for="salario" th:text="#{Datos.Economicos.Salario}"/>
-        <input type="text" id="salario" th:field="*{datosEconomicosDTO.salarioDTO}"  />
-        <div th:if="${#fields.hasErrors('datosEconomicosDTO.salarioDTO')}"
-             th:errors="*{datosEconomicosDTO.salarioDTO}" class="error"></div>
+        <input type="text" id="salario" th:field="*{salarioDTO}"  />
+        <div th:if="${#fields.hasErrors('salarioDTO')}"
+             th:errors="*{salarioDTO}" class="error"></div>
         <br><br>
 
         <label for="comision" th:text="#{Datos.Economicos.Comision}"/>
-        <input type="text" id="comision" th:field="*{datosEconomicosDTO.comisionDTO}"  />
-        <div th:if="${#fields.hasErrors('datosEconomicosDTO.comisionDTO')}"
-             th:errors="*{datosEconomicosDTO.comisionDTO}" class="error"></div>
+        <input type="text" id="comision" th:field="*{comisionDTO}"  />
+        <div th:if="${#fields.hasErrors('comisionDTO')}"
+             th:errors="*{comisionDTO}" class="error"></div>
         <br><br>
 
         <h2 th:text="#{Titulo.tarjetaCredito}"/>
 
         <div>
             <label for="tipoTarjeta" th:text="#{Datos.Economicos.tipoTarjeta }"></label>
-            <select th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.tipoTarjetaCreditoDTO}" id="tipoTarjeta">
+            <select th:field="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO}" id="tipoTarjeta">
                 <option th:each="t : ${tiposTarjeta}"
-                        th:value="${t.codigoTipoTarjetaCredito}"
-                        th:text="${t.tipoTarjetaCredito}">
+                        th:value="${t.descripcion}"
+                        th:text="${t.nombre}">
                 </option>
             </select>
-            <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.tipoTarjetaCreditoDTO')}"
-                 th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.tipoTarjetaCreditoDTO}" class="error"></div>
+            <div th:if="${#fields.hasErrors('tarjetasCreditoDTO')}"
+                 th:errors="*{tarjetasCreditoDTO}" class="error"></div>
         </div>
         <br><br>
 
         <label for="numeroTarjetaCredito" th:text="#{Datos.Economicos.numeroTarjetaCredito}"/>
-        <input type="text" id="numeroTarjetaCredito" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.numeroTarjetaCreditoDTO}"  />
-        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.numeroTarjetaCreditoDTO')}"
-             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.numeroTarjetaCreditoDTO}" class="error"></div>
+        <input type="text" id="numeroTarjetaCredito" th:field="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}"  />
+        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.numeroTarjetaCreditoDTO')}"
+             th:errors="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}" class="error"></div>
         <br><br>
 
         <label for="mesCaducidadTarjetaCredito" th:text="#{Datos.Economicos.mesCaducidad}"/>
-        <input type="text" id="mesCaducidadTarjetaCredito" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.mesCaducidadTarjetaCreditoDTO}"  />
-        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.mesCaducidadTarjetaCreditoDTO')}"
-             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.mesCaducidadTarjetaCreditoDTO}" class="error"></div>
+        <input type="text" id="mesCaducidadTarjetaCredito" th:field="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}"  />
+        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO')}"
+             th:errors="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" class="error"></div>
         <br><br>
 
         <label for="anioCaducidadTarjetaCredito" th:text="#{Datos.Economicos.anioCaducidad}"/>
-        <input type="text" id="anioCaducidadTarjetaCredito" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.anioCaducidadTarjetaCreditoDTO}"  />
-        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.anioCaducidadTarjetaCreditoDTO')}"
-             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.anioCaducidadTarjetaCreditoDTO}" class="error"></div>
+        <input type="text" id="anioCaducidadTarjetaCredito" th:field="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}"  />
+        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO')}"
+             th:errors="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" class="error"></div>
         <br><br>
 
         <label for="cvc" th:text="#{Datos.Economicos.cvc}"/>
-        <input type="text" id="cvc" th:field="*{datosEconomicosDTO.tarjetaCreditoDTO.CVCDTO}"  />
-        <div th:if="${#fields.hasErrors('datosEconomicosDTO.tarjetaCreditoDTO.CVCDTO')}"
-             th:errors="*{datosEconomicosDTO.tarjetaCreditoDTO.CVCDTO}" class="error"></div>
+        <input type="text" id="cvc" th:field="*{tarjetasCreditoDTO.CVCDTO}"  />
+        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.CVCDTO')}"
+             th:errors="*{tarjetasCreditoDTO.CVCDTO}" class="error"></div>
         <br><br>
 
 

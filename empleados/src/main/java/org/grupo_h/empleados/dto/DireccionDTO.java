@@ -1,5 +1,6 @@
 package org.grupo_h.empleados.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,8 +22,8 @@ public class DireccionDTO {
     /**
      * Tipo de vía (calle, avenida, etc.). No puede estar vacío.
      */
-    @NotBlank(groups = DatosRegistroDireccion.class)
-    private String tipoViaDireccionPpalDTO = "C";
+    @Valid
+    private TipoViaDTO tipoViaDireccionPpalDTO;
 
     /**
      * Nombre de la vía. No puede estar vacío.

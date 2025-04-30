@@ -1,17 +1,17 @@
 package org.grupo_h.empleados.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.grupo_h.comun.entity.auxiliar.Genero;
-import org.grupo_h.comun.repository.GeneroRepository;
+import org.grupo_h.comun.entity.auxiliar.TipoDocumento;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.*;
 import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.DniValido;
 import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.EdadCoherente; // Importa la anotación personalizada
-import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosDepartamento;
-import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosPersonales;
-import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosRegistroDireccion;
 import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.MinimoDosCheckbox;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -52,29 +52,29 @@ public class EmpleadoRegistroDTO {
 //    @Pattern(regexp = ".*\\.(gif|jpg|jpeg|png)$", flags = Pattern.Flag.CASE_INSENSITIVE,
 //            message = "{Validacion.fotografia.formato}",
 //            groups = DatosPersonales.class)
-    private byte[] fotografia;
-
-//    /**
-//     * Género del empleado. No requiere validación. Insertado en tabla por defecto
-//     */
-////    @Pattern(
-////            regexp = "^([MFO])$",
-////            message = "{Validacion.generoSeleccionado.notBlank}",
-////            groups = DatosPersonales.class
-////    )
-//    private Genero generoSeleccionado;
-
-
+    private byte[] fotografiaDTO;
 
     /**
      * Género del empleado. No requiere validación. Insertado en tabla por defecto
      */
-    @Pattern(
-            regexp = "^([MFO])$",
-            message = "{Validacion.generoSeleccionado.notBlank}",
-            groups = DatosPersonales.class
-    )
-    private String genero;
+//    @Pattern(
+//            regexp = "^([MFO])$",
+//            message = "{Validacion.generoSeleccionado.notBlank}",
+//            groups = DatosPersonales.class
+//    )
+    private Genero generoSeleccionadoDTO;
+
+
+
+//    /**
+//     * Género del empleado. No requiere validación. Insertado en tabla por defecto
+//     */
+//    @Pattern(
+//            regexp = "^([MFO])$",
+//            message = "{Validacion.generoSeleccionado.notBlank}",
+//            groups = DatosPersonales.class
+//    )
+//    private String genero;
 
 
     /**
@@ -83,37 +83,37 @@ public class EmpleadoRegistroDTO {
     @NotNull(message = "{Validacion.fechaNac.vacio}")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     @Past(message = "{Validacion.fechaNac.Past}", groups = DatosPersonales.class)
-    private LocalDate fechaNacimiento;
+    private LocalDate fechaNacimientoDTO;
 
 
     @NotNull
     @Positive(message = "{Validacion.edad.Positive}", groups = DatosPersonales.class)
-    private Integer edad;
+    private Integer edadDTO;
 
     /**
      * País de nacimiento del empleado.
      */
-    @NotNull(groups = DatosPersonales.class)
-    private String paisNacimiento = "ES";
+    @Valid
+    private PaisDTO paisNacimiento;
 
     /**
      * Comentario del empleado.
      */
-    @NotNull(groups = DatosPersonales.class)
+    @NotNull(groups = {DatosPersonales.class})
     private String comentarios;
 
     /**
      * Tipo de Documento del empleado.
      */
     @NotNull(groups = DatosRegistroDireccion.class)
-    private String tipoDocumento = "DNI";
+    private TipoDocumento tipoDocumentoDTO;
 
     /**
      * Número del Documento del empleado.
      */
     @DniValido(groups = DatosRegistroDireccion.class)
     @NotNull(groups = DatosRegistroDireccion.class)
-    private String numeroDocumento;
+    private String numeroDocumentoDTO;
 
     /**
      * Prefijo Internacional del teléfono móvil del empleado.
@@ -141,24 +141,37 @@ public class EmpleadoRegistroDTO {
      * Departamento del empleado.
      */
     @NotNull(groups = DatosDepartamento.class)
-    private String DepartamentoDTO;
+    private DepartamentoDTO DepartamentoDTO;
 
     /**
      * Especialidades del empleado.
      */
+    @Valid
     @MinimoDosCheckbox(groups = DatosDepartamento.class)
-    private List<String> especialidadesSeleccionadasDTO;
+    private List<EspecialidadesEmpleadoDTO> especialidadesSeleccionadasDTO;
+
+
+    @Column(name="salario", table = "datosEconomicos")
+    private Double salarioDTO;
+
+    @Column(name="comision", table = "datosEconomicos")
+    private Double comisionDTO;
 
     @Valid
-    private DatosEconomicosDTO datosEconomicosDTO;
+    private CuentaCorrienteDTO cuentaCorrienteDTO;
+
+    @Valid
+    private TarjetaCreditoDTO tarjetasCreditoDTO;
+
+    @NotNull(groups = DatosFinales.class)
+    @AssertTrue(message = "{Validacion.Consentimiento.true}",
+            groups = DatosFinales.class)
+    private Boolean aceptaInformacionDTO;
 
     //    /**
 //     * Nombre original del archivo adjunto.
 //     */
 //
 //    private String archivoNombreOriginal;
-    @NotNull
-    @AssertTrue(message = "{Validacion.Consentimiento.true}")
-    private Boolean aceptaInformacionDTO;
 
 }

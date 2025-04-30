@@ -14,7 +14,7 @@ public class TarjetaCreditoDTO {
             regexp = "^(V|AM|MC)$",
             message = "{Validacion.tarjetaCredito.notBlank}",
             groups = DatosFinancieros.class)
-    private String tipoTarjetaCreditoDTO;
+    private TipoTarjetaCreditoDTO tipoTarjetaCreditoDTO;
 
     // Validacion algoritmo Luhn
 //    @LuhnCheck(message = "{Validacion.tarjetaCredito.formatoInvalido}",

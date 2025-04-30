@@ -39,11 +39,10 @@ public class DatosEconomicosDTO {
             groups = DatosFinancieros.class)
     private Double comisionDTO;
 
-    @Valid
-    @NotNull(groups = DatosFinancieros.class)
-    private TarjetaCreditoDTO tarjetaCreditoDTO;
+//    @Valid
+//    @NotNull(groups = DatosFinancieros.class)
+//    private TarjetaCreditoDTO tarjetaCreditoDTO;
 
     @Valid
-    @NotNull(groups = DatosFinancieros.class)
     private CuentaCorrienteDTO cuentaCorrienteDTO;
 }

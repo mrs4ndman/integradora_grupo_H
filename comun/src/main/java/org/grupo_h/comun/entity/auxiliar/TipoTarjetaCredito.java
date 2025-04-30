@@ -11,29 +11,28 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "tipo_tarjeta")
 public class TipoTarjetaCredito {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "Cod_Tipo_Tarjeta",
-            unique = true)
-    private String codigoTipoTarjetaCredito;
+    @Column(name = "nombre", nullable = false, unique = true)
+    private String nombre;
 
-    @Column(name = "Tipo_Tarjeta",
-            unique = true)
-    private String tipoTarjetaCredito;
+    @Column(name = "descripcion")
+    private String descripcion;
 
     private TipoTarjetaCredito (TipoTarjetaCredito tipoTarjetaCredito) {
         this.id = tipoTarjetaCredito.id;
-        this.codigoTipoTarjetaCredito = tipoTarjetaCredito.codigoTipoTarjetaCredito;
-        this.tipoTarjetaCredito = tipoTarjetaCredito.tipoTarjetaCredito;
+        this.nombre = tipoTarjetaCredito.nombre;
+        this.descripcion = tipoTarjetaCredito.descripcion;
     }
 
-    public static TipoTarjetaCredito of(String tipoTarjetaCredito, String codigoTipoTarjetaCredito) {
+    public static TipoTarjetaCredito of(String nombre, String descripcion) {
         TipoTarjetaCredito nuevaTipoTarjetaCredito = new TipoTarjetaCredito();
-        nuevaTipoTarjetaCredito.setCodigoTipoTarjetaCredito(codigoTipoTarjetaCredito);
-        nuevaTipoTarjetaCredito.setTipoTarjetaCredito(tipoTarjetaCredito);
+        nuevaTipoTarjetaCredito.setNombre(nombre);
+        nuevaTipoTarjetaCredito.setDescripcion(descripcion);
         return nuevaTipoTarjetaCredito;
     }
 

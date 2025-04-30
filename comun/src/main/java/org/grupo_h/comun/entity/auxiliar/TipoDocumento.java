@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class TipoDocumento {
     @Id
     @Column(name = "Cod_Tipo_Doc", length = 3, nullable = false)
-    private String codTipoDocumento;
+    private String codTipoDocumento = "DNI";
     private String tipoDocumento;
 }
