@@ -61,9 +61,12 @@
     + ' Año:' + *{datosEconomicosDTO.tarjetaCreditoDTO.anioCaducidadTarjetaCreditoDTO}"></p>
     <p th:text="'CVC: ' + *{datosEconomicosDTO.tarjetaCreditoDTO.CVCDTO}"></p>
 
+    <label for="aceptaInformacionDTO" th:text="#{Validacion.Consentimiento.true}"></label>
     <input type="checkbox"
-            th:text="#{Validacion.Consentimiento.true}"
-            th:field="*{aceptaInformacionDTO}">
+            th:field="*{aceptaInformacionDTO}"
+            id="aceptaInformacionDTO">
+    <div th:if="${#fields.hasErrors('aceptaInformacionDTO')}"
+         th:errors="*{aceptaInformacionDTO}" class="error"></div>
 
     <br>
 

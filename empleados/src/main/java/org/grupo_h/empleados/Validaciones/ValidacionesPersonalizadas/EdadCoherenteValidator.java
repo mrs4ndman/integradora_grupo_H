@@ -10,12 +10,12 @@ import java.time.Period;
 public class EdadCoherenteValidator implements ConstraintValidator<EdadCoherente, EmpleadoRegistroDTO> {
     @Override
     public boolean isValid(EmpleadoRegistroDTO empleadoDTO, ConstraintValidatorContext constraintValidatorContext) {
-        if (empleadoDTO.getFechaNacimiento() == null || empleadoDTO.getEdad() == null) {
+        if (empleadoDTO.getFechaNacimientoDTO() == null || empleadoDTO.getEdadDTO() == null) {
             return true; // Deja que @NotNull y @Past manejen los nulos
         }
 
-        LocalDate fechaNacimiento = empleadoDTO.getFechaNacimiento();
+        LocalDate fechaNacimiento = empleadoDTO.getFechaNacimientoDTO();
         int edadCalculada = Period.between(fechaNacimiento, LocalDate.now()).getYears();
-        return edadCalculada == empleadoDTO.getEdad();
+        return edadCalculada == empleadoDTO.getEdadDTO();
     }
 }

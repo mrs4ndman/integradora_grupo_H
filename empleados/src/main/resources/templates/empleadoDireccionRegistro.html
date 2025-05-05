@@ -25,7 +25,7 @@
 
     <div th:each="tipo : ${tiposDocumento}">
         <input type="radio"
-               th:field="*{tipoDocumento}"
+               th:field="*{tipoDocumentoDTO.codTipoDocumento}"
                th:value="${tipo.codTipoDocumento}"
                th:id="${'genero-input-' + tipo.codTipoDocumento}"/>
         <label th:for="${'genero-input-' + tipo.codTipoDocumento}"
@@ -34,8 +34,8 @@
     <br><br>
 
     <label for="documento" th:text="#{Datos-documento.documento}"/>
-    <input type="text" id="documento" th:field="*{numeroDocumento}" />
-    <div th:if="${#fields.hasErrors('numeroDocumento')}" th:errors="*{numeroDocumento}" class="error"></div>
+    <input type="text" id="documento" th:field="*{numeroDocumentoDTO}" />
+    <div th:if="${#fields.hasErrors('numeroDocumentoDTO')}" th:errors="*{numeroDocumentoDTO}" class="error"></div>
     <br><br>
 
     <div>
@@ -57,7 +57,7 @@
     <h2>Formulario de Dirección del Empleado</h2>
 
     <div>
-        <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO}" id="tipoVia">
+        <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO.codigoTipoVia}" id="tipoVia">
             <option th:each="v : ${tiposVia}"
                     th:value="${v.codigoTipoVia}"
                     th:text="${v.tipoVia}">

@@ -1,5 +1,6 @@
 package org.grupo_h.empleados.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,11 +18,13 @@ public class CuentaCorrienteDTO {
     @NotBlank(message = "{Validacion.numeroCuenta.NotBlank}")
     @Pattern(regexp = "^[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}$",
             message = "{Validacion.numeroCuenta.IBAN}")
-    private String cuentaCorrienteDTO;
+    private String numeroCuentaDTO;
+
+    private String ibanDTO;
 
     /**
      * Nombre del banco asociado a la cuenta corriente. No puede ser nulo.
      */
-    @NotNull(message = "{Validacion.entidadBancaria.NotNull}")
-    private Long entidadBancaria;
+    @Valid
+    private EntidadBancariaDTO entidadBancaria;
 }

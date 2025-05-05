@@ -12,13 +12,8 @@ import java.util.UUID;
 @Embeddable
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class TarjetaCredito {
-
-    @Column(name = "tipo_tarjeta_id" )
-    private Long tipoTarjetaId;
-
-    @Column(name = "numero_tarjeta")
+    @Column(name = "numero_tarjeta", nullable = false)
     private String numeroTarjeta;
 
     @Column(name = "mes_caducidad")
@@ -27,10 +22,14 @@ public class TarjetaCredito {
     @Column(name = "anio_caducidad")
     private String anioCaducidad;
 
-    @Column(name = "cvc")
+    @Column(name = "cvc", length = 3, nullable = false)
     private String cvc;
 
-    @Transient
-    private TipoTarjetaCredito tipo; // Solo para lógica de negocio
+    @Column(name = "orden")
+    private Integer orden;
 
+    // Relación con TipoTarjeta
+    @ManyToOne
+    @JoinColumn(name = "tipo_tarjeta_id", nullable = false)
+    private TipoTarjetaCredito tipoTarjeta;
 }

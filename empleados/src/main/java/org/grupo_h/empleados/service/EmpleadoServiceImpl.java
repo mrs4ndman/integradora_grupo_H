@@ -41,23 +41,23 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
         Empleado empleado = modelMapper.map(empleadoDTO, Empleado.class);
 
-//        Direccion direccion = new Direccion();
-//        DireccionDTO direccionDTO = new DireccionDTO();
-//        direccion = modelMapper.map(direccionDTO, Direccion.class);
-//
-//        empleado.setDireccion(direccion);
-//
-//        CuentaCorriente cuentaCorriente = new CuentaCorriente();
-//        cuentaCorriente = modelMapper.map(cuentaCorriente, CuentaCorriente.class);
-//
-//        DatosEconomicos datosEconomicos = new DatosEconomicos();
-//        datosEconomicos.setCuentaCorriente(cuentaCorriente);
-//
+        Direccion direccion = new Direccion();
+        DireccionDTO direccionDTO = new DireccionDTO();
+        direccion = modelMapper.map(direccionDTO, Direccion.class);
+
+        empleado.setDireccion(direccion);
+
+        CuentaCorriente cuentaCorriente = new CuentaCorriente();
+        cuentaCorriente = modelMapper.map(cuentaCorriente, CuentaCorriente.class);
+
+        DatosEconomicos datosEconomicos = new DatosEconomicos();
+        datosEconomicos.setCuentaCorriente(cuentaCorriente);
+
 //        empleado.setDatosEconomicos(datosEconomicos);
-//
-//        TarjetaCredito tarjetaCredito = new TarjetaCredito();
-//        TarjetaCreditoDTO tarjetaCreditoDTO = new TarjetaCreditoDTO();
-//        tarjetaCredito = modelMapper.map(empleadoDTO, TarjetaCredito.class);
+
+        TarjetaCredito tarjetaCredito = new TarjetaCredito();
+        TarjetaCreditoDTO tarjetaCreditoDTO = new TarjetaCreditoDTO();
+        tarjetaCredito = modelMapper.map(empleadoDTO, TarjetaCredito.class);
 
 
         // Persistir el empleado

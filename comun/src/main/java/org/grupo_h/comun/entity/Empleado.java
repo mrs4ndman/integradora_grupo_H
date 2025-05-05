@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.grupo_h.comun.entity.auxiliar.*; // Asegúrate que Genero está aquí
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,13 +18,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@SecondaryTable(name = "datosEconomicos",
+@SecondaryTable(name = "datos_Economicos",
         pkJoinColumns = @PrimaryKeyJoinColumn(name = "empleados_id"),
         foreignKey = @ForeignKey(name = "FK_EMPLEADO_DATOS_ECONOMICOS")
 )
 public class Empleado {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
 //    @OneToOne(optional = false)
@@ -71,6 +73,7 @@ public class Empleado {
     )
     private Pais paisNacimiento;
 
+
     @Column(name = "comentarios")
     private String comentarios;
 
@@ -110,31 +113,35 @@ public class Empleado {
     )
     private List<EspecialidadesEmpleado> especialidadesEmpleado;
 
+    // Tabla Secundaria Datos Económicos
 
+    @Column(name="salario", table = "datos_Economicos")
+    private Double salario;
 
+    @Column(name="comision", table = "datos_Economicos")
+    private Double comision;
 
-
-    @Embedded
-    private DatosEconomicos datosEconomicos;
-
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "cuenta_corriente_id", table = "datos_Economicos")
+    private CuentaCorriente cuentaCorriente;
 
 
     @ElementCollection
     @CollectionTable(
-            name = "datosEconomicos",
-            joinColumns = @JoinColumn(name = "empleado_id"),
-            foreignKey = @ForeignKey(name = "FK_TARJETAS_EMPLEADO")
+            name = "tarjeta_credito",
+            joinColumns = @JoinColumn(name = "empleado_id")
     )
-    @AttributeOverrides({
-            @AttributeOverride(name = "tipoTarjetaId", column = @Column(name = "tarjeta_tipo_id")),
-            @AttributeOverride(name = "numeroTarjeta", column = @Column(name = "tarjeta_numero")),
-            @AttributeOverride(name = "mesCaducidad", column = @Column(name = "tarjeta_mes_cad")),
-            @AttributeOverride(name = "anioCaducidad", column = @Column(name = "tarjeta_anio_cad")),
-            @AttributeOverride(name = "cvc", column = @Column(name = "tarjeta_cvc"))
-    })
-    @OrderColumn(name = "tarjeta_orden")
-    private List<TarjetaCredito> tarjetasCredito;
+    private List<TarjetaCredito> tarjetas = new ArrayList<>();
+
+    // Method de conveniencia para agregar tarjetas
+    public void addTarjeta(TarjetaCredito tarjeta) {
+        tarjetas.add(tarjeta);
+        // Asignar un orden automáticamente
+        tarjeta.setOrden(tarjetas.size());
+    }
 
 
     private Boolean aceptaInformacion;
+
+
 }

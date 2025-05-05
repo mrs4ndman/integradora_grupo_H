@@ -1,11 +1,15 @@
 package org.grupo_h.empleados.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosFinales;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosFinancieros;
 
 @Data
 @NoArgsConstructor
@@ -16,14 +20,17 @@ public class EntidadBancariaDTO {
 
     @Pattern(
             regexp = "^(SAN|BBVA|CABK|SABE)$\n",
-            message = "{Validacion.codigoEntidadBancaria.notBlank}")
-    private String codigoEntidadBancaria;
+            message = "{Validacion.codigoEntidadBancaria.notBlank}",
+            groups = DatosFinancieros.class)
+    private String codigoEntidadDTO;
 
-    @NotBlank(message = "El nombre de la entidad bancaria es obligatorio")
+    @NotNull(message = "{Validacion.entidadBancaria.NotNull}", groups = DatosFinancieros.class)
     @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
-    private String nombreEntidadBancaria;
+    private String nombreEntidadDTO;
 
-    private String siglasEntidad;
+    @NotNull(message = "{Validacion.entidadBancaria.NotNull}", groups = DatosFinancieros.class)
+    private String siglasDTO;
 
-    private String codigoPais;
+    @Valid
+    private PaisDTO codigoPais;
 }
