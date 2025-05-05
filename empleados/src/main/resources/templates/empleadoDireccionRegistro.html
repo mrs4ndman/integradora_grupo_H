@@ -25,7 +25,7 @@
 
     <div th:each="tipo : ${tiposDocumento}">
         <input type="radio"
-               th:field="*{tipoDocumentoDTO}"
+               th:field="*{tipoDocumentoDTO.codTipoDocumento}"
                th:value="${tipo.codTipoDocumento}"
                th:id="${'genero-input-' + tipo.codTipoDocumento}"/>
         <label th:for="${'genero-input-' + tipo.codTipoDocumento}"
@@ -57,7 +57,7 @@
     <h2>Formulario de Dirección del Empleado</h2>
 
     <div>
-        <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO}" id="tipoVia">
+        <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO.codigoTipoVia}" id="tipoVia">
             <option th:each="v : ${tiposVia}"
                     th:value="${v.codigoTipoVia}"
                     th:text="${v.tipoVia}">

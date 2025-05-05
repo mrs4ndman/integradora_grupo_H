@@ -51,7 +51,7 @@
 
     <div th:each="g : ${generos}">
         <input type="radio"
-               th:field="*{generoSeleccionadoDTO}"
+               th:field="*{generoSeleccionadoDTO.codigoGenero}"
                th:value="${g.codigoGenero}"
                th:id="${'genero'}"/>
       <label th:for="${'genero'}"
@@ -76,7 +76,7 @@
 
     <div>
       <label for="paisNacimiento" th:text="#{Datos-Personales.pais}"></label>
-      <select th:field="*{paisNacimiento}" id="paisNacimiento">
+      <select th:field="*{paisNacimiento.codigoPaisDTO}" id="paisNacimiento">
         <option th:each="p : ${paises}"
                 th:value="${p.codigoPais}"
                 th:text="${p.nombrePais}">

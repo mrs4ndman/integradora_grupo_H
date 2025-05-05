@@ -6,5 +6,5 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 @Service
 public interface DepartamentoService {
-    List<Departamento> findAll();
+    List<Departamento> obtenerTodosDepartamentos();
 }

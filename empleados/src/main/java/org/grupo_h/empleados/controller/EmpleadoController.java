@@ -226,11 +226,24 @@ public class EmpleadoController {
         public String mostrarFormularioRegistroDepartamento(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
                 HttpSession session,
                 Model model) {
-            session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
 
-            model.addAttribute("departamentos",departamentoService.findAll());
-            model.addAttribute("especialidades",especialidadesEmpleadoService.findAll());
-            System.out.println("Hola");
+            // Inicializar la lista de especialidades (si es null)
+            if (empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO() == null) {
+                empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(new ArrayList<>());
+            }
+
+            // Obtener y asignar especialidades (solo si está vacía)
+            if (empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO().isEmpty()) {
+                List<EspecialidadesEmpleadoDTO> especialidades =
+                        especialidadesEmpleadoService.obtenerTodasEspecialidadesEmpleadoDTO();
+                empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(especialidades);
+            }
+
+            model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
+            model.addAttribute("especialidades",especialidadesEmpleadoService.obtenerTodasEspecialidades());
+//            System.out.println(empleadoRegistroDTO);
+
+            session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
             return "datosDepartamento";
         }
 
@@ -242,8 +255,8 @@ public class EmpleadoController {
                 Model model) {
 
             if (result.hasErrors()) {
-                model.addAttribute("departamentos",departamentoService.findAll());
-                model.addAttribute("especialidades",especialidadesEmpleadoService.findAll());
+                model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
+                model.addAttribute("especialidades",especialidadesEmpleadoService.obtenerTodasEspecialidades());
                 // Imprimir los errores para depurar
                 result.getAllErrors().forEach(error -> System.out.println(error.toString()));
                 System.out.println("Estoy en errores departamento");

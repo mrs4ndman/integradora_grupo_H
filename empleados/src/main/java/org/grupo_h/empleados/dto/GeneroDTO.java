@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GeneroDTO {
-    private String codigoGenero;
+    private String codigoGenero = "F";
     private String nombreGenero;
 }

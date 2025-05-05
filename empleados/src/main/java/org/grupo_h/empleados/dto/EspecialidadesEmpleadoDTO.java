@@ -19,5 +19,11 @@ public class EspecialidadesEmpleadoDTO {
     private UUID id;
     @NotNull(groups = DatosDepartamento.class)
     private String especialidad;
+    private Boolean seleccionada;
+    private Integer index;
+
+    public Boolean isSeleccionado() {
+        return seleccionada;
+    }
 
 }

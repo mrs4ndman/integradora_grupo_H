@@ -15,6 +15,7 @@ import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.MinimoDosCh
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -62,7 +63,7 @@ public class EmpleadoRegistroDTO {
 //            message = "{Validacion.generoSeleccionado.notBlank}",
 //            groups = DatosPersonales.class
 //    )
-    private Genero generoSeleccionadoDTO;
+    private GeneroDTO generoSeleccionadoDTO;
 
 
 
@@ -148,13 +149,30 @@ public class EmpleadoRegistroDTO {
      */
     @Valid
     @MinimoDosCheckbox(groups = DatosDepartamento.class)
-    private List<EspecialidadesEmpleadoDTO> especialidadesSeleccionadasDTO;
+    private List<EspecialidadesEmpleadoDTO> especialidadesSeleccionadasDTO = new ArrayList<>();
 
 
-    @Column(name="salario", table = "datosEconomicos")
+    @NotNull(message = "{Validacion.Salario.Notnull}",
+            groups = DatosFinancieros.class)
+    @Digits(integer = 8,
+            fraction = 2,
+            message = "{Validacion.Salario.Digits}",
+            groups = DatosFinancieros.class)
+    @PositiveOrZero(message = "{Validacion.Salario.PositiveOrZero}",
+            groups = DatosFinancieros.class)
     private Double salarioDTO;
 
-    @Column(name="comision", table = "datosEconomicos")
+    /**
+     * Comisión del empleado.
+     */
+    @NotNull(message = "{Validacion.Comision.Notnull}",
+            groups = DatosFinancieros.class)
+    @Digits(integer = 8,
+            fraction = 2,
+            message = "{Validacion.Comision.Digits}",
+            groups = DatosFinancieros.class)
+    @PositiveOrZero(message = "{Validacion.Comision.PositiveOrZero}",
+            groups = DatosFinancieros.class)
     private Double comisionDTO;
 
     @Valid
