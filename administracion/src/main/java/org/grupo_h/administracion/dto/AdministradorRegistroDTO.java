@@ -3,6 +3,7 @@ package org.grupo_h.administracion.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+// TODO: BORRAR Y REFACTORIZAR
 
 /**
  * DTO que representa los datos de registro de un usuario.

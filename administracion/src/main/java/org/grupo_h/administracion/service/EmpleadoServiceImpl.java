@@ -2,6 +2,7 @@ package org.grupo_h.administracion.service;
 
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.comun.repository.EmpleadoRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,21 +31,14 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     /**
      * Obtiene los detalles de un empleado por su ID.
      *
-     * @param id Identificador único del empleado
-     * @return Optional con los detalles del empleado si existe, o empty si no existe
+     * @param id Identificador único del empleado, tipo {@link UUID}
+     * @return {@link Optional} con los detalles del empleado si existe, o empty si no existe
      */
     @Override
     public Optional<EmpleadoDetalleDTO> obtenerDetalleEmpleado(UUID id) {
-        return empleadosRepository.findById(id).map(empleado -> {
-            EmpleadoDetalleDTO detalleDTO = new EmpleadoDetalleDTO();
-            detalleDTO.setId(empleado.getId());
-            detalleDTO.setNombre(empleado.getNombre());
-            detalleDTO.setApellidos(empleado.getApellidos());
-            detalleDTO.setFechaNacimiento(empleado.getFechaNacimiento());
-            detalleDTO.setDireccion(empleado.getDireccion());
-            detalleDTO.setCuentaCorriente(empleado.getCuentaCorriente());
-            detalleDTO.setFechaAltaEnBaseDeDatos(empleado.getFechaAltaEnBaseDeDatos());
-            return detalleDTO;
-        });
+        ModelMapper modelMapper = new ModelMapper();
+        return empleadosRepository.findById(id)
+                .map(empleado -> modelMapper.map(empleado, EmpleadoDetalleDTO.class));
     }
+
 }

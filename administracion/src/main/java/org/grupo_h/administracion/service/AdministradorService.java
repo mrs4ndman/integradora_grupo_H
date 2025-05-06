@@ -11,5 +11,6 @@ public interface AdministradorService {
 
     void procesarLoginExitoso(String email);
 
+    // Método para desbloquear una cuenta bloqueada
     void desbloquearCuenta(String email);
 }

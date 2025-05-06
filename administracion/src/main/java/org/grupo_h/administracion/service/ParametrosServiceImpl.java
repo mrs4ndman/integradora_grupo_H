@@ -24,7 +24,12 @@ public class ParametrosServiceImpl implements ParametrosService {
     private ParametrosRepository parametrosRepository;
 
 
-    // Método privado para obtener y parsear el valor. Devuelve Optional vacío si falla.
+    /**
+     * Método privado para obtener y parsear un parámetro a valor entero.
+     *
+     * @param clave Clave de tipo {@link String} del parámetro a buscar en la base de datos
+     * @return {@link Optional} con el valor entero si existe y es válido, o vacío si no se encuentra o no es convertible
+     */
     private Optional<Integer> getParametroComoInt(String clave) {
         Optional<Parametros> parametroOpt = parametrosRepository.findByClave(clave);
         if (parametroOpt.isPresent()) {
@@ -40,6 +45,13 @@ public class ParametrosServiceImpl implements ParametrosService {
         return Optional.empty(); // No se encontró la clave
     }
 
+    /**
+     * Obtiene el número máximo de intentos fallidos permitidos antes de bloquear una cuenta.
+     * Este valor se almacena en caché para mejorar el rendimiento.
+     *
+     * @return Número entero con el máximo de intentos fallidos configurado
+     * @throws {@link IllegalStateException} si el parámetro no existe o no es válido
+     */
     @Override
     @Cacheable(value = "parametros", key = "'" + KEY_MAX_INTENTOS + "'")
     public int getMaxIntentosFallidos() {
@@ -50,6 +62,13 @@ public class ParametrosServiceImpl implements ParametrosService {
                         "Parámetro requerido '" + KEY_MAX_INTENTOS + "' no encontrado o inválido en la base de datos."));
     }
 
+    /**
+     * Obtiene la duración del bloqueo en minutos para usuarios regulares.
+     * Este valor se almacena en caché para mejorar el rendimiento.
+     *
+     * @return Número entero con la duración del bloqueo en minutos
+     * @throws {@link IllegalStateException} si el parámetro no existe o no es válido
+     */
     @Override
     @Cacheable(value = "parametros", key = "'" + KEY_DURACION_BLOQUEO + "'")
     public int getDuracionBloqueoMinutos() {
@@ -60,15 +79,26 @@ public class ParametrosServiceImpl implements ParametrosService {
                         "Parámetro requerido '" + KEY_DURACION_BLOQUEO + "' no encontrado o inválido en la base de datos."));
     }
 
+    /**
+     * Obtiene la duración del bloqueo en minutos para administradores.
+     * Este valor se almacena en caché para mejorar el rendimiento.
+     *
+     * @return Número entero con la duración del bloqueo en minutos para administradores
+     * @throws {@link IllegalStateException} si el parámetro no existe o no es válido
+     */
     @Override
-    @Cacheable(value = "parametros", key = "'" + KEY_DURACION_BLOQUEO_ADMIN)
+    @Cacheable(value = "parametros", key = "'" + KEY_DURACION_BLOQUEO_ADMIN + "'")
     public int getDuracionBloqueoMinutosAdmin() {
         log.debug("Obteniendo parámetro: {}", KEY_DURACION_BLOQUEO_ADMIN);
         return getParametroComoInt(KEY_DURACION_BLOQUEO_ADMIN)
                 .orElseThrow(() -> new IllegalStateException(
-                        "Parámetro requerido '" + KEY_DURACION_BLOQUEO + "' no encontrado o inválido en la base de datos."));
+                        "Parámetro requerido '" + KEY_DURACION_BLOQUEO_ADMIN + "' no encontrado o inválido en la base de datos."));
     }
 
+    /**
+     * Limpia la caché de parámetros, forzando a que las próximas solicitudes
+     * obtengan los valores actualizados desde la base de datos.
+     */
     @CacheEvict(value = "parametros", allEntries = true)
     public void limpiarCacheParametros() {
         log.info("Caché de parámetros limpiada.");

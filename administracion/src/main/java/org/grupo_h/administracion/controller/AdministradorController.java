@@ -1,12 +1,8 @@
 package org.grupo_h.administracion.controller;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
-import org.grupo_h.administracion.service.EmpleadoService;
-import org.grupo_h.administracion.service.UsuarioService;
+import org.grupo_h.administracion.service.*;
 import org.grupo_h.comun.entity.Administrador;
 import org.grupo_h.administracion.service.ParametrosService;
 import org.grupo_h.administracion.service.AdministradorService;
@@ -76,10 +72,11 @@ public class AdministradorController {
                                                  @RequestParam(value = "error", required = false) String error,
                                                  @RequestParam(value = "logout", required = false) String logout,
                                                  @ModelAttribute("logoutReferer") String logoutReferer) {
-        List<String> previousLogins = new ArrayList<>();
+        List<String> loginsAnteriores = new ArrayList<>();
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
+                // Si existe una cookie con los datos de logins anteriores
                 if ("loginsAnterioresAdmin".equals(cookie.getName())) {
                     String cookieValue = cookie.getValue();
                     // Comprobar que el valor de la cookie no sea nulo ni esté vacío antes de procesar
@@ -87,22 +84,23 @@ public class AdministradorController {
                         try {
                             String decodedValue = new String(Base64.getUrlDecoder().decode(cookieValue));
                             // Dividir Y FILTRAR cadenas vacías o nulas
-                            previousLogins = Arrays.stream(decodedValue.split(","))
+                            loginsAnteriores = Arrays.stream(decodedValue.split(","))
                                     .map(String::trim) // Opcional: quitar espacios blancos alrededor
                                     .filter(email -> email != null && !email.isEmpty()) // <-- Filtrar vacíos
                                     .collect(Collectors.toList()); // Recolectar en la lista
                         } catch (IllegalArgumentException e) {
                             // Manejar posible error en Base64 si la cookie está corrupta
                             System.err.println("Error al decodificar cookie loginsAnterioresAdmin: " + e.getMessage());
-                            // Dejar previousLogins vacía
+                            // Dejar loginsAnteriores vacía
                         }
                     }
                     break; // Encontrada la cookie, salir del bucle
                 }
             }
         }
-        model.addAttribute("loginsAnterioresAdmin", previousLogins);
+        model.addAttribute("loginsAnterioresAdmin", loginsAnteriores);
 
+        // Si el atributo de logout no es nulo, mostramos el mensaje de Logout
         if (logout != null) {
             model.addAttribute("mensaje", "Has cerrado sesión exitosamente.");
             if (logoutReferer != null && !logoutReferer.isEmpty()) {
@@ -144,7 +142,8 @@ public class AdministradorController {
 
         if (rememberMeTokenValue != null && !rememberMeTokenValue.isEmpty()) {
             System.out.println("Encontrada cookie remember-me-token-admin: " + rememberMeTokenValue);
-            Optional<Administrador> administradorOptByToken = administradorRepository.findByRememberMeToken(rememberMeTokenValue);
+            Optional<Administrador> administradorOptByToken =
+                    administradorRepository.findByRememberMeToken(rememberMeTokenValue);
 
             if (administradorOptByToken.isPresent()) {
                 Administrador administradorRecordado = administradorOptByToken.get();
@@ -186,17 +185,22 @@ public class AdministradorController {
         }
         // --- Fin Comprobación Remember Me ---
 
+
+        // Comprobamos que el administrador que nos proporciona el usuario con email existe
         Optional<Administrador> administradorOpt = administradorRepository.findByEmail(email);
 
+        // SI NO EXISTE
         if (administradorOpt.isEmpty() || !administradorOpt.get().isHabilitado()) {
             redirectAttributes.addFlashAttribute("error", "Administrador no encontrado o deshabilitado");
             return "redirect:/administrador/inicio-sesion?error=true";
         }
 
+        // SI EXISTE
         Administrador administrador = administradorOpt.get();
 
         if (administrador.isCuentaBloqueada()) {
             LocalDateTime horaDesbloqueo = administrador.getTiempoHastaDesbloqueo();
+            // SI ESTA BLOQUEADO Y NO SE HA PASADO EL TIEMPO
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
                 // Todavía bloqueada: Mostrar mensaje específico
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
@@ -206,10 +210,12 @@ public class AdministradorController {
                 redirectAttributes.addFlashAttribute("error", mensajeError);
                 return "redirect:/administrador/inicio-sesion?error=true";
             } else {
+                // SI ESTA BLOQUEADO Y YA SE HA PASADO EL TIEMPO
                 administradorService.desbloquearCuenta(email);
             }
         }
 
+        // LO AÑADIMOS COMO ATRIBUTO A LA SESION PARA EL SIGUIENTE PASO
         session.setAttribute("emailParaLoginAdmin", email);
         return "redirect:/administrador/inicio-sesion/password";
     }
@@ -254,7 +260,8 @@ public class AdministradorController {
         String email = (String) session.getAttribute("emailParaLoginAdmin");
 
         if (email == null) {
-            redirectAttributes.addFlashAttribute("error", "Error de sesión. Por favor, inicia sesión de nuevo.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Error de sesión. Por favor, inicia sesión de nuevo.");
             return "redirect:/administrador/inicio-sesion";
         }
 
@@ -268,6 +275,7 @@ public class AdministradorController {
 
         Administrador administrador = administradorOpt.get();
 
+        // A la hora de autenticarse con el servidor hay un error, este booleano confirma la redireccion como necesaria
         boolean debeRedirigirPorErrorPrevio = false;
         String mensajeErrorPrevio = null;
         if (!administrador.isHabilitado()) {
@@ -275,13 +283,16 @@ public class AdministradorController {
             debeRedirigirPorErrorPrevio = true;
         } else if (administrador.isCuentaBloqueada()) {
             LocalDateTime horaDesbloqueo = administrador.getTiempoHastaDesbloqueo();
+            // SI LA HORA ES ANTIGUA, SE DEJA BLOQUEADO Y SE COMUNICA CUANDO SE DESBLOQUEARA
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                         .withLocale(Locale.of("es", "ES"));
                 String unlockTimeString = horaDesbloqueo.format(formatter);
-                mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
+                mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las "
+                        + unlockTimeString;
                 debeRedirigirPorErrorPrevio = true;
             } else {
+                // SI LA HORA YA PASO, SE ABRE
                 administradorService.desbloquearCuenta(email);
                 administrador = administradorRepository.findByEmail(email).orElse(administrador);
             }
@@ -293,6 +304,7 @@ public class AdministradorController {
             return "redirect:/administrador/inicio-sesion?error=true";
         }
 
+        // SI LA CONTRASEÑA COINCIDE CON LA DADA POR EL ADMINISTRADOR
         if (passwordEncoder.matches(contrasena, administrador.getContrasena())) {
             // --- Inicio: Lógica de Cookies ---
             Set<String> logins = new LinkedHashSet<>();
@@ -393,6 +405,14 @@ public class AdministradorController {
         }
     }
 
+    /**
+     * Elimina un email de administrador de la cookie de logins anteriores.
+     *
+     * @param emailAEliminar Email a eliminar de la cookie.
+     * @param request        Solicitud HTTP.
+     * @param response       Respuesta HTTP.
+     * @return Respuesta indicando éxito o fracaso de la operación.
+     */
     @PostMapping("/inicio-sesion/eliminar-administrador")
     public ResponseEntity<?> eliminarAdministradorCookie(@RequestParam String emailAEliminar,
                                                          HttpServletRequest request,
@@ -487,6 +507,7 @@ public class AdministradorController {
      * Cierra la sesión del administrador.
      *
      * @param request            Solicitud HTTP.
+     * @param response           Respuesta HTTP para manipular cookies.
      * @param redirectAttributes Atributos para redirección.
      * @return Redirección a la página de inicio de sesión.
      */
@@ -586,7 +607,13 @@ public class AdministradorController {
 
     /* ------------------------ CAMBIO A BLOQUEO / DESBLOQUEO ----------------------------- */
 
-    // Mostrar dashboard con filtro
+    /**
+     * Muestra el dashboard de gestión de usuarios con filtrado opcional.
+     *
+     * @param filtro Filtro de búsqueda opcional para usuarios.
+     * @param model  Modelo para pasar datos a la vista.
+     * @return Vista del dashboard de usuarios.
+     */
     @GetMapping("/dashboardGestionUsuarios")
     public String mostrarDashboard(
             @RequestParam(value = "filtro", required = false) String filtro,
@@ -602,23 +629,40 @@ public class AdministradorController {
         return "dashboardUsuarios";
     }
 
-    // Bloquear usuario desde Administración
+    /**
+     * Bloquea un usuario desde la administración.
+     *
+     * @param id            ID del usuario a bloquear.
+     * @param motivoBloqueo Motivo por el cual se bloquea al usuario.
+     * @return Redirección al dashboard de gestión de usuarios.
+     */
     @PostMapping("/bloquear-usuario")
     public String bloquearUsuario(
             @RequestParam UUID id,
-            @RequestParam String motivoBloqueo,
-            @RequestParam String duracionBloqueoMinutosAdmin) {
-        usuarioService.bloquearUsuarioAdmin(id, motivoBloqueo, Integer.parseInt(duracionBloqueoMinutosAdmin));
+            @RequestParam String motivoBloqueo) {
+        usuarioService.bloquearUsuarioAdmin(id, motivoBloqueo, parametrosService.getDuracionBloqueoMinutosAdmin());
         return "redirect:/administrador/dashboardGestionUsuarios";
     }
 
-    // Desbloquear usuario
+    /**
+     * Desbloquea un usuario bloqueado.
+     *
+     * @param id ID del usuario a desbloquear.
+     * @return Redirección al dashboard de gestión de usuarios.
+     */
     @PostMapping("/desbloquear-usuario")
     public String desbloquearUsuario(@RequestParam UUID id) {
         usuarioService.desbloquearUsuario(id);
         return "redirect:/administrador/dashboardGestionUsuarios";
     }
 
+    /**
+     * Muestra el formulario de edición de un usuario.
+     *
+     * @param id    ID del usuario a editar.
+     * @param model Modelo para pasar datos a la vista.
+     * @return Vista del formulario de edición o redirección al dashboard.
+     */
     @GetMapping("/editar-usuario/{id}")
     public String mostrarFormularioEdicion(@PathVariable UUID id, Model model) {
         Usuario usuario = usuarioService.buscarPorId(id);
@@ -629,6 +673,15 @@ public class AdministradorController {
         return "redirect:/administrador/dashboardGestionUsuarios";
     }
 
+    /**
+     * Procesa la edición de un usuario, incluyendo cambio opcional de contraseña.
+     *
+     * @param usuario             Datos del usuario a actualizar.
+     * @param nuevaContrasena     Nueva contraseña (opcional).
+     * @param confirmarContrasena Confirmación de la nueva contraseña.
+     * @param redirectAttributes  Atributos para redirección.
+     * @return Redirección al dashboard o al formulario de edición en caso de error.
+     */
     @PostMapping("/editar-usuario")
     public String editarUsuario(
             @ModelAttribute Usuario usuario,
