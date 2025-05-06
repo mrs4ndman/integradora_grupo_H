@@ -14,6 +14,11 @@ import java.util.Properties;
  */
 @Configuration
 public class Configuraciones {
+    /**
+     * Instancia el ModelMapper para su uso en este módulo
+     *
+     * @return El Bean de ModelMapper para poder instanciarlo
+     */
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();

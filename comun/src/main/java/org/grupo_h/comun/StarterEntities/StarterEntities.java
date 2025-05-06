@@ -54,6 +54,9 @@ public class StarterEntities {
     @Autowired
     private AdministradorRepository administradorRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     @PostConstruct
     public void initGenero() {
         if (generoRepository.count() == 0) {
@@ -207,5 +210,21 @@ public class StarterEntities {
         }
     }
 
+    @Transactional
+    @PostConstruct
+    public void initUsuario() {
+        if (usuarioRepository.count() == 0) {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            Usuario u1 = new Usuario();
+            u1.setEmail("juanm@juanm.com");
+            u1.setContrasena(passwordEncoder.encode("juanm"));
+            u1.setCuentaBloqueada(true);
+            Usuario u2 = new Usuario();
+            u2.setEmail("juanito@juanito.com");
+            u2.setContrasena(passwordEncoder.encode("juanito"));
+            u2.setCuentaBloqueada(true);
+            usuarioRepository.saveAll(List.of(u1, u2));
+        }
+    }
 
 }

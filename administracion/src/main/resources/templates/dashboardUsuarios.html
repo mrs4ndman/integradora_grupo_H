@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Usuarios</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .acciones {
+            white-space: nowrap;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-container input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .search-container button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <h1>Dashboard de Gestion de Usuarios</h1>
+
+    <!-- Campo de búsqueda -->
+    <div class="search-container">
+        <form th:action="@{/administrador/dashboardGestionUsuarios}" method="get">
+            <input type="text" name="filtro" th:value="${filtro}" placeholder="Buscar por correo" />
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <table>
+        <thead>
+        <tr>
+            <th>Email</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="usuario : ${usuarios}">
+            <td th:text="${usuario.email}"></td>
+            <td th:text="${usuario.cuentaBloqueada ? 'Bloqueado' : 'Desbloqueado'}"></td>
+            <td class="acciones">
+                <!-- Botón para editar -->
+                <button>
+                    <a th:href="@{/administrador/editar-usuario/{id}(id=${usuario.id})}">Ajustes</a>
+                </button>
+                <!-- Botón para bloquear -->
+                <form th:action="@{/administrador/bloquear-usuario}" method="post" style="display: inline;">
+                    <input type="hidden" name="id" th:value="${usuario.id}">
+                    <button type="submit">Bloquear</button>
+                </form>
+                <!-- Botón para desbloquear -->
+                <form th:action="@{/administrador/desbloquear-usuario}" method="post" style="display: inline;">
+                    <input type="hidden" name="id" th:value="${usuario.id}">
+                    <button type="submit">Desbloquear</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

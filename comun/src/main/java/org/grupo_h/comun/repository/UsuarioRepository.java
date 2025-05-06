@@ -14,5 +14,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
     Optional<Usuario> findByRememberMeToken(String rememberMeToken);
 
+    List<Usuario> findByEmailContainingIgnoreCase(String email);
+
     // Optional<Usuario> findAllByCuentaBloqueada(boolean estatus);
 }

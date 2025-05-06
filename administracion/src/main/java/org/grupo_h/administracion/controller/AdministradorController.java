@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
-import org.grupo_h.administracion.dto.UsuariosForm;
 import org.grupo_h.administracion.service.EmpleadoService;
 import org.grupo_h.administracion.service.UsuarioService;
 import org.grupo_h.comun.entity.Administrador;
@@ -586,32 +585,74 @@ public class AdministradorController {
     }
 
     /* ------------------------ CAMBIO A BLOQUEO / DESBLOQUEO ----------------------------- */
-    @GetMapping("/desbloqueo-usuarios")
-    public String desbloqueoUsuariosGet(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String email = (String) session.getAttribute("emailAutenticadoAdmin");
 
-        if (email == null) {
-            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta funcionalidad.");
-            return "redirect:/administrador/inicio-sesion";
+    // Método para mostrar el dashboard con todos los usuarios
+    @GetMapping("/dashboardGestionUsuarios")
+    public String mostrarDashboard(@RequestParam(value = "filtro", required = false) String filtro,
+                                   Model model) {
+        List<Usuario> usuarios;
+        if (filtro != null && !filtro.isEmpty()) {
+            usuarios = usuarioService.buscarPorFiltro(filtro);
+        } else {
+            usuarios = usuarioService.obtenerTodosLosUsuarios();
         }
-
-        List<Usuario> usuariosActuales = usuarioService.obtenerTodosUsuarios();
-        System.out.println(usuariosActuales);
-        UsuariosForm form = new UsuariosForm();
-        form.setUsuariosActuales(usuariosActuales);
-        model.addAttribute("usuariosForm", form);
-
-        return "desbloqueoUsuarios";
+        model.addAttribute("usuarios", usuarios);
+        model.addAttribute("filtro", filtro);
+        return "dashboardUsuarios";
     }
 
-    @PostMapping("/guardarCambios")
-    public String guardarCambios(
-            @ModelAttribute("usuariosForm") UsuariosForm usuariosForm) {
-        // Extraemos la lista del wrapper
-        List<Usuario> lista = usuariosForm.getUsuariosActuales();
-        // Llamamos al servicio con la lista real
-        usuarioService.actualizarUsuarios(lista);
-        return "redirect:/administrador/desbloqueo-usuarios";
+    // Método para bloquear un usuario
+    @PostMapping("/bloquear-usuario")
+    public String bloquearUsuario(@RequestParam UUID id) {
+        usuarioService.bloquearUsuario(id);
+        return "redirect:/administrador/dashboardGestionUsuarios";
+    }
+
+    // Método para desbloquear un usuario
+    @PostMapping("/desbloquear-usuario")
+    public String desbloquearUsuario(@RequestParam UUID id) {
+        usuarioService.desbloquearUsuario(id);
+        return "redirect:/administrador/dashboardGestionUsuarios";
+    }
+
+    @GetMapping("/editar-usuario/{id}")
+    public String mostrarFormularioEdicion(@PathVariable UUID id, Model model) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+        if (usuario != null) {
+            model.addAttribute("usuario", usuario);
+            return "editarUsuario";
+        }
+        return "redirect:/administrador/dashboardGestionUsuarios";
+    }
+
+    @PostMapping("/editar-usuario")
+    public String editarUsuario(
+            @ModelAttribute Usuario usuario,
+            @RequestParam(required = false) String nuevaContrasena,
+            @RequestParam(required = false) String confirmarContrasena,
+            RedirectAttributes redirectAttributes) {
+
+        // Validar si se proporcionó una nueva contraseña
+        if (nuevaContrasena != null && !nuevaContrasena.isEmpty()) {
+            // Verificar que las contraseñas coincidan
+            if (!nuevaContrasena.equals(confirmarContrasena)) {
+                redirectAttributes.addFlashAttribute("error", "Las contraseñas no coinciden.");
+                return "redirect:/administrador/editar-usuario/" + usuario.getId();
+            }
+            // Encriptar la nueva contraseña
+            usuario.setContrasena(passwordEncoder.encode(nuevaContrasena));
+        } else {
+            // Si no se proporciona una nueva contraseña, mantener la contraseña actual
+            Usuario usuarioExistente = usuarioService.buscarPorId(usuario.getId());
+            if (usuarioExistente != null) {
+                usuario.setContrasena(usuarioExistente.getContrasena());
+            }
+        }
+
+        // Guardar los cambios
+        usuarioService.actualizarUsuario(usuario);
+        redirectAttributes.addFlashAttribute("mensaje", "Usuario actualizado exitosamente.");
+        return "redirect:/administrador/dashboardGestionUsuarios";
     }
 
 }
