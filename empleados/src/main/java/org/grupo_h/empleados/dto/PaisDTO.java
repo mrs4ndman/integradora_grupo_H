@@ -15,11 +15,9 @@ public class PaisDTO {
     @NotNull(groups = {DatosPersonales.class, DatosFinancieros.class})
     private String codigoPaisDTO = "ES";
 
-    @NotNull(message = "El nombre del país es obligatorio",
-            groups = {DatosPersonales.class, DatosFinancieros.class})
+
     private String nombrePaisDTO;
 
-    @NotNull(message = "El prefijo del país es obligatorio",
-            groups = {DatosPersonales.class, DatosFinancieros.class})
+
     private String prefijoPaisDTO;
 }

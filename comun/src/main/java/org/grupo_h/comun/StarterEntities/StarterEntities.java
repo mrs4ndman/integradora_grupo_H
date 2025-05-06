@@ -77,18 +77,30 @@ public class StarterEntities {
     @PostConstruct
     public void initTipoVia() {
         if (tipoViaRepository.count() == 0) {
-            tipoViaRepository.save(new TipoVia("AV", "Avenida"));
-            tipoViaRepository.save(new TipoVia("C", "Calle"));
-            tipoViaRepository.save(new TipoVia("PS", "Paseo"));
-            tipoViaRepository.save(new TipoVia("PA", "Pasaje"));
+            TipoVia calle = new TipoVia();
+            calle.setTipoVia("Calle");
+
+            TipoVia avenida = new TipoVia();
+            avenida.setTipoVia("Avenida");
+
+            TipoVia paseo = new TipoVia();
+            paseo.setTipoVia("Paseo");
+
+            tipoViaRepository.saveAll(List.of(calle, avenida, paseo));
         }
     }
 
     @PostConstruct
     public void initTipoDocumento() {
         if (tipoDocumentoRepository.count() == 0) {
-            tipoDocumentoRepository.save(new TipoDocumento("DNI", "Documento Nacional Identidad "));
-            tipoDocumentoRepository.save(new TipoDocumento("NIE", "Numero Identidad Extranjero"));
+            TipoDocumento dni = new TipoDocumento();
+            dni.setTipoDocumento("DNI");
+
+            TipoDocumento nie = new TipoDocumento();
+            nie.setTipoDocumento("NIE");
+
+            tipoDocumentoRepository.saveAll(List.of(dni,nie));
+
         }
     }
 
@@ -98,41 +110,16 @@ public class StarterEntities {
         if (entidadBancariaRepository.count() == 0) {
             try {
 
-                // 1. Verificar existencia del país (con debug)
-                System.err.println("Buscando país ES...");
-                Pais espana = paisRepository.findById("ES")
-                        .orElseThrow(() -> {
-                            System.err.println("País ES no encontrado. Países existentes:");
-                            paisRepository.findAll().forEach(p ->
-                                    System.err.println(p.getCodigoPais() + " - " + p.getNombrePais()));
-                            return new IllegalArgumentException("Pais con código ES no encontrado");
-                        });
+              EntidadBancaria santander = new EntidadBancaria();
+              santander.setNombreEntidad("Santander");
 
-                EntidadBancaria santander = new EntidadBancaria();
-                santander.setSiglas("SAN");
-                santander.setNombre("Banco Santander");
-                santander.setCodigoEntidad("0049");
-                santander.setPais(espana);
+              EntidadBancaria bbva = new EntidadBancaria();
+              bbva.setNombreEntidad("BBVA");
 
-                EntidadBancaria bbva = new EntidadBancaria();
-                bbva.setCodigoEntidad("0812");
-                bbva.setNombre("Banco Bilbao Vizcaya Argentaria");
-                bbva.setSiglas("BBVA");
-                bbva.setPais(espana);
+              EntidadBancaria ing = new EntidadBancaria();
+              ing.setNombreEntidad("ING");
 
-                EntidadBancaria caixabank = new EntidadBancaria();
-                caixabank.setCodigoEntidad("2100");
-                caixabank.setNombre("Caixabank");
-                caixabank.setSiglas("CABK");
-                caixabank.setPais(espana);
-
-                EntidadBancaria sabadell = new EntidadBancaria();
-                sabadell.setCodigoEntidad("0081");
-                sabadell.setNombre("Sabadell");
-                sabadell.setSiglas("SABE");
-                sabadell.setPais(espana);
-
-                entidadBancariaRepository.saveAll(List.of(santander, bbva, caixabank, sabadell));
+              entidadBancariaRepository.saveAll(List.of(santander, bbva, ing));
 
 
                 System.out.println("Datos iniciales de EntidadBancaria cargados exitosamente");
@@ -166,10 +153,17 @@ public class StarterEntities {
     @PostConstruct
     public void initEspecialidadEmpleado() {
         if (especialidadesEmpleadoRepository.count() == 0) {
-            EspecialidadesEmpleado especialidad1 = EspecialidadesEmpleado.of("Especialista en Gestión de Inventarios");
-            EspecialidadesEmpleado especialidad2 = EspecialidadesEmpleado.of("Especialista en IT");
-            EspecialidadesEmpleado especialidad3 = EspecialidadesEmpleado.of("Especialista en Logística");
-            especialidadesEmpleadoRepository.saveAll(List.of(especialidad1, especialidad2, especialidad3));
+
+            EspecialidadesEmpleado e1 = new EspecialidadesEmpleado();
+            e1.setEspecialidad("Especialista en Gestión de Inventarios");
+
+            EspecialidadesEmpleado e2 = new EspecialidadesEmpleado();
+            e2.setEspecialidad("Especialista en IT");
+
+            EspecialidadesEmpleado e3 = new EspecialidadesEmpleado();
+            e3.setEspecialidad("Especialista en Logística");
+
+            especialidadesEmpleadoRepository.saveAll(List.of(e1,e2, e3));
         }
     }
 
@@ -177,9 +171,9 @@ public class StarterEntities {
     @PostConstruct
     public void initTipoTarjeta() {
         if (tipoTarjetaRepository.count() == 0) {
-            TipoTarjetaCredito visa = TipoTarjetaCredito.of("VISA", "V");
-            TipoTarjetaCredito americanExpress = TipoTarjetaCredito.of("AMERICAN EXPRESS", "AM");
-            TipoTarjetaCredito masterCard = TipoTarjetaCredito.of("MASTER CARD", "MC");
+            TipoTarjetaCredito visa = TipoTarjetaCredito.of("VISA");
+            TipoTarjetaCredito americanExpress = TipoTarjetaCredito.of("AMERICAN EXPRESS");
+            TipoTarjetaCredito masterCard = TipoTarjetaCredito.of("MASTER CARD");
             tipoTarjetaRepository.saveAll(List.of(visa, americanExpress, masterCard));
         }
     }

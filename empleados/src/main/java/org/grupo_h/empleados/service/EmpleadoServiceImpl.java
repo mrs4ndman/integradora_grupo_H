@@ -1,6 +1,5 @@
 package org.grupo_h.empleados.service;
 
-import org.grupo_h.comun.entity.DatosEconomicos;
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.auxiliar.*;
 import org.grupo_h.empleados.dto.*;
@@ -8,11 +7,10 @@ import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.modelmapper.ModelMapper;
 import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.comun.repository.UsuarioRepository;
-import org.grupo_h.comun.entity.auxiliar.Genero;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -24,16 +22,18 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final UsuarioRepository usuarioRepository;
     private final GeneroRepository generoRepository;
     private final ModelMapper modelMapper;
+    private final AbstractConfigurableTemplateResolver abstractConfigurableTemplateResolver;
 
     @Autowired
     public EmpleadoServiceImpl(EmpleadoRepository empleadosRepository,
                                UsuarioRepository usuarioRepository,
                                GeneroRepository generoRepository,
-                               ModelMapper modelMapper) {
+                               ModelMapper modelMapper, AbstractConfigurableTemplateResolver abstractConfigurableTemplateResolver) {
         this.empleadosRepository = empleadosRepository;
         this.usuarioRepository = usuarioRepository;
         this.generoRepository = generoRepository;
         this.modelMapper = modelMapper;
+        this.abstractConfigurableTemplateResolver = abstractConfigurableTemplateResolver;
     }
 
     @Override
@@ -41,24 +41,9 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
         Empleado empleado = modelMapper.map(empleadoDTO, Empleado.class);
 
-        Direccion direccion = new Direccion();
-        DireccionDTO direccionDTO = new DireccionDTO();
-        direccion = modelMapper.map(direccionDTO, Direccion.class);
-
-        empleado.setDireccion(direccion);
-
-        CuentaCorriente cuentaCorriente = new CuentaCorriente();
-        cuentaCorriente = modelMapper.map(cuentaCorriente, CuentaCorriente.class);
-
-        DatosEconomicos datosEconomicos = new DatosEconomicos();
-        datosEconomicos.setCuentaCorriente(cuentaCorriente);
-
-//        empleado.setDatosEconomicos(datosEconomicos);
-
-        TarjetaCredito tarjetaCredito = new TarjetaCredito();
-        TarjetaCreditoDTO tarjetaCreditoDTO = new TarjetaCreditoDTO();
-        tarjetaCredito = modelMapper.map(empleadoDTO, TarjetaCredito.class);
-
+        modelMapper.typeMap(CuentaCorrienteDTO.class, CuentaCorriente.class).addMappings(mapper -> {
+            mapper.skip(CuentaCorriente::setEntidadBancaria);
+        });
 
         // Persistir el empleado
         return empleadosRepository.save(empleado);

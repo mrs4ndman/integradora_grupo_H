@@ -20,7 +20,11 @@ public class CuentaCorrienteDTO {
             message = "{Validacion.numeroCuenta.IBAN}")
     private String numeroCuentaDTO;
 
-    private String ibanDTO;
+    /**
+     * ID del banco asociado a la cuenta corriente. Se usa para binding en formulario.
+     */
+    @NotNull(message = "{Validacion.entidadBancaria.NotNull}")
+    private Long entidadBancariaId;
 
     /**
      * Nombre del banco asociado a la cuenta corriente. No puede ser nulo.

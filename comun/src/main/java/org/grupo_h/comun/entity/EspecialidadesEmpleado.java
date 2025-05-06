@@ -18,22 +18,19 @@ public class EspecialidadesEmpleado {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(name="Especialidad",
-            nullable = false)
+    @Column(name="Especialidad")
     private String especialidad;
 
-    @ManyToMany(mappedBy = "especialidadesEmpleado")  // Relación inversa
-    private List<Empleado> empleados;  // Lista de empleados que tienen esta especialidad
 
-    private EspecialidadesEmpleado(EspecialidadesEmpleado e) {
-        this.id = e.id;
-        this.especialidad = e.especialidad;
-    }
-
-    public static EspecialidadesEmpleado of(String especialidad) {
-        EspecialidadesEmpleado nuevaEspecialidad = new EspecialidadesEmpleado();  // Asignar un ID único
-        nuevaEspecialidad.setEspecialidad(especialidad);  // Asignar el nombre de la especialidad
-        return nuevaEspecialidad;
-    }
+//    private EspecialidadesEmpleado(EspecialidadesEmpleado e) {
+//        this.id = e.id;
+//        this.especialidad = e.especialidad;
+//    }
+//
+//    public static EspecialidadesEmpleado of(String especialidad) {
+//        EspecialidadesEmpleado nuevaEspecialidad = new EspecialidadesEmpleado();  // Asignar un ID único
+//        nuevaEspecialidad.setEspecialidad(especialidad);  // Asignar el nombre de la especialidad
+//        return nuevaEspecialidad;
+//    }
 }
 

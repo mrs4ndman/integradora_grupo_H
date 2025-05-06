@@ -16,6 +16,9 @@ public class MinimoDosCheckboxesValidator
         if (especialidadesSeleccionadas == null) {
             return false;
         }
-        return especialidadesSeleccionadas.size() >= 2; // Al menos 2 elementos
+        long count = especialidadesSeleccionadas.stream()
+                .filter(e -> e.getSeleccionada() != null && e.getSeleccionada())
+                .count();
+        return count >= 2;
     }
 }

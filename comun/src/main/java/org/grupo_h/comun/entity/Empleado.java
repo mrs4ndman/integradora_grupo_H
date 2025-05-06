@@ -19,8 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @SecondaryTable(name = "datos_Economicos",
-        pkJoinColumns = @PrimaryKeyJoinColumn(name = "empleados_id"),
-        foreignKey = @ForeignKey(name = "FK_EMPLEADO_DATOS_ECONOMICOS")
+        pkJoinColumns = @PrimaryKeyJoinColumn(name = "empleados_id_datos_economicos")
 )
 public class Empleado {
 
@@ -32,6 +31,8 @@ public class Empleado {
 //    @MapsId
 //    @JoinColumn(name = "id")
 //    private Usuario usuario;
+
+    // DATOS PERSONALES
 
     @Column(nullable = false)
     private String nombre;
@@ -67,15 +68,18 @@ public class Empleado {
     private Integer edad; // Considerar calcularla en lugar de almacenarla si es posible
 
     @ManyToOne
-    @JoinColumn(
-            name = "pais_nacimiento",
-            foreignKey = @ForeignKey(name = "FK_PAIS_NACIMIENTO_EMPLEADO")
-    )
+//    @JoinColumn(
+//            name = "pais_nacimiento",
+//            foreignKey = @ForeignKey(name = "FK_PAIS_NACIMIENTO_EMPLEADO")
+//    )
     private Pais paisNacimiento;
 
 
     @Column(name = "comentarios")
     private String comentarios;
+
+
+    // DATOS DE CONTACTO
 
     @ManyToOne
     @JoinColumn(name = "tipo_documento_cod_tipo_doc",
@@ -95,11 +99,9 @@ public class Empleado {
     @Embedded
     private Direccion direccion;
 
-    @Column(name = "fecha_alta_en_BD")
-    private LocalDate fechaAltaEnBaseDeDatos = LocalDate.now();
 
-    @Column(name = "archivo_nombre_original")
-    private String archivoNombreOriginal;
+
+    // DATOS PROFESIONALES
 
     @ManyToOne
     @JoinColumn(name = "departamento_id")
@@ -126,22 +128,21 @@ public class Empleado {
     private CuentaCorriente cuentaCorriente;
 
 
-    @ElementCollection
-    @CollectionTable(
-            name = "tarjeta_credito",
-            joinColumns = @JoinColumn(name = "empleado_id")
-    )
-    private List<TarjetaCredito> tarjetas = new ArrayList<>();
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "tiposTarjetaCredito", column = @Column(table = "datos_Economicos", name = "tipo_tarjeta_credito")),
+            @AttributeOverride(name = "numeroTarjetaCredito", column = @Column(table = "datos_Economicos", name = "numero_tarjeta_credito")),
+            @AttributeOverride(name = "cvv", column = @Column(table = "datos_Economicos", name = "cvv")),
+            @AttributeOverride(name = "mesCaducidad", column = @Column(table = "datos_Economicos", name = "mes_caducidad")),
+            @AttributeOverride(name = "anioCaducidad", column = @Column(table = "datos_Economicos", name = "anio_caducidad"))
+    })
+    private TarjetaCredito tarjetas;
 
-    // Method de conveniencia para agregar tarjetas
-    public void addTarjeta(TarjetaCredito tarjeta) {
-        tarjetas.add(tarjeta);
-        // Asignar un orden automáticamente
-        tarjeta.setOrden(tarjetas.size());
-    }
 
 
     private Boolean aceptaInformacion;
 
+    @Column(name = "fecha_alta_en_BD")
+    private LocalDate fechaAltaEnBaseDeDatos = LocalDate.now();
 
 }

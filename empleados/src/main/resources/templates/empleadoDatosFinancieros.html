@@ -32,10 +32,10 @@
 
         <div>
             <label for="entidadBancaria" th:text="#{Datos.Economicos.entidad }"></label>
-            <select th:field="*{cuentaCorrienteDTO.entidadBancaria}" id="entidadBancaria">
+            <select th:field="*{cuentaCorrienteDTO.entidadBancaria.nombreEntidadDTO}" id="entidadBancaria">
                 <option th:each="e : ${entidades}"
-                        th:value="${e.codigoEntidad}"
-                        th:text="${e.nombre}">
+                        th:value="${e.id}"
+                        th:text="${e.nombreEntidad}">
                 </option>
             </select>
             <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.entidadBancaria')}"
@@ -67,12 +67,12 @@
             <label for="tipoTarjeta" th:text="#{Datos.Economicos.tipoTarjeta }"></label>
             <select th:field="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO}" id="tipoTarjeta">
                 <option th:each="t : ${tiposTarjeta}"
-                        th:value="${t.descripcion}"
-                        th:text="${t.nombre}">
+                        th:value="${t.id}"
+                        th:text="${t.nombreTipoTarjeta}">
                 </option>
             </select>
-            <div th:if="${#fields.hasErrors('tarjetasCreditoDTO')}"
-                 th:errors="*{tarjetasCreditoDTO}" class="error"></div>
+            <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.tipoTarjetaCreditoDTO')}"
+                 th:errors="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO}" class="error"></div>
         </div>
         <br><br>
 

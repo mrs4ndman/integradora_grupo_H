@@ -1,5 +1,9 @@
 package org.grupo_h.empleados.dto;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,19 +22,6 @@ public class EntidadBancariaDTO {
 
     private Long id;
 
-    @Pattern(
-            regexp = "^(SAN|BBVA|CABK|SABE)$\n",
-            message = "{Validacion.codigoEntidadBancaria.notBlank}",
-            groups = DatosFinancieros.class)
-    private String codigoEntidadDTO;
-
     @NotNull(message = "{Validacion.entidadBancaria.NotNull}", groups = DatosFinancieros.class)
-    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
     private String nombreEntidadDTO;
-
-    @NotNull(message = "{Validacion.entidadBancaria.NotNull}", groups = DatosFinancieros.class)
-    private String siglasDTO;
-
-    @Valid
-    private PaisDTO codigoPais;
 }
