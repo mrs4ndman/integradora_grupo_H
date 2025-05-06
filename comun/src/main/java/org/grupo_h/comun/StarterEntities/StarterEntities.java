@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.List;
 
 @Component
@@ -150,6 +152,7 @@ public class StarterEntities {
         if (parametrosRepository.count() == 0) {
             parametrosRepository.save(new Parametros("MAX_INTENTOS_FALLIDOS", "3"));
             parametrosRepository.save(new Parametros("DURACION_BLOQUEO", "15"));
+            parametrosRepository.save(new Parametros("DURACION_BLOQUEO_ADMIN", "1440"));
         }
     }
 
@@ -219,10 +222,15 @@ public class StarterEntities {
             u1.setEmail("juanm@juanm.com");
             u1.setContrasena(passwordEncoder.encode("juanm"));
             u1.setCuentaBloqueada(true);
+            u1.setMotivoBloqueo("BLOQUEO POR DEFECTO");
+            u1.setTiempoHastaDesbloqueo(LocalDateTime.now().plus(Period.ofDays(1)));
+
             Usuario u2 = new Usuario();
             u2.setEmail("juanito@juanito.com");
             u2.setContrasena(passwordEncoder.encode("juanito"));
             u2.setCuentaBloqueada(true);
+            u2.setMotivoBloqueo("BLOQUEO POR DEFECTO");
+            u2.setTiempoHastaDesbloqueo(LocalDateTime.now().plus(Period.ofDays(2)));
             usuarioRepository.saveAll(List.of(u1, u2));
         }
     }

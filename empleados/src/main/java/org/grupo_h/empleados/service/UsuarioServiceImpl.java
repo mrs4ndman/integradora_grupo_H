@@ -84,6 +84,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                     usuario.setCuentaBloqueada(true);
                     LocalDateTime horaDesbloqueo = LocalDateTime.now().plus(duracionBloqueo, ChronoUnit.MINUTES); // Usar valor del servicio
                     usuario.setTiempoHastaDesbloqueo(horaDesbloqueo);
+                    usuario.setMotivoBloqueo("Bloqueado por exceder el número máximo de intentos fallidos");
                     System.out.println("Cuenta bloqueada para usuario con email: " + email + ". Se desbloqueará a las: " + horaDesbloqueo);
                 }
                 usuarioRepository.save(usuario);
@@ -125,6 +126,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.setCuentaBloqueada(false);
                 usuario.setIntentosFallidos(0);
                 usuario.setTiempoHastaDesbloqueo(null); // Resetea el tiempo de bloqueo
+                usuario.setMotivoBloqueo("");
                 usuarioRepository.save(usuario);
             }
         }

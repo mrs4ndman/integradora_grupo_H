@@ -64,6 +64,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 // Actualizar la instancia local del usuario para reflejar el desbloqueo
                 usuario.setCuentaBloqueada(false);
                 usuario.setIntentosFallidos(0);
+                usuario.setMotivoBloqueo("");
                 usuario.setTiempoHastaDesbloqueo(null);
             }
         }

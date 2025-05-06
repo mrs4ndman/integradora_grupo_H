@@ -232,9 +232,9 @@ public class UsuarioController {
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
                 // Todavía bloqueada: Mostrar mensaje específico
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                        .withLocale(new Locale("es", "ES"));
+                        .withLocale(Locale.of("es", "ES"));
                 String unlockTimeString = horaDesbloqueo.format(formatter);
-                String mensajeError = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
+                String mensajeError = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString + " - Motivo: " + usuario.getMotivoBloqueo();
                 redirectAttributes.addFlashAttribute("error", mensajeError);
                 return "redirect:/usuarios/inicio-sesion?error=true";
             } else {
@@ -303,6 +303,7 @@ public class UsuarioController {
 
         boolean debeRedirigirPorErrorPrevio = false;
         String mensajeErrorPrevio = null;
+
         if (!usuario.isHabilitado()) {
             mensajeErrorPrevio = "La cuenta no está disponible (deshabilitada).";
             debeRedirigirPorErrorPrevio = true;
@@ -310,9 +311,9 @@ public class UsuarioController {
             LocalDateTime horaDesbloqueo = usuario.getTiempoHastaDesbloqueo();
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                        .withLocale(new Locale("es", "ES"));
+                        .withLocale(Locale.of("es", "ES"));
                 String unlockTimeString = horaDesbloqueo.format(formatter);
-                mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
+                mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString + " - Motivo: " + usuario.getMotivoBloqueo();
                 debeRedirigirPorErrorPrevio = true;
             } else {
                 usuarioService.desbloquearCuenta(email);
@@ -404,7 +405,7 @@ public class UsuarioController {
                 LocalDateTime horaDesbloqueo = usuarioActualizado.getTiempoHastaDesbloqueo();
                 if (horaDesbloqueo != null) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                            .withLocale(new Locale("es", "ES"));
+                            .withLocale(Locale.of("es", "ES"));
                     String unlockTimeString = horaDesbloqueo.format(formatter);
                     mensajeErrorFallido = "Contraseña incorrecta. Cuenta bloqueada. Podrá intentar de nuevo después de las " + unlockTimeString;
                 } else {

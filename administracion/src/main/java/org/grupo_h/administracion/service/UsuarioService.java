@@ -4,6 +4,7 @@ import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,10 +29,13 @@ public class UsuarioService {
         return usuarioRepository.findByEmailContainingIgnoreCase(filtro);
     }
 
-    public void bloquearUsuario(UUID id) {
-        Usuario usuario = this.buscarPorId(id);
+    // Bloquear usuario desde Administración
+    public void bloquearUsuarioAdmin(UUID id, String motivoBloqueo, int duracionBloqueoMinutosAdmin) {
+        Usuario usuario = usuarioRepository.findById(id).orElse(null);
         if (usuario != null) {
             usuario.setCuentaBloqueada(true);
+            usuario.setTiempoHastaDesbloqueo(LocalDateTime.now().plusMinutes(duracionBloqueoMinutosAdmin));
+            usuario.setMotivoBloqueo(motivoBloqueo);
             usuarioRepository.save(usuario);
         }
     }
@@ -40,6 +44,8 @@ public class UsuarioService {
         Usuario usuario = this.buscarPorId(id);
         if (usuario != null) {
             usuario.setCuentaBloqueada(false);
+            usuario.setMotivoBloqueo("");
+            usuario.setTiempoHastaDesbloqueo(null);
             usuarioRepository.save(usuario);
         }
     }

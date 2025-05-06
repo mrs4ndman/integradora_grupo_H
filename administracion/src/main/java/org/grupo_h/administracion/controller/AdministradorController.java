@@ -200,7 +200,7 @@ public class AdministradorController {
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
                 // Todavía bloqueada: Mostrar mensaje específico
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                        .withLocale(new Locale("es", "ES"));
+                        .withLocale(Locale.of("es", "ES"));
                 String unlockTimeString = horaDesbloqueo.format(formatter);
                 String mensajeError = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
                 redirectAttributes.addFlashAttribute("error", mensajeError);
@@ -277,7 +277,7 @@ public class AdministradorController {
             LocalDateTime horaDesbloqueo = administrador.getTiempoHastaDesbloqueo();
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                        .withLocale(new Locale("es", "ES"));
+                        .withLocale(Locale.of("es", "ES"));
                 String unlockTimeString = horaDesbloqueo.format(formatter);
                 mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
                 debeRedirigirPorErrorPrevio = true;
@@ -371,7 +371,7 @@ public class AdministradorController {
                 LocalDateTime horaDesbloqueo = administradorActualizado.getTiempoHastaDesbloqueo();
                 if (horaDesbloqueo != null) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                            .withLocale(new Locale("es", "ES"));
+                            .withLocale(Locale.of("es", "ES"));
                     String unlockTimeString = horaDesbloqueo.format(formatter);
                     mensajeErrorFallido = "Contraseña incorrecta. Cuenta bloqueada. Podrá intentar de nuevo después de las " + unlockTimeString;
                 } else {
@@ -586,10 +586,11 @@ public class AdministradorController {
 
     /* ------------------------ CAMBIO A BLOQUEO / DESBLOQUEO ----------------------------- */
 
-    // Método para mostrar el dashboard con todos los usuarios
+    // Mostrar dashboard con filtro
     @GetMapping("/dashboardGestionUsuarios")
-    public String mostrarDashboard(@RequestParam(value = "filtro", required = false) String filtro,
-                                   Model model) {
+    public String mostrarDashboard(
+            @RequestParam(value = "filtro", required = false) String filtro,
+            Model model) {
         List<Usuario> usuarios;
         if (filtro != null && !filtro.isEmpty()) {
             usuarios = usuarioService.buscarPorFiltro(filtro);
@@ -601,14 +602,17 @@ public class AdministradorController {
         return "dashboardUsuarios";
     }
 
-    // Método para bloquear un usuario
+    // Bloquear usuario desde Administración
     @PostMapping("/bloquear-usuario")
-    public String bloquearUsuario(@RequestParam UUID id) {
-        usuarioService.bloquearUsuario(id);
+    public String bloquearUsuario(
+            @RequestParam UUID id,
+            @RequestParam String motivoBloqueo,
+            @RequestParam String duracionBloqueoMinutosAdmin) {
+        usuarioService.bloquearUsuarioAdmin(id, motivoBloqueo, Integer.parseInt(duracionBloqueoMinutosAdmin));
         return "redirect:/administrador/dashboardGestionUsuarios";
     }
 
-    // Método para desbloquear un usuario
+    // Desbloquear usuario
     @PostMapping("/desbloquear-usuario")
     public String desbloquearUsuario(@RequestParam UUID id) {
         usuarioService.desbloquearUsuario(id);

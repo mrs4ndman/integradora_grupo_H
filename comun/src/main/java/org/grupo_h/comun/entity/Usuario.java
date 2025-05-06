@@ -54,6 +54,9 @@ public class Usuario {
     @Column
     private LocalDateTime tiempoHastaDesbloqueo;
 
+    @Column(length = 500)
+    private String motivoBloqueo;
+
     @Column(length = 100)
     private String rememberMeToken;
 

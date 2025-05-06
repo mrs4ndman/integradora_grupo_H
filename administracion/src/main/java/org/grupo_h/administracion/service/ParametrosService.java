@@ -5,4 +5,6 @@ public interface ParametrosService {
     int getMaxIntentosFallidos();
 
     int getDuracionBloqueoMinutos();
+
+    int getDuracionBloqueoMinutosAdmin();
 }

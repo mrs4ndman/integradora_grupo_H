@@ -38,6 +38,10 @@
         .search-container button:hover {
             background-color: #0056b3;
         }
+
+        .motivo-bloqueo {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -58,6 +62,8 @@
         <tr>
             <th>Email</th>
             <th>Estado</th>
+            <th>Fecha de Desbloqueo</th>
+            <th>Motivo de Bloqueo</th>
             <th>Acciones</th>
         </tr>
         </thead>
@@ -65,6 +71,8 @@
         <tr th:each="usuario : ${usuarios}">
             <td th:text="${usuario.email}"></td>
             <td th:text="${usuario.cuentaBloqueada ? 'Bloqueado' : 'Desbloqueado'}"></td>
+            <td th:text="${usuario.tiempoHastaDesbloqueo != null} ? ${#temporals.format(usuario.tiempoHastaDesbloqueo, 'dd/MM/yyyy HH:mm')} : ''"></td>
+            <td th:text="${usuario.motivoBloqueo}"></td>
             <td class="acciones">
                 <!-- Botón para editar -->
                 <button>
@@ -73,6 +81,11 @@
                 <!-- Botón para bloquear -->
                 <form th:action="@{/administrador/bloquear-usuario}" method="post" style="display: inline;">
                     <input type="hidden" name="id" th:value="${usuario.id}">
+                    <div class="motivo-bloqueo">
+                        <label for="motivoBloqueo">Motivo de Bloqueo:</label>
+                        <input type="text" id="motivoBloqueo" name="motivoBloqueo" required>
+                    </div>
+                    <input type="hidden" name="duracionBloqueoMinutosAdmin" value="1440"> <!-- 24 horas -->
                     <button type="submit">Bloquear</button>
                 </form>
                 <!-- Botón para desbloquear -->

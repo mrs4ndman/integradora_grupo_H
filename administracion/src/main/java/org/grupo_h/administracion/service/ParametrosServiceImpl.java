@@ -18,6 +18,7 @@ public class ParametrosServiceImpl implements ParametrosService {
 
     private static final String KEY_MAX_INTENTOS = "MAX_INTENTOS_FALLIDOS";
     private static final String KEY_DURACION_BLOQUEO = "DURACION_BLOQUEO";
+    private static final String KEY_DURACION_BLOQUEO_ADMIN = "DURACION_BLOQUEO_ADMIN";
 
     @Autowired
     private ParametrosRepository parametrosRepository;
@@ -55,6 +56,15 @@ public class ParametrosServiceImpl implements ParametrosService {
         log.debug("Obteniendo parámetro: {}", KEY_DURACION_BLOQUEO);
         // Intenta obtener el valor. Si no existe o es inválido, lanza una excepción.
         return getParametroComoInt(KEY_DURACION_BLOQUEO)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Parámetro requerido '" + KEY_DURACION_BLOQUEO + "' no encontrado o inválido en la base de datos."));
+    }
+
+    @Override
+    @Cacheable(value = "parametros", key = "'" + KEY_DURACION_BLOQUEO_ADMIN)
+    public int getDuracionBloqueoMinutosAdmin() {
+        log.debug("Obteniendo parámetro: {}", KEY_DURACION_BLOQUEO_ADMIN);
+        return getParametroComoInt(KEY_DURACION_BLOQUEO_ADMIN)
                 .orElseThrow(() -> new IllegalStateException(
                         "Parámetro requerido '" + KEY_DURACION_BLOQUEO + "' no encontrado o inválido en la base de datos."));
     }
