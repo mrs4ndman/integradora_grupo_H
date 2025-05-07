@@ -8,6 +8,7 @@ import org.grupo_h.comun.repository.*;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.*;
 import org.grupo_h.empleados.dto.*;
 import org.grupo_h.empleados.service.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controlador para gestionar las operaciones relacionadas con los empleados.
@@ -41,6 +43,12 @@ public class EmpleadoController {
     private final TipoDocumentoRepository tipoDocumentoRepository;
     @Autowired
     private final TipoViaRepository tipoViaRepository;
+    @Autowired
+    private final TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository;
+    @Autowired
+    private final EntidadBancariaRepository entidadBancariaRepository;
+
+    private final ModelMapper modelMapper;
 //Servicios
     @Autowired
     private final EmpleadoService empleadoService;
@@ -55,15 +63,20 @@ public class EmpleadoController {
     @Autowired
     private final TipoTarjetaService tipoTarjetaService;
     @Autowired
-    private EntidadBancariaRepository entidadBancariaRepository;
+    private TipoViaService tipoViaService;
+    @Autowired
+    private TipoDocumentoService tipoDocumentoService;
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, EntidadBancariaRepository entidadBancariaRepository, ModelMapper modelMapper, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
         this.paisRepository = paisRepository;
         this.tipoDocumentoRepository = tipoDocumentoRepository;
         this.tipoViaRepository = tipoViaRepository;
+        this.tipoTarjetaCreditoRepository = tipoTarjetaCreditoRepository;
+        this.entidadBancariaRepository = entidadBancariaRepository;
+        this.modelMapper = modelMapper;
         this.generoService = generoService;
         this.departamentoService = departamentoService;
         this.especialidadesEmpleadoService = especialidadesEmpleadoService;
@@ -183,8 +196,17 @@ public class EmpleadoController {
                 Model model) {
             session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
 
-            model.addAttribute("tiposDocumento",tipoDocumentoRepository.findAll());
-            model.addAttribute("tiposVia",tipoViaRepository.findAll());
+
+            List<TipoViaDTO> tipoViaDTO = tipoViaService.obtenertodasTipoVia().stream()
+                    .map(e -> modelMapper.map(e, TipoViaDTO.class))
+                    .collect(Collectors.toList());
+            model.addAttribute("tiposVia", tipoViaDTO);
+
+            List<TipoDocumentoDTO> tipoDocumentoDTO = tipoDocumentoService.obtenertodosTiposDocumento().stream()
+                    .map(e -> modelMapper.map(e, TipoDocumentoDTO.class))
+                    .collect(Collectors.toList());
+            model.addAttribute("tiposDocumento",tipoDocumentoDTO);
+
             model.addAttribute("paises", paisRepository.findAll());
             return "empleadoDireccionRegistro";
         }
@@ -204,15 +226,27 @@ public class EmpleadoController {
                 BindingResult result,
                 HttpSession session,
                 Model model) {
+
             if (result.hasErrors()) {
-                model.addAttribute("tiposDocumento",tipoDocumentoRepository.findAll());
-                model.addAttribute("tiposVia",tipoViaRepository.findAll());
+                List<TipoViaDTO> tipoViaDTO = tipoViaService.obtenertodasTipoVia().stream()
+                        .map(e -> modelMapper.map(e, TipoViaDTO.class))
+                        .collect(Collectors.toList());
+                model.addAttribute("tiposVia",tipoViaDTO);
+
+                List<TipoDocumentoDTO> tipoDocumentoDTO = tipoDocumentoService.obtenertodosTiposDocumento().stream()
+                        .map(e -> modelMapper.map(e, TipoDocumentoDTO.class))
+                        .collect(Collectors.toList());
+                model.addAttribute("tiposDocumento",tipoDocumentoDTO);
+
                 model.addAttribute("paises", paisRepository.findAll());
                 // Imprimir los errores para depurar
                 result.getAllErrors().forEach(error -> System.out.println(error.toString()));
+                System.out.println(empleadoRegistroDTO);
                 return "empleadoDireccionRegistro";
             }
+
             session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
+
             return "redirect:/empleados/registro-departamento";
         }
 
@@ -226,24 +260,12 @@ public class EmpleadoController {
         public String mostrarFormularioRegistroDepartamento(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO,
                 HttpSession session,
                 Model model) {
+            session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
 
-            // Inicializar la lista de especialidades (si es null)
-            if (empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO() == null) {
-                empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(new ArrayList<>());
-            }
-
-            // Obtener y asignar especialidades (solo si está vacía)
-            if (empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO().isEmpty()) {
-                List<EspecialidadesEmpleadoDTO> especialidades =
-                        especialidadesEmpleadoService.obtenerTodasEspecialidadesEmpleadoDTO();
-                empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(especialidades);
-            }
-
-            model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
-            model.addAttribute("especialidades",especialidadesEmpleadoService.obtenerTodasEspecialidades());
+            // Cargar las especialidades y los departamentos
+            cargarEspecialidades(empleadoRegistroDTO, model);
 //            System.out.println(empleadoRegistroDTO);
 
-            session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
             return "datosDepartamento";
         }
 
@@ -255,8 +277,8 @@ public class EmpleadoController {
                 Model model) {
 
             if (result.hasErrors()) {
-                model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
-                model.addAttribute("especialidades",especialidadesEmpleadoService.obtenerTodasEspecialidades());
+                // Cargar las especialidades y los departamentos
+                cargarEspecialidades(empleadoRegistroDTO, model);
                 // Imprimir los errores para depurar
                 result.getAllErrors().forEach(error -> System.out.println(error.toString()));
                 System.out.println("Estoy en errores departamento");
@@ -270,15 +292,7 @@ public class EmpleadoController {
 
 
 
-
-
-
-
-
-
-
-
-        /**
+    /**
          * Muestra el formulario de registro de datos financieros del empleado.
          *
          * @param empleadoRegistroDTO El DTO de registro del empleado.
@@ -314,18 +328,30 @@ public class EmpleadoController {
             // ModelAttribute instanciado arriba
             EmpleadoRegistroDTO dtoSesion = getEmpleadoRegistroDTO(session);
 
-            model.addAttribute("entidades", entidadBancariaRepository.findAll());
-            model.addAttribute("tiposTarjeta", tipoTarjetaService.listarTipoTarjetaCredito());
+            List<EntidadBancariaDTO> entidadesDTO = entidadBancariaService.listarEntidadBancaria().stream()
+                    .map(e -> modelMapper.map(e, EntidadBancariaDTO.class))
+                    .collect(Collectors.toList());
+            model.addAttribute("entidades", entidadesDTO);
+
+            List<TipoTarjetaCreditoDTO> tipoTarjetaCreditoDTOS = tipoTarjetaCreditoRepository.findAll().stream()
+                    .map(e -> modelMapper.map(e, TipoTarjetaCreditoDTO.class))
+                    .collect(Collectors.toList());
+            model.addAttribute("tiposTarjeta", tipoTarjetaCreditoDTOS);
 
 
 
             if (result.hasErrors()) {
-                model.addAttribute("entidades", entidadBancariaService.listarEntidadBancaria());
-                model.addAttribute("tiposTarjeta", tipoTarjetaService.listarTipoTarjetaCredito());
+                // Obtener entidades bancarias desde la base de datos
+                model.addAttribute("entidades",entidadBancariaService.listarEntidadBancaria());
+                model.addAttribute("tiposTarjeta", tipoTarjetaCreditoRepository.findAll());
                 // Imprimir los errores para depurar
                 result.getAllErrors().forEach(error -> System.out.println(error.toString()));
+
+                session.setAttribute("empleadoRegistroDTO", dtoSesion);
                 return "empleadoDatosFinancieros";
             }
+
+
 
             session.setAttribute("empleadoRegistroDTO", dtoSesion);
             return "redirect:/empleados/registro-finales";
@@ -351,43 +377,27 @@ public class EmpleadoController {
         public String datosFinalesGet(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session, Model model) {
             empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
 
-//            TarjetaCreditoDTO tarjetaCreditoDTO = null;
-//
-//            if (empleadoRegistroDTO == null) {
-//                empleadoRegistroDTO = new EmpleadoRegistroDTO();
-//            }
-//
-//            // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
-//            if (empleadoRegistroDTO.getDireccionDTO() == null) {
-//                empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
-//            }
-//
-//            if (empleadoRegistroDTO.getDatosEconomicosDTO() == null) {
-//                DatosEconomicosDTO datosEconomicos = new DatosEconomicosDTO();
-//                datosEconomicos.setCuentaCorrienteDTO(new CuentaCorrienteDTO());
-//                empleadoRegistroDTO.setDatosEconomicosDTO(datosEconomicos);
-//
-//                TipoTarjetaCreditoDTO tipoTarjetaCreditoDTO = new TipoTarjetaCreditoDTO();
-//                tarjetaCreditoDTO = new TarjetaCreditoDTO();
-//                tarjetaCreditoDTO.setTipoTarjetaCreditoDTO(tipoTarjetaCreditoDTO);
-//
-//            } else {
-//                if (empleadoRegistroDTO.getDatosEconomicosDTO().getCuentaCorrienteDTO() == null) {
-//                    empleadoRegistroDTO.getDatosEconomicosDTO().setCuentaCorrienteDTO(new CuentaCorrienteDTO());
-//                }
-//                if (empleadoRegistroDTO.getTarjetasCreditoDTO() == null) {
-//                    // Crear una nueva tarjeta de crédito en lugar de usar la variable que podría ser nula
-//                    List<TarjetaCreditoDTO> nuevasTarjetas = new ArrayList<>();
-//                    TarjetaCreditoDTO nuevaTarjeta = new TarjetaCreditoDTO();
-//                    nuevaTarjeta.setTipoTarjetaCreditoDTO(new TipoTarjetaCreditoDTO());
-//                    nuevasTarjetas.add(nuevaTarjeta);
-//                    empleadoRegistroDTO.setTarjetasCreditoDTO(nuevasTarjetas);
-//                }
-//            }
+
+            if (empleadoRegistroDTO == null) {
+                empleadoRegistroDTO = new EmpleadoRegistroDTO();
+            }
+
+            // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
+            if (empleadoRegistroDTO.getDireccionDTO() == null) {
+                empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
+            }
+
+            if(empleadoRegistroDTO.getCuentaCorrienteDTO() == null){
+                empleadoRegistroDTO.setCuentaCorrienteDTO(new CuentaCorrienteDTO());
+            }
+
+            if (empleadoRegistroDTO.getTarjetasCreditoDTO() == null){
+                empleadoRegistroDTO.setTarjetasCreditoDTO(new TarjetaCreditoDTO());
+            }
+
+
             model.addAttribute("datos", empleadoRegistroDTO);
-//        if (empleadoRegistroDTO.getArchivoNombreOriginal() != null && !empleadoRegistroDTO.getArchivoNombreOriginal().isEmpty()) {
-//            model.addAttribute("nombreArchivo", empleadoRegistroDTO.getArchivoNombreOriginal());
-//        }
+
             return "empleadoDatosFinales";
         }
 
@@ -463,7 +473,25 @@ public class EmpleadoController {
 //        }
             return "";
         }
+
+    private void cargarEspecialidades(@ModelAttribute("empleadoRegistroDTO") @Validated(DatosDepartamento.class) EmpleadoRegistroDTO empleadoRegistroDTO, Model model) {
+        if (empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO() == null || empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO().isEmpty()) {
+            List<EspecialidadesEmpleadoDTO> especialidades = especialidadesEmpleadoService.obtenerTodasEspecialidadesEmpleadoDTO();
+//            especialidades.forEach(e -> {
+//                if (e.getNombreEspecialidad() == null) {
+//                }
+//            });
+
+            empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(especialidades);
+        }
+        List<DepartamentoDTO> departamentosDTO = departamentoService.obtenerTodosDepartamentos().stream()
+                .map(e -> modelMapper.map(e, DepartamentoDTO.class))
+                .collect(Collectors.toList());
+        model.addAttribute("departamentos", departamentosDTO);
+//        model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
     }
+
+}
 
 
 

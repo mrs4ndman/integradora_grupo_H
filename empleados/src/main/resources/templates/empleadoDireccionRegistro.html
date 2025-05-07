@@ -25,11 +25,11 @@
 
     <div th:each="tipo : ${tiposDocumento}">
         <input type="radio"
-               th:field="*{tipoDocumentoDTO.codTipoDocumento}"
-               th:value="${tipo.codTipoDocumento}"
-               th:id="${'genero-input-' + tipo.codTipoDocumento}"/>
-        <label th:for="${'genero-input-' + tipo.codTipoDocumento}"
+               th:field="*{tipoDocumentoDTO.id}"
+               th:value="${tipo.id}"/>
+        <label th:for="${'tipoDocumento-input-' + tipo.tipoDocumento}"
                th:text="${tipo.tipoDocumento}"></label><br>
+        <div th:if="${#fields.hasErrors('tipoDocumentoDTO.tipoDocumento')}" th:errors="*{tipoDocumentoDTO.tipoDocumento}" class="error"></div>
     </div>
     <br><br>
 
@@ -57,13 +57,13 @@
     <h2>Formulario de Dirección del Empleado</h2>
 
     <div>
-        <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO.codigoTipoVia}" id="tipoVia">
-            <option th:each="v : ${tiposVia}"
-                    th:value="${v.codigoTipoVia}"
-                    th:text="${v.tipoVia}">
+        <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO.id}" id="tipoVia">
+            <option th:each="via : ${tiposVia}"
+                    th:value="${via.id}"
+                    th:text="${via.tipoVia}">
             </option>
         </select>
-        <div th:if="${#fields.hasErrors('direccionDTO.tipoViaDireccionPpalDTO')}" th:errors="*{direccionDTO.tipoViaDireccionPpalDTO}" class="error"></div>
+        <div th:if="${#fields.hasErrors('direccionDTO.tipoViaDireccionPpalDTO.tipoVia')}" th:errors="*{direccionDTO.tipoViaDireccionPpalDTO.tipoVia}" class="error"></div>
     </div>
     <br><br>
 

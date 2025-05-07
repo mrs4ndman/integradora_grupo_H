@@ -7,7 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosDepartamento;
+import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.MinimoDosCheckbox;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,13 +19,10 @@ import java.util.UUID;
 public class EspecialidadesEmpleadoDTO {
     @NotNull(groups = DatosDepartamento.class)
     private UUID id;
-    @NotNull(groups = DatosDepartamento.class)
-    private String especialidad;
-    private Boolean seleccionada;
-    private Integer index;
 
-    public Boolean isSeleccionado() {
-        return seleccionada;
-    }
+
+    private String nombreEspecialidad;
+
+    private Boolean seleccionada = false;
 
 }

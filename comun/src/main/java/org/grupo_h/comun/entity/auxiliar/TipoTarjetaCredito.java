@@ -11,28 +11,23 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tipo_tarjeta")
+@Table(name = "tipo_tarjeta_credito")
 public class TipoTarjetaCredito {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
-    @Column(name = "nombre", nullable = false, unique = true)
-    private String nombre;
-
-    @Column(name = "descripcion")
-    private String descripcion;
+    @Column(name = "nombre_tipo_tarjeta", nullable = false, unique = true)
+    private String nombreTipoTarjeta;
 
     private TipoTarjetaCredito (TipoTarjetaCredito tipoTarjetaCredito) {
         this.id = tipoTarjetaCredito.id;
-        this.nombre = tipoTarjetaCredito.nombre;
-        this.descripcion = tipoTarjetaCredito.descripcion;
+        this.nombreTipoTarjeta = tipoTarjetaCredito.nombreTipoTarjeta;
     }
 
-    public static TipoTarjetaCredito of(String nombre, String descripcion) {
+    public static TipoTarjetaCredito of(String nombre) {
         TipoTarjetaCredito nuevaTipoTarjetaCredito = new TipoTarjetaCredito();
-        nuevaTipoTarjetaCredito.setNombre(nombre);
-        nuevaTipoTarjetaCredito.setDescripcion(descripcion);
+        nuevaTipoTarjetaCredito.setNombreTipoTarjeta(nombre);
         return nuevaTipoTarjetaCredito;
     }
 

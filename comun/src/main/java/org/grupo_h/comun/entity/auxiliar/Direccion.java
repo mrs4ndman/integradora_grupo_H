@@ -17,7 +17,7 @@ public class Direccion {
      */
     @ManyToOne
     @JoinColumn(name = "tipo_via_direccion_ppal_id",
-            referencedColumnName = "codigoTipoVia",
+            referencedColumnName = "tipoVia",
             foreignKey = @ForeignKey(name = "FK_TIPOVIA_DIRECCION"))
     private TipoVia tipoViaDireccionPpal;
 

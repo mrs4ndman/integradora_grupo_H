@@ -1,7 +1,9 @@
 package org.grupo_h.empleados.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosFinancieros;
@@ -10,15 +12,15 @@ import org.hibernate.validator.constraints.LuhnCheck;
 @Data
 public class TarjetaCreditoDTO {
 
-    @Pattern(
-            regexp = "^(V|AM|MC)$",
-            message = "{Validacion.tarjetaCredito.notBlank}",
-            groups = DatosFinancieros.class)
+
+    private String tipoTarjetaCreditoNombre;  // simple property for binding
+
+    @Valid
     private TipoTarjetaCreditoDTO tipoTarjetaCreditoDTO;
 
     // Validacion algoritmo Luhn
-//    @LuhnCheck(message = "{Validacion.tarjetaCredito.formatoInvalido}",
-//            groups = DatosFinancieros.class)
+    @LuhnCheck(message = "{Validacion.tarjetaCredito.formatoInvalido}",
+            groups = DatosFinancieros.class)
     private String numeroTarjetaCreditoDTO;
 
     @Pattern(

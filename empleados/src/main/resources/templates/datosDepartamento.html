@@ -22,9 +22,9 @@
 
         <div>
             <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
-            <select th:field="*{departamentoDTO.codigo}" id="departamento">
+            <select th:field="*{departamentoDTO.id}" id="departamento">
                 <option th:each="d : ${departamentos}"
-                        th:value="${d.codigo}"
+                        th:value="${d.id}"
                         th:text="${d.nombreDept}">
                 </option>
             </select>
@@ -33,27 +33,15 @@
         <br><br>
 
         <!-- Sección de Especialidades -->
-        <h3 th:text="#{Datos-departamento.especialidades}">Especialidades</h3>
-
+        <label>Especialidades:</label><br>
         <div th:each="e, iterStat : *{especialidadesSeleccionadasDTO}">
-
-<!--            &lt;!&ndash; Campo oculto para ID &ndash;&gt;-->
-<!--            <input type="hidden"-->
-<!--                   th:field="*{especialidadesSeleccionadasDTO[__${iterStat.index}__].id}">-->
-
-<!--            &lt;!&ndash; Campo oculto para nombre de especialidad &ndash;&gt;-->
-<!--            <input type="hidden"-->
-<!--                   th:field="*{especialidadesSeleccionadasDTO[__${iterStat.index}__].especialidad}">-->
-
-            <!-- Checkbox -->
             <input type="checkbox"
                    th:field="*{especialidadesSeleccionadasDTO[__${iterStat.index}__].seleccionada}"
-                   th:value="${e.seleccionada}"
-                   th:id="'esp-' + ${e.id}">
-
-            <label th:for="'esp-' + ${e.id}"
-                   th:text="${e.especialidad}">Nombre especialidad</label>
+                   th:value="${e.id}"
+                   th:id="'esp-' + ${e.id}"/>
+            <label th:for="'esp-' + ${e.id}" th:text="${e.nombreEspecialidad}"></label>
         </div>
+        <span th:if="${#fields.hasErrors('especialidadesSeleccionadasDTO')}" th:errors="*{especialidadesSeleccionadasDTO}" style="color:red"></span>
 
         <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()">
         <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()">

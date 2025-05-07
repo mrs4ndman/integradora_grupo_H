@@ -20,7 +20,6 @@ public class CuentaCorrienteDTO {
             message = "{Validacion.numeroCuenta.IBAN}")
     private String numeroCuentaDTO;
 
-    private String ibanDTO;
 
     /**
      * Nombre del banco asociado a la cuenta corriente. No puede ser nulo.

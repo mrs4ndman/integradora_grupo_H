@@ -6,13 +6,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * DTO for {@link org.grupo_h.comun.entity.auxiliar.TipoTarjetaCredito}
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TipoTarjetaCreditoDTO {
-//    UUID id;
-    String nombreTipoTarjetaDTO;
+public class TipoDocumentoDTO {
+
+    private UUID id;
+
+    private String tipoDocumento = "DNI";
 }

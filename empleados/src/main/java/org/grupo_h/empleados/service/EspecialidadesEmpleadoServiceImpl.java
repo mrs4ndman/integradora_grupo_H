@@ -3,9 +3,11 @@ package org.grupo_h.empleados.service;
 import org.grupo_h.comun.entity.EspecialidadesEmpleado;
 import org.grupo_h.comun.repository.EspecialidadesEmpleadoRepository;
 import org.grupo_h.empleados.dto.EspecialidadesEmpleadoDTO;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -15,6 +17,12 @@ public class EspecialidadesEmpleadoServiceImpl implements EspecialidadesEmpleado
 
     @Autowired
     private EspecialidadesEmpleadoRepository especialidadesEmpleadoRepository;
+    private final ModelMapper modelMapper;
+
+    public EspecialidadesEmpleadoServiceImpl(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
+
 
     @Override
     public List<EspecialidadesEmpleado> obtenerTodasEspecialidades() {
@@ -23,18 +31,16 @@ public class EspecialidadesEmpleadoServiceImpl implements EspecialidadesEmpleado
 
     @Override
     public List<EspecialidadesEmpleadoDTO> obtenerTodasEspecialidadesEmpleadoDTO() {
-        List<EspecialidadesEmpleado> entidades = especialidadesEmpleadoRepository.findAll();
-        return IntStream.range(0, entidades.size())
-                .mapToObj(i -> {
-                    EspecialidadesEmpleado e = entidades.get(i);
-                    return new EspecialidadesEmpleadoDTO(
-                            e.getId(),
-                            e.getEspecialidad(),
-                            false,
-                            i
-                    );
+        return especialidadesEmpleadoRepository.findAll().stream()
+                .map(e -> {
+                    EspecialidadesEmpleadoDTO dto = new EspecialidadesEmpleadoDTO();
+                    dto.setId(e.getId());
+                    dto.setNombreEspecialidad(e.getEspecialidad());
+                    dto.setSeleccionada(false);
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
+
 
 }

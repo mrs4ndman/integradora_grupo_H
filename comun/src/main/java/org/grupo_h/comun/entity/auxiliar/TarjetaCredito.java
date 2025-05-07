@@ -13,8 +13,14 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class TarjetaCredito {
+
+    // Relación con TipoTarjeta
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "tipo_tarjeta_id", nullable = false)
+    private TipoTarjetaCredito tipoTarjetaCredito;
+
     @Column(name = "numero_tarjeta", nullable = false)
-    private String numeroTarjeta;
+    private String numeroTarjetaCredito;
 
     @Column(name = "mes_caducidad")
     private String mesCaducidad;
@@ -22,14 +28,7 @@ public class TarjetaCredito {
     @Column(name = "anio_caducidad")
     private String anioCaducidad;
 
-    @Column(name = "cvc", length = 3, nullable = false)
+    @Column(name = "cvc", length = 3)
     private String cvc;
 
-    @Column(name = "orden")
-    private Integer orden;
-
-    // Relación con TipoTarjeta
-    @ManyToOne
-    @JoinColumn(name = "tipo_tarjeta_id", nullable = false)
-    private TipoTarjetaCredito tipoTarjeta;
 }

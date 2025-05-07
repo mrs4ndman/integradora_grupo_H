@@ -23,7 +23,7 @@
     <p style="color: red;" th:text="${error}"></p>
   </div>
 
-  <form th:action="@{/empleados/registro-datos}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" >
+  <form th:action="@{/empleados/registro-datos}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" enctype="multipart/form-data">
 
     <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
     <div th:if="${#fields.hasGlobalErrors()}">
@@ -82,7 +82,7 @@
                 th:text="${p.nombrePais}">
         </option>
       </select>
-      <div th:if="${#fields.hasErrors('paisNacimiento')}" th:errors="*{paisNacimiento}" class="error"></div>
+      <div th:if="${#fields.hasErrors('paisNacimiento.codigoPaisDTO')}" th:errors="*{paisNacimiento.codigoPaisDTO}" class="error"></div>
     </div>
 
     <label for="comentario" th:text="#{Datos-Personales.comentario}"></label>
