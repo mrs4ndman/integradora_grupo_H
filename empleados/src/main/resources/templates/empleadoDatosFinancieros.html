@@ -32,9 +32,9 @@
 
         <div>
             <label for="entidadBancaria" th:text="#{Datos.Economicos.entidad }"></label>
-            <select th:field="*{cuentaCorrienteDTO.entidadBancaria.nombreEntidadDTO}" id="entidadBancaria">
+            <select th:field="*{cuentaCorrienteDTO.entidadBancaria}" id="entidadBancaria">
                 <option th:each="e : ${entidades}"
-                        th:value="${e.id}"
+                        th:value="${e.nombreEntidad}"
                         th:text="${e.nombreEntidad}">
                 </option>
             </select>
@@ -64,10 +64,10 @@
         <h2 th:text="#{Titulo.tarjetaCredito}"/>
 
         <div>
-            <label for="tipoTarjeta" th:text="#{Datos.Economicos.tipoTarjeta }"></label>
-            <select th:field="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO}" id="tipoTarjeta">
+            <label for="tipoTarjeta" th:text="#{Datos.Economicos.tipoTarjeta}"></label>
+            <select th:field="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO.nombreTipoTarjetaDTO}" id="tipoTarjeta">
                 <option th:each="t : ${tiposTarjeta}"
-                        th:value="${t.id}"
+                        th:value="${t.nombreTipoTarjeta}"
                         th:text="${t.nombreTipoTarjeta}">
                 </option>
             </select>

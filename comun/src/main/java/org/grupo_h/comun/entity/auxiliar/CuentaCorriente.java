@@ -17,11 +17,11 @@ public class CuentaCorriente {
     @Column(name = "numero_cuenta", nullable = false)
     private String numeroCuenta;
 
-    @Column(name = "iban", nullable = false, unique = true)
-    private String iban;
+//    @Column(name = "iban", nullable = false, unique = true)
+//    private String iban;
 
     // Relación con Entidad Bancaria
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "entidad_bancaria_id", nullable = false)
     private EntidadBancaria entidadBancaria;
 }

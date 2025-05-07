@@ -2,6 +2,7 @@ package org.grupo_h.empleados.service;
 
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.auxiliar.*;
+import org.grupo_h.comun.repository.EntidadBancariaRepository;
 import org.grupo_h.empleados.dto.*;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.modelmapper.ModelMapper;
@@ -19,21 +20,23 @@ import java.util.UUID;
 public class EmpleadoServiceImpl implements EmpleadoService {
 
     private final EmpleadoRepository empleadosRepository;
+    public final EntidadBancariaRepository entidadBancariaRepository;
     private final UsuarioRepository usuarioRepository;
     private final GeneroRepository generoRepository;
+    private final EntidadBancariaServiceImpl tipoTarjetaCreditoRepository;
     private final ModelMapper modelMapper;
-    private final AbstractConfigurableTemplateResolver abstractConfigurableTemplateResolver;
 
     @Autowired
     public EmpleadoServiceImpl(EmpleadoRepository empleadosRepository,
                                UsuarioRepository usuarioRepository,
                                GeneroRepository generoRepository,
-                               ModelMapper modelMapper, AbstractConfigurableTemplateResolver abstractConfigurableTemplateResolver) {
+                               ModelMapper modelMapper, AbstractConfigurableTemplateResolver abstractConfigurableTemplateResolver, EntidadBancariaRepository entidadBancariaRepository, EntidadBancariaServiceImpl tipoTarjetaCreditoRepository) {
         this.empleadosRepository = empleadosRepository;
         this.usuarioRepository = usuarioRepository;
         this.generoRepository = generoRepository;
         this.modelMapper = modelMapper;
-        this.abstractConfigurableTemplateResolver = abstractConfigurableTemplateResolver;
+        this.entidadBancariaRepository = entidadBancariaRepository;
+        this.tipoTarjetaCreditoRepository = tipoTarjetaCreditoRepository;
     }
 
     @Override
@@ -41,9 +44,25 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO) {
         Empleado empleado = modelMapper.map(empleadoDTO, Empleado.class);
 
-        modelMapper.typeMap(CuentaCorrienteDTO.class, CuentaCorriente.class).addMappings(mapper -> {
-            mapper.skip(CuentaCorriente::setEntidadBancaria);
-        });
+//        if (empleado.getCuentaCorriente() != null && empleado.getCuentaCorriente().getEntidadBancaria() != null) {
+//            Long entidadBancariaId = empleado.getCuentaCorriente().getEntidadBancaria().getId();
+//            if (entidadBancariaId != null) {
+//                EntidadBancaria entidadBancaria = entidadBancariaRepository.findById(entidadBancariaId)
+//                        .orElseThrow(() -> new RuntimeException("EntidadBancaria no encontrada con id: " + entidadBancariaId));
+//                empleado.getCuentaCorriente().setEntidadBancaria(entidadBancaria);
+//            } else {
+//                throw new RuntimeException("EntidadBancaria ID es null");
+//            }
+//        }
+//
+//        if (empleado.getTarjetas().getTipoTarjetaCredito() != null) {
+//            Long tipoTarjetaId = empleado.getTarjetas().getTipoTarjetaCredito().getId();
+//            if (tipoTarjetaId != null) {
+//                TipoTarjetaCredito tipoTarjetaCredito = (TipoTarjetaCredito) tipoTarjetaCreditoRepository.findById(tipoTarjetaId)
+//                        .orElseThrow(() -> new RuntimeException("TipoTarjetaCredito no encontrada con id: " + tipoTarjetaId));
+//                empleado.getTarjetas().setTipoTarjetaCredito(tipoTarjetaCredito);
+//            }
+//        }
 
         // Persistir el empleado
         return empleadosRepository.save(empleado);

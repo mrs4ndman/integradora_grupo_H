@@ -13,6 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TipoTarjetaCreditoDTO {
-    UUID id;
+//    UUID id;
     String nombreTipoTarjetaDTO;
 }

@@ -22,9 +22,9 @@
 
         <div>
             <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
-            <select th:field="*{departamentoDTO.codigo}" id="departamento">
+            <select th:field="*{departamentoDTO.nombreDept}" id="departamento">
                 <option th:each="d : ${departamentos}"
-                        th:value="${d.codigo}"
+                        th:value="${d.nombreDept}"
                         th:text="${d.nombreDept}">
                 </option>
             </select>
@@ -37,6 +37,7 @@
         <div th:each="e, iterStat : *{especialidadesSeleccionadasDTO}">
             <input type="checkbox"
                    th:field="*{especialidadesSeleccionadasDTO[__${iterStat.index}__].seleccionada}"
+                   th:value="${e.id}"
                    th:id="'esp-' + ${e.id}"/>
             <label th:for="'esp-' + ${e.id}" th:text="${e.nombreEspecialidad}"></label>
         </div>

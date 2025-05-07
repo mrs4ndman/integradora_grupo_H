@@ -20,8 +20,8 @@ import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosFinancieros;
 @AllArgsConstructor
 public class EntidadBancariaDTO {
 
-    private Long id;
+//    private Long id;
 
-    @NotNull(message = "{Validacion.entidadBancaria.NotNull}", groups = DatosFinancieros.class)
+//    @NotNull(message = "{Validacion.entidadBancaria.NotNull}", groups = DatosFinancieros.class)
     private String nombreEntidadDTO;
 }

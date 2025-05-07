@@ -321,6 +321,7 @@ public class EmpleadoController {
                 // Imprimir los errores para depurar
                 result.getAllErrors().forEach(error -> System.out.println(error.toString()));
 
+                session.setAttribute("empleadoRegistroDTO", dtoSesion);
                 return "empleadoDatosFinancieros";
             }
 
