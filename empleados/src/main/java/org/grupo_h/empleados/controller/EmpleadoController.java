@@ -45,6 +45,8 @@ public class EmpleadoController {
     private final TipoViaRepository tipoViaRepository;
     @Autowired
     private final TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository;
+    @Autowired
+    private final EntidadBancariaRepository entidadBancariaRepository;
 
     private final ModelMapper modelMapper;
 //Servicios
@@ -61,9 +63,11 @@ public class EmpleadoController {
     @Autowired
     private final TipoTarjetaService tipoTarjetaService;
     @Autowired
-    private EntidadBancariaRepository entidadBancariaRepository;
+    private TipoViaService tipoViaService;
+    @Autowired
+    private TipoDocumentoService tipoDocumentoService;
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, ModelMapper modelMapper, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, EntidadBancariaRepository entidadBancariaRepository, ModelMapper modelMapper, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
@@ -71,6 +75,7 @@ public class EmpleadoController {
         this.tipoDocumentoRepository = tipoDocumentoRepository;
         this.tipoViaRepository = tipoViaRepository;
         this.tipoTarjetaCreditoRepository = tipoTarjetaCreditoRepository;
+        this.entidadBancariaRepository = entidadBancariaRepository;
         this.modelMapper = modelMapper;
         this.generoService = generoService;
         this.departamentoService = departamentoService;
@@ -191,8 +196,17 @@ public class EmpleadoController {
                 Model model) {
             session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
 
-            model.addAttribute("tiposDocumento",tipoDocumentoRepository.findAll());
-            model.addAttribute("tiposVia",tipoViaRepository.findAll());
+
+            List<TipoViaDTO> tipoViaDTO = tipoViaService.obtenertodasTipoVia().stream()
+                    .map(e -> modelMapper.map(e, TipoViaDTO.class))
+                    .collect(Collectors.toList());
+            model.addAttribute("tiposVia", tipoViaDTO);
+
+            List<TipoDocumentoDTO> tipoDocumentoDTO = tipoDocumentoService.obtenertodosTiposDocumento().stream()
+                    .map(e -> modelMapper.map(e, TipoDocumentoDTO.class))
+                    .collect(Collectors.toList());
+            model.addAttribute("tiposDocumento",tipoDocumentoDTO);
+
             model.addAttribute("paises", paisRepository.findAll());
             return "empleadoDireccionRegistro";
         }
@@ -212,15 +226,27 @@ public class EmpleadoController {
                 BindingResult result,
                 HttpSession session,
                 Model model) {
+
             if (result.hasErrors()) {
-                model.addAttribute("tiposDocumento",tipoDocumentoRepository.findAll());
-                model.addAttribute("tiposVia",tipoViaRepository.findAll());
+                List<TipoViaDTO> tipoViaDTO = tipoViaService.obtenertodasTipoVia().stream()
+                        .map(e -> modelMapper.map(e, TipoViaDTO.class))
+                        .collect(Collectors.toList());
+                model.addAttribute("tiposVia",tipoViaDTO);
+
+                List<TipoDocumentoDTO> tipoDocumentoDTO = tipoDocumentoService.obtenertodosTiposDocumento().stream()
+                        .map(e -> modelMapper.map(e, TipoDocumentoDTO.class))
+                        .collect(Collectors.toList());
+                model.addAttribute("tiposDocumento",tipoDocumentoDTO);
+
                 model.addAttribute("paises", paisRepository.findAll());
                 // Imprimir los errores para depurar
                 result.getAllErrors().forEach(error -> System.out.println(error.toString()));
+                System.out.println(empleadoRegistroDTO);
                 return "empleadoDireccionRegistro";
             }
+
             session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
+
             return "redirect:/empleados/registro-departamento";
         }
 
@@ -351,12 +377,11 @@ public class EmpleadoController {
         public String datosFinalesGet(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session, Model model) {
             empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
 
-//            TarjetaCreditoDTO tarjetaCreditoDTO = null;
-//
+
             if (empleadoRegistroDTO == null) {
                 empleadoRegistroDTO = new EmpleadoRegistroDTO();
             }
-//
+
             // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
             if (empleadoRegistroDTO.getDireccionDTO() == null) {
                 empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());

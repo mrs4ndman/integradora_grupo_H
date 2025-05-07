@@ -55,7 +55,7 @@ public class Empleado {
             foreignKey = @ForeignKey(name = "FK_EMPLEADO_GENERO")) // Opcional: Nombre explícito FK
     private Genero genero; // <-- CAMBIO DE NOMBRE AQUÍ
 
-    @Column(nullable = false)
+    @Column(name="email")
     private String email;
 
     @Column(name = "fecha_nacimiento", nullable = false)

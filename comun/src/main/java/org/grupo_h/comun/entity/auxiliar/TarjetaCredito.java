@@ -28,7 +28,7 @@ public class TarjetaCredito {
     @Column(name = "anio_caducidad")
     private String anioCaducidad;
 
-    @Column(name = "cvc", length = 3, nullable = false)
+    @Column(name = "cvc", length = 3)
     private String cvc;
 
 }
