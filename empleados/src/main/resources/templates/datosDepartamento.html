@@ -22,9 +22,9 @@
 
         <div>
             <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
-            <select th:field="*{departamentoDTO.nombreDept}" id="departamento">
+            <select th:field="*{departamentoDTO.id}" id="departamento">
                 <option th:each="d : ${departamentos}"
-                        th:value="${d.nombreDept}"
+                        th:value="${d.id}"
                         th:text="${d.nombreDept}">
                 </option>
             </select>

@@ -15,7 +15,7 @@ import java.util.UUID;
 public class TarjetaCredito {
 
     // Relación con TipoTarjeta
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "tipo_tarjeta_id", nullable = false)
     private TipoTarjetaCredito tipoTarjetaCredito;
 

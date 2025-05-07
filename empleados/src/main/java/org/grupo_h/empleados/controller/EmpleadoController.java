@@ -459,7 +459,11 @@ public class EmpleadoController {
 
             empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(especialidades);
         }
-        model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
+        List<DepartamentoDTO> departamentosDTO = departamentoService.obtenerTodosDepartamentos().stream()
+                .map(e -> modelMapper.map(e, DepartamentoDTO.class))
+                .collect(Collectors.toList());
+        model.addAttribute("departamentos", departamentosDTO);
+//        model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
     }
 
 }
