@@ -387,9 +387,21 @@ public class EmpleadoController {
             empleadoRegistroDTO = new EmpleadoRegistroDTO();
         }
 
+        if(empleadoRegistroDTO.getGeneroSeleccionadoDTO() == null){
+            empleadoRegistroDTO.setGeneroSeleccionadoDTO(new GeneroDTO());
+        }
+
+        if(empleadoRegistroDTO.getTipoDocumentoDTO() == null){
+            empleadoRegistroDTO.setTipoDocumentoDTO(new TipoDocumentoDTO());
+        }
+
         // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
         if (empleadoRegistroDTO.getDireccionDTO() == null) {
             empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
+        }
+
+        if(empleadoRegistroDTO.getDireccionDTO().getTipoViaDireccionPpalDTO() == null){
+            empleadoRegistroDTO.getDireccionDTO().setTipoViaDireccionPpalDTO(new TipoViaDTO());
         }
 
         if (empleadoRegistroDTO.getCuentaCorrienteDTO() == null) {
@@ -399,7 +411,6 @@ public class EmpleadoController {
         if (empleadoRegistroDTO.getTarjetasCreditoDTO() == null) {
             empleadoRegistroDTO.setTarjetasCreditoDTO(new TarjetaCreditoDTO());
         }
-
 
         model.addAttribute("datos", empleadoRegistroDTO);
 
@@ -437,7 +448,8 @@ public class EmpleadoController {
         if (usuario.isPresent()) {
             logger.info("Se ha encontrado el ID del usuario autenticado.");
         } else {
-            logger.error("No se pudo obtener el ID del usuario autenticado.");
+            logger.error("No se pudo obtener el ID del usuario autenticado. Hola");
+            return "redirect:/usuarios/inicio-sesion";
         }
 
         try {

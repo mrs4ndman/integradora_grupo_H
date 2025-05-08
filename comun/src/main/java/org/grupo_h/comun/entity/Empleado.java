@@ -90,8 +90,8 @@ public class Empleado {
     )
     private TipoDocumento tipoDocumento;
 
-    @Column(name = "contenido_documento")
-    private String contenidoDocumento;
+    @Column(name = "numero_documento")
+    private String numeroDocumento;
 
     @Column(name = "prefijo_internacional_telf")
     private String prefijoTelefono;
