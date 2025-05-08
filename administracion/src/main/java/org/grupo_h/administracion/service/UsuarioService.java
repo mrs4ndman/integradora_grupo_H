@@ -51,7 +51,7 @@ public class UsuarioService {
     }
 
     public List<Usuario> obtenerTodosLosUsuarios() {
-        return usuarioRepository.findAll();
+        return usuarioRepository.findAllDistinct();
     }
 
     public void actualizarUsuario(Usuario usuario) {

@@ -1,6 +1,7 @@
 package org.grupo_h.comun.entity.auxiliar;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
  * Representa una dirección postal.
  */
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
 public class Direccion {

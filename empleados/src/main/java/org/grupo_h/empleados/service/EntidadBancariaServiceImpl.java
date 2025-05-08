@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class EntidadBancariaServiceImpl implements EntidadBancariaService {
@@ -37,11 +38,6 @@ public class EntidadBancariaServiceImpl implements EntidadBancariaService {
         return entidadesDTO.stream()
                 .filter(dto -> dto.getNombreEntidadDTO().equals(nombreEntidad))
                 .findFirst();
-    }
-
-    @Override
-    public Optional<Object> findById(Long entidadId) {
-        return Optional.empty();
     }
 
     public List<EntidadBancariaDTO> obtenerEntidadesBancarias(){

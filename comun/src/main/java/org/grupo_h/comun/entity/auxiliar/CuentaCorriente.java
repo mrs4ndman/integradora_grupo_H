@@ -3,6 +3,8 @@ package org.grupo_h.comun.entity.auxiliar;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 
 @Entity
 @Table(name = "cuenta_corriente")
@@ -11,8 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 public class CuentaCorriente {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @Column(name = "numero_cuenta", nullable = false)
     private String numeroCuenta;

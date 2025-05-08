@@ -13,7 +13,5 @@ public interface EntidadBancariaService {
 
     Optional<EntidadBancariaDTO> findByNombreEntidad(String nombreEntidad);
 
-    Optional<Object> findById(Long entidadId);
-
     List<EntidadBancariaDTO> obtenerEntidadesBancarias();
 }

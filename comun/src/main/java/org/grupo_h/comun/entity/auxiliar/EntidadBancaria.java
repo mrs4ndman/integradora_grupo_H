@@ -14,8 +14,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class EntidadBancaria {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "nombre_entidad")
     private String nombreEntidad;

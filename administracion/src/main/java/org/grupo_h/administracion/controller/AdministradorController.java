@@ -712,4 +712,8 @@ public class AdministradorController {
         return "redirect:/administrador/dashboardGestionUsuarios";
     }
 
+    @GetMapping("/gestion-productos/importar-catalogo")
+    public String vistaImportarCatalogo() {
+        return "importarCatalogo";
+    }
 }

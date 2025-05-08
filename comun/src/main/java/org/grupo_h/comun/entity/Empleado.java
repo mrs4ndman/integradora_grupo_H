@@ -4,11 +4,14 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.grupo_h.comun.entity.auxiliar.*; // Asegúrate que Genero está aquí
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -19,18 +22,19 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @SecondaryTable(name = "datos_Economicos",
-        pkJoinColumns = @PrimaryKeyJoinColumn(name = "empleados_id_datos_economicos")
+        pkJoinColumns = @PrimaryKeyJoinColumn(name = "empleados_id"),
+        foreignKey = @ForeignKey(name = "FK_EMPLEADO_DATOS_ECONOMICOS")
 )
 public class Empleado {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-//    @OneToOne(optional = false)
-//    @MapsId
-//    @JoinColumn(name = "id")
-//    private Usuario usuario;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
+    @JoinColumn(name = "id") // Ajusta 'usuario_id' al nombre real de tu columna FK
+    private Usuario usuario;
 
     // DATOS PERSONALES
 
@@ -68,12 +72,11 @@ public class Empleado {
     private Integer edad; // Considerar calcularla en lugar de almacenarla si es posible
 
     @ManyToOne
-//    @JoinColumn(
-//            name = "pais_nacimiento",
-//            foreignKey = @ForeignKey(name = "FK_PAIS_NACIMIENTO_EMPLEADO")
-//    )
+    @JoinColumn(
+            name = "pais_nacimiento",
+            foreignKey = @ForeignKey(name = "FK_PAIS_NACIMIENTO_EMPLEADO")
+    )
     private Pais paisNacimiento;
-
 
     @Column(name = "comentarios")
     private String comentarios;
@@ -100,8 +103,8 @@ public class Empleado {
     private Direccion direccion;
 
 
-
-    // DATOS PROFESIONALES
+    @Column(name = "archivo_nombre_original")
+    private String archivoNombreOriginal;
 
     @ManyToOne
     @JoinColumn(name = "departamento_id")
@@ -116,18 +119,6 @@ public class Empleado {
     private List<EspecialidadesEmpleado> especialidadesEmpleado;
 
     // Tabla Secundaria Datos Económicos
-
-    @Column(name="salario", table = "datos_Economicos")
-    private Double salario;
-
-    @Column(name="comision", table = "datos_Economicos")
-    private Double comision;
-
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "cuenta_corriente_id", table = "datos_Economicos")
-    private CuentaCorriente cuentaCorriente;
-
-
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "tiposTarjetaCredito", column = @Column(table = "datos_Economicos", name = "tipo_tarjeta_credito")),
@@ -138,11 +129,46 @@ public class Empleado {
     })
     private TarjetaCredito tarjetas;
 
-
-
     private Boolean aceptaInformacion;
 
     @Column(name = "fecha_alta_en_BD")
     private LocalDate fechaAltaEnBaseDeDatos = LocalDate.now();
 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+            name = "empleado_etiqueta",
+            joinColumns = @JoinColumn(name = "empleado_id"),
+            inverseJoinColumns = @JoinColumn(name = "etiqueta_id"))
+    @ToString.Exclude
+    private Set<Etiqueta> etiquetas = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "jefe_id")
+    @ToString.Exclude
+    private Empleado jefe;
+
+    @OneToMany(mappedBy = "jefe", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private Set<Empleado> subordinados = new HashSet<>();
+
+    public void addEtiqueta(Etiqueta etiqueta) {
+        this.etiquetas.add(etiqueta);
+        // Si la relación fuera bidireccional (Etiqueta tuviera Set<Empleado>),
+        // también añadiríamos this a etiqueta.getEmpleados().add(this);
+    }
+
+    public void removeEtiqueta(Etiqueta etiqueta) {
+        this.etiquetas.remove(etiqueta);
+        // Si fuera bidireccional: etiqueta.getEmpleados().remove(this);
+    }
+
+    public void addSubordinado(Empleado subordinado) {
+        this.subordinados.add(subordinado);
+        subordinado.setJefe(this);
+    }
+
+    public void removeSubordinado(Empleado subordinado) {
+        this.subordinados.remove(subordinado);
+        subordinado.setJefe(null);
+    }
 }

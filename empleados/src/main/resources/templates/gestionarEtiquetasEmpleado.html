@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title th:text="'Gestionar Etiquetas de ' + ${empleado.nombre} + ' ' + ${empleado.apellido1}">Gestionar Etiquetas</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+    <h1 th:text="'Gestionar Etiquetas de ' + ${empleado.nombre} + ' ' + ${empleado.apellido1}">Gestionar Etiquetas de Empleado</h1>
+
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Gestión de Etiquetas</div>
+        <div class="card-body">
+
+            <h5>Etiquetas Asignadas Actualmente:</h5>
+            <div th:if="${empleado.etiquetas == null or empleado.etiquetas.isEmpty()}">
+                <p>Este empleado no tiene etiquetas asignadas.</p>
+            </div>
+            <div th:unless="${empleado.etiquetas == null or empleado.etiquetas.isEmpty()}" class="mb-3">
+                <ul class="list-inline">
+                    <li th:each="etiqueta : ${empleado.etiquetas}" class="list-inline-item mb-2">
+                        <span class="badge bg-primary me-1" th:text="${etiqueta.nombre}">Nombre Etiqueta</span>
+                        <form th:action="@{/empleados/{subId}/etiquetas/{tagId}/eliminar(subId=${empleado.id}, tagId=${etiqueta.id})}"
+                              method="post"
+                              style="display: inline;"
+                              onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta etiqueta?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar etiqueta">&times;</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            <hr>
+
+            <h5>Asignar Etiqueta Existente:</h5>
+            <form th:action="@{/empleados/{subId}/etiquetas(subId=${empleado.id})}" method="post" class="row g-3 align-items-center mb-3">
+                <div class="col-auto">
+                    <label for="etiquetaExistenteSelect" class="visually-hidden">Etiqueta</label>
+                    <select class="form-select" id="etiquetaExistenteSelect" name="etiquetaId" required>
+                        <option value="" disabled selected>Selecciona una etiqueta...</option>
+                        <th:block th:each="et : ${todasLasEtiquetas}">
+                            <option th:unless="${#lists.contains(empleado.etiquetas.![id], et.id)}"
+                                    th:value="${et.id}"
+                                    th:text="${et.nombre}">Nombre Etiqueta</option>
+                        </th:block>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-success">Asignar</button>
+                </div>
+            </form>
+            <hr>
+
+            <h5>Crear y Asignar Nueva Etiqueta:</h5>
+            <form th:action="@{/empleados/{subId}/etiquetas/nueva(subId=${empleado.id})}" method="post" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="nombreNuevaEtiquetaInput" class="visually-hidden">Nueva Etiqueta</label>
+                    <input type="text" class="form-control" id="nombreNuevaEtiquetaInput" name="nombreNuevaEtiqueta" placeholder="Nombre de la nueva etiqueta" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-info">Crear y Asignar</button>
+                </div>
+            </form>
+
+        </div> </div> <div class="mt-3">
+    <a th:href="@{/empleados/detalle/{id}(id=${empleado.id})}" class="btn btn-secondary">Volver al Detalle del Empleado</a>
+    <a th:href="@{/areaPersonal}" class="btn btn-outline-secondary">Ir al Área Personal</a>
+</div>
+
+</div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

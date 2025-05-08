@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"> <head>
+    <meta charset="UTF-8">
+    <title>Importar Catálogo de Productos</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="file"] { padding: 8px; border: 1px solid #ddd; border-radius: 3px; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .message { padding: 10px; margin-top: 15px; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        pre { background-color: #f0f0f0; padding: 10px; border-radius: 3px; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Importar Catálogo de Productos desde JSON</h2>
+
+    <div id="apiMessages"></div> <form id="importForm" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="archivo">Seleccionar archivo JSON:</label>
+        <input type="file" id="archivo" name="archivo" accept=".json" required>
+    </div>
+    <button type="submit">Importar Catálogo</button>
+</form>
+</div>
+
+<script>
+    document.getElementById('importForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Prevenir el envío tradicional del formulario
+
+        const archivoInput = document.getElementById('archivo');
+        const apiMessagesDiv = document.getElementById('apiMessages');
+        apiMessagesDiv.innerHTML = ''; // Limpiar mensajes anteriores
+
+        if (archivoInput.files.length === 0) {
+            apiMessagesDiv.innerHTML = '<div class="message error">Por favor, seleccione un archivo.</div>';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('archivo', archivoInput.files[0]);
+
+        try {
+            // Asegúrate de que la URL coincida con tu endpoint en CatalogoRestController
+            const response = await fetch('/api/administracion/catalogo/importar', {
+                method: 'POST',
+                body: formData
+                // No necesitas 'Content-Type': 'multipart/form-data' aquí,
+                // el navegador lo establece automáticamente para FormData con archivos.
+            });
+
+            const result = await response.json(); // Siempre intentar parsear como JSON
+
+            if (response.ok) {
+                let successHtml = '<div class="message success">';
+                successHtml += '<p>' + escapeHtml(result.mensaje) + '</p>';
+                if (result.productosNuevos !== undefined) {
+                    successHtml += '<p>Productos nuevos: ' + result.productosNuevos + '</p>';
+                }
+                if (result.productosActualizados !== undefined) {
+                    successHtml += '<p>Productos actualizados: ' + result.productosActualizados + '</p>';
+                }
+                if (result.erroresIndividuales && result.erroresIndividuales.length > 0) {
+                    successHtml += '<p>Advertencias/Errores individuales:</p><ul>';
+                    result.erroresIndividuales.forEach(err => {
+                        successHtml += '<li>' + escapeHtml(err) + '</li>';
+                    });
+                    successHtml += '</ul>';
+                }
+                successHtml += '</div>';
+                apiMessagesDiv.innerHTML = successHtml;
+            } else {
+                // Error devuelto por la API (ej. 400, 500)
+                let errorHtml = '<div class="message error">';
+                errorHtml += '<h4>Error al importar: ' + (result.error || 'Error desconocido') + ' (Status: ' + response.status + ')</h4>';
+                errorHtml += '<p>' + escapeHtml(result.mensaje || 'No se pudo procesar la solicitud.') + '</p>';
+                if (result.detalles && result.detalles.length > 0) {
+                    errorHtml += '<p>Detalles:</p><pre>' + escapeHtml(result.detalles.join('\n')) + '</pre>';
+                }
+                errorHtml += '</div>';
+                apiMessagesDiv.innerHTML = errorHtml;
+            }
+        } catch (error) {
+            // Error de red o al parsear JSON si la respuesta no fue JSON (ej. error de servidor grave sin respuesta JSON)
+            console.error('Error en la petición fetch:', error);
+            apiMessagesDiv.innerHTML = '<div class="message error">Error de conexión o respuesta inesperada del servidor. Detalles: ' + escapeHtml(error.message) + '</div>';
+        }
+    });
+
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return unsafe
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>
+</body>
+</html>

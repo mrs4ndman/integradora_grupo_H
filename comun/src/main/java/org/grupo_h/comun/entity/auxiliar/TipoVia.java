@@ -13,7 +13,7 @@ import java.util.UUID;
 @Entity
 public class TipoVia {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String tipoVia;
 }

@@ -17,15 +17,6 @@ import java.util.Properties;
  */
 @Configuration
 public class Configuraciones {
-    /**
-     * Configura el codificador de contraseñas.
-     *
-     * @return El codificador de las contraseñas
-     */
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     /**
      * Configura la cadena de filtros de seguridad.

@@ -5,8 +5,12 @@ import org.grupo_h.comun.entity.Usuario;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.util.Optional;
+
 public interface UsuarioService {
     Usuario registrarUsuario(UsuarioRegistroDTO usuarioDTO);
+
+    Optional<Usuario> findByEmail(String email);
 
     // Métodos para manejar intentos de login
     void procesarLoginFallido(String email);

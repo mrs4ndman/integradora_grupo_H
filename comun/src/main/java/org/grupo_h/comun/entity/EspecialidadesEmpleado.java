@@ -15,7 +15,7 @@ import java.util.UUID;
 public class EspecialidadesEmpleado {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name="Especialidad")

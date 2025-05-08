@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class TipoDocumento {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "Cod_Tipo_Doc", length = 3)

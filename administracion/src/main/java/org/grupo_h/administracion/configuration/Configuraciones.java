@@ -23,15 +23,6 @@ public class Configuraciones {
     public ModelMapper modelMapper() {
         return new ModelMapper();
     }
-    /**
-     * Configura el codificador de contraseñas.
-     *
-     * @return El codificador de las contraseñas
-     */
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     /**
      * Configura la cadena de filtros de seguridad.
@@ -48,6 +39,7 @@ public class Configuraciones {
                         .requestMatchers(
                                 "/administracion/**",
                                 "/administrador/**",
+                                "/api/**",
                                 "/css/**", "/js/**", "/img/**").permitAll()
 
                         .anyRequest().authenticated()

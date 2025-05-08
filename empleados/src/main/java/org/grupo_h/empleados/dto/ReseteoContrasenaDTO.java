@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.grupo_h.empleados.validation.ContrasenaCoincide;
+import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.ContrasenaCoincide;
 
 @Data
 @NoArgsConstructor

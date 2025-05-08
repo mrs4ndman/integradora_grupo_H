@@ -14,7 +14,7 @@ import java.util.UUID;
 @Table(name = "tipo_tarjeta_credito")
 public class TipoTarjetaCredito {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "nombre_tipo_tarjeta", nullable = false, unique = true)

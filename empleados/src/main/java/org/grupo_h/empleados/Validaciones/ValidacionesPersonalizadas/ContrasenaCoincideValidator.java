@@ -1,9 +1,10 @@
-package org.grupo_h.empleados.validation;
+package org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.grupo_h.empleados.dto.ReseteoContrasenaDTO;
 import org.grupo_h.empleados.dto.UsuarioRegistroDTO;
+import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.ContrasenaCoincide;
 
 public class ContrasenaCoincideValidator implements ConstraintValidator<ContrasenaCoincide, Object> {
 
