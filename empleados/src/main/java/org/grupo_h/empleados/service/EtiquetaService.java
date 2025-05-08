@@ -1,10 +1,13 @@
 package org.grupo_h.empleados.service;
 
 import org.grupo_h.comun.entity.Etiqueta;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public interface EtiquetaService {
 
     Optional<Etiqueta> findById(UUID id);

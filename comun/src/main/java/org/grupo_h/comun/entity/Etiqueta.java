@@ -1,4 +1,4 @@
-package org.grupo_h.comun.entity; // O el paquete que elijas, ej. org.grupo_h.comun.entity.etiquetas
+package org.grupo_h.comun.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

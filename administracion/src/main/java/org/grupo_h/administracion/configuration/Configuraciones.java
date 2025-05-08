@@ -14,6 +14,11 @@ import java.util.Properties;
  */
 @Configuration
 public class Configuraciones {
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
     /**
      * Instancia el ModelMapper para su uso en este módulo
      *
@@ -43,8 +48,9 @@ public class Configuraciones {
                                 "/css/**", "/js/**", "/img/**").permitAll()
 
                         .anyRequest().authenticated()
-                );
-//                .formLogin(Customizer.withDefaults()); // Habilita el login por defecto para otros endpoints protegidos
+                )
+                .formLogin(form -> form
+                        .loginPage("/administrador/inicio-sesion")); // Habilita el login por defecto para otros endpoints protegidos
 
         return http.build();
     }

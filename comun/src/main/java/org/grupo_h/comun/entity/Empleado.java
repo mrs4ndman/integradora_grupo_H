@@ -1,10 +1,7 @@
 package org.grupo_h.comun.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.grupo_h.comun.entity.auxiliar.*; // Asegúrate que Genero está aquí
 
 import java.time.LocalDate;
@@ -28,12 +25,13 @@ import java.util.UUID;
 public class Empleado {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId
     @JoinColumn(name = "id") // Ajusta 'usuario_id' al nombre real de tu columna FK
+    @EqualsAndHashCode.Exclude
     private Usuario usuario;
 
     // DATOS PERSONALES
@@ -108,6 +106,7 @@ public class Empleado {
 
     @ManyToOne
     @JoinColumn(name = "departamento_id")
+    @EqualsAndHashCode.Exclude
     private Departamento departamento;
 
     @ManyToMany
@@ -134,22 +133,28 @@ public class Empleado {
     @Column(name = "fecha_alta_en_BD")
     private LocalDate fechaAltaEnBaseDeDatos = LocalDate.now();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @OneToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
             name = "empleado_etiqueta",
             joinColumns = @JoinColumn(name = "empleado_id"),
             inverseJoinColumns = @JoinColumn(name = "etiqueta_id"))
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Etiqueta> etiquetas = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jefe_id")
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Empleado jefe;
 
-    @OneToMany(mappedBy = "jefe", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "jefe", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Empleado> subordinados = new HashSet<>();
+
+    @Version
+    private Integer version;
 
     public void addEtiqueta(Etiqueta etiqueta) {
         this.etiquetas.add(etiqueta);

@@ -1,8 +1,10 @@
 package org.grupo_h.administracion.service;
 
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
+import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +21,11 @@ public interface EmpleadoService {
      * @return Optional con los detalles del empleado si existe, o vacío si no se encuentra
      */
     Optional<EmpleadoDetalleDTO> obtenerDetalleEmpleado(UUID id);
+
+    void asignarSubordinado(UUID idJefe, UUID idSubordinado);
+
+    void desasignarSubordinadoDeSuJefe(UUID idSubordinado);
+
+    List<EmpleadoSimpleDTO> obtenerTodosLosEmpleadosParaSeleccion();
+
 }

@@ -18,6 +18,11 @@ import java.util.Properties;
 @Configuration
 public class Configuraciones {
 
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     /**
      * Configura la cadena de filtros de seguridad.
      *
