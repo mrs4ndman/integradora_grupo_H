@@ -17,7 +17,7 @@
 </div>
 
 <form th:action="@{/empleados/registro-finales}" th:object="${empleadoRegistroDTO}" method="post"
-      onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
+      onsubmit="return confirmarAccionFormularioRegistroEmpleado(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
 
 
     <h2>Empleado</h2>

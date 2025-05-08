@@ -14,6 +14,15 @@ function confirmarAccionFormulario(elemento, mensaje) {
     }
 }
 
+function confirmarAccionFormularioRegistroEmpleado(elemento, mensaje) {
+    if (confirm(mensaje)) {
+        alert("Datos guardados correctamente")
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // *************** FUNCIONES REGISTRO EMPLEADO ***********************
 
 // Vacía el formulario de datos pùlsando el botón vaciar
