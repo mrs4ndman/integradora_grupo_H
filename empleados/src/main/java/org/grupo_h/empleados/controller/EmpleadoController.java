@@ -494,7 +494,7 @@ public class EmpleadoController {
     }
 //        model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
 
-    // --- NUEVOS Y MODIFICADOS ENDPOINTS PARA ETIQUETADO ---
+    // --- ENDPOINTS PARA ETIQUETADO ---
 
     /**
      * NUEVO: Muestra la página dedicada para gestionar etiquetas de un subordinado específico.
@@ -504,16 +504,13 @@ public class EmpleadoController {
     @PreAuthorize("@empleadoServiceImpl.esJefeDirecto(#subordinadoId)")
     public String mostrarGestionarEtiquetas(@PathVariable UUID subordinadoId, Model model) {
         try {
-            // Cargar datos del subordinado (necesitamos al menos nombre y ID, y sus etiquetas actuales)
-            // Usaremos EmpleadoDetalleDTO ya que probablemente contiene las etiquetas. Ajusta si usas otro DTO.
             Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.findEmpleadoDetalleById(subordinadoId);
             if (empleadoOpt.isEmpty()) {
                 throw new EntityNotFoundException("Empleado no encontrado con ID: " + subordinadoId);
             }
             EmpleadoDetalleDTO empleado = empleadoOpt.get();
-            model.addAttribute("empleado", empleado); // Para mostrar nombre y etiquetas actuales
+            model.addAttribute("empleado", empleado);
 
-            // Cargar todas las etiquetas disponibles para los formularios
             List<EtiquetaDTO> todasLasEtiquetas = etiquetaService.findAll()
                     .stream()
                     .map(et -> modelMapper.map(et, EtiquetaDTO.class))
@@ -523,11 +520,8 @@ public class EmpleadoController {
             return "gestionarEtiquetasEmpleado"; // Nombre de la nueva vista Thymeleaf
 
         } catch (EntityNotFoundException e) {
-            // Considera añadir un mensaje flash y redirigir a una página de error o al área personal
-            // redirectAttributes.addFlashAttribute("errorMessage", "Error: No se encontró el empleado.");
             return "redirect:/areaPersonal"; // O una página de error
         } catch (Exception e) {
-            // redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado.");
             return "redirect:/areaPersonal";
         }
     }

@@ -16,9 +16,4 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID>, JpaSp
      List<Producto> findByMarca(String marca);
 
     Optional<Producto> findByDescripcionAndProveedor(String descripcion, Proveedor proveedor);
-
-    // Para la importación, podrías necesitar un método para buscar por un identificador único
-    // que no sea el UUID, si es que los productos vienen con un SKU o EAN.
-    // Por ejemplo, si añades un campo 'sku' a tu entidad Producto:
-    // Optional<Producto> findBySku(String sku);
 }

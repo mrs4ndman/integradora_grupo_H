@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Productos</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Consulta Parametrizada de Productos</h1>
+
+    <div th:if="${errorApi}" class="alert alert-danger error-api" th:text="${errorApi}"></div>
+
+    <form th:action="@{/administrador/consulta-productos}" method="get" class="search-form mb-4">
+        <input type="hidden" name="sortField" th:value="${sortField}">
+        <input type="hidden" name="sortDir" th:value="${sortDir}">
+        <div class="row">
+            <div class="col-md-6 form-group">
+                <label for="descripcion">Descripcion:</label>
+                <input type="text" id="descripcion" name="descripcion" th:value="${criteriosBusqueda.descripcion}"
+                       class="form-control">
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="categoriaId">Categoría:</label>
+                <select id="categoriaId" name="categoriaId" class="form-control">
+                    <option value="">-- Todas --</option>
+                    <option th:each="cat : ${categorias}" th:value="${cat.id}"
+                            th:text="${cat.nombre}"
+                            th:selected="${criteriosBusqueda.categoriaId != null && criteriosBusqueda.categoriaId.equals(cat.id)}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 form-group">
+                <label for="precioMin">Precio Mín.:</label>
+                <input type="number" step="0.01" id="precioMin" name="precioMin"
+                       th:value="${criteriosBusqueda.precioMin}" class="form-control">
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="precioMax">Precio Máx.:</label>
+                <input type="number" step="0.01" id="precioMax" name="precioMax"
+                       th:value="${criteriosBusqueda.precioMax}" class="form-control">
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="proveedorId">Proveedor:</label>
+                <select id="proveedorId" name="proveedorId" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <option th:each="prov : ${proveedores}"
+                            th:value="${prov.id}" th:text="${prov.nombre}"
+                            th:selected="${criteriosBusqueda.proveedorId != null && criteriosBusqueda.proveedorId.equals(prov.id)}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 form-group">
+                <label for="esPerecedero">Estado:</label>
+                <select id="esPerecedero" name="esPerecedero" class="form-control">
+                    <option value="">-- Todos --</option>
+                    <option value="true" th:selected="${criteriosBusqueda.esPerecedero == true}">Perecedero</option>
+                    <option value="false" th:selected="${criteriosBusqueda.esPerecedero == false}">No Perecedero
+                    </option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <a th:href="@{/administrador/consulta-productos}" class="btn btn-secondary">Limpiar Filtros</a>
+    </form>
+
+    <div th:if="${paginaProductos != null && !paginaProductos.empty}">
+        <table class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th>
+                    <a th:href="@{/administrador/consulta-productos(descripcion=${criteriosBusqueda.descripcion}, categoriaId=${criteriosBusqueda.categoriaId}, precioMin=${criteriosBusqueda.precioMin}, precioMax=${criteriosBusqueda.precioMax}, proveedorId=${criteriosBusqueda.proveedorId}, esPerecedero=${criteriosBusqueda.esPerecedero}, page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='id', sortDir=${sortField == 'id' && sortDir == 'asc' ? 'desc' : 'asc'})}"
+                       th:classappend="${sortField == 'id' ? ('sorted-' + sortDir) : ''}">ID</a></th>
+                <th>
+                    <a th:href="@{/administrador/consulta-productos(descripcion=${criteriosBusqueda.descripcion}, categoriaId=${criteriosBusqueda.categoriaId}, precioMin=${criteriosBusqueda.precioMin}, precioMax=${criteriosBusqueda.precioMax}, proveedorId=${criteriosBusqueda.proveedorId}, esPerecedero=${criteriosBusqueda.esPerecedero}, page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='descripcion', sortDir=${sortField == 'descripcion' && sortDir == 'asc' ? 'desc' : 'asc'})}">Descripción</a>
+                </th>
+                <th>
+                    <a th:href="@{/administrador/consulta-productos(descripcion=${criteriosBusqueda.descripcion}, categoriaId=${criteriosBusqueda.categoriaId}, precioMin=${criteriosBusqueda.precioMin}, precioMax=${criteriosBusqueda.precioMax}, proveedorId=${criteriosBusqueda.proveedorId}, esPerecedero=${criteriosBusqueda.esPerecedero}, size=${paginaProductos.size}, sortField='precio', sortDir=${sortField == 'precio' ? reverseSortDir : 'asc'})}"
+                       th:classappend="${sortField == 'precio' ? ('sorted-' + sortDir) : ''}">Precio</a>
+                <th>
+                    <a th:href="@{/administrador/consulta-productos(descripcion=${criteriosBusqueda.descripcion}, categoriaId=${criteriosBusqueda.categoriaId}, precioMin=${criteriosBusqueda.precioMin}, precioMax=${criteriosBusqueda.precioMax}, proveedorId=${criteriosBusqueda.proveedorId}, esPerecedero=${criteriosBusqueda.esPerecedero}, page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='categoria.nombre', sortDir=${sortField == 'categoria.nombre' && sortDir == 'asc' ? 'desc' : 'asc'})}">Categoría</a>
+                </th>
+                <th>Proveedor</th>
+                <th>Marca</th>
+                <th>Valoracion</th>
+                <th>Unidades</th>
+                <th>Perecedero</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="producto : ${paginaProductos.content}">
+                <td th:text="${producto.id}"></td>
+                <td th:text="${#strings.abbreviate(producto.descripcion, 100)}"></td>
+                <td th:text="${#numbers.formatCurrency(producto.precio)}"></td>
+                <td th:text="${producto.categoriaNombre}"></td>
+                <td th:text="${producto.proveedorNombre}"></td>
+                <td th:text="${producto.marca}"></td>
+                <td th:text="${#numbers.formatDecimal(producto.valoracionMedia, 1, 1)}"></td>
+                <td th:text="${producto.unidadesDisponibles}"></td>
+                <td th:text="${producto.esPerecedero ? 'Sí' : 'No'}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination-controls" th:if="${paginaProductos.totalPages > 1}">
+            <a th:if="${paginaProductos.hasPrevious()}"
+               th:href="@{/administrador/consulta-productos(descripcion=${criteriosBusqueda.descripcion}, categoriaId=${criteriosBusqueda.categoriaId}, precioMin=${criteriosBusqueda.precioMin}, precioMax=${criteriosBusqueda.precioMax}, proveedorId=${criteriosBusqueda.proveedorId}, esPerecedero=${criteriosBusqueda.esPerecedero}, page=${paginaProductos.number-1}, size=${paginaProductos.size}, sortField=${sortField}, sortDir=${sortDir})}">
+                &laquo; Anterior
+            </a>
+
+            <th:block th:each="i : ${#numbers.sequence(0, paginaProductos.totalPages - 1)}">
+                <a th:if="${paginaProductos.number != i}"
+                   th:href="@{/administrador/consulta-productos(descripcion=${criteriosBusqueda.descripcion}, categoriaId=${criteriosBusqueda.categoriaId}, precioMin=${criteriosBusqueda.precioMin}, precioMax=${criteriosBusqueda.precioMax}, proveedorId=${criteriosBusqueda.proveedorId}, esPerecedero=${criteriosBusqueda.esPerecedero}, page=${i}, size=${paginaProductos.size}, sortField=${sortField}, sortDir=${sortDir})}"
+                   th:text="${i+1}"></a>
+                <span th:if="${paginaProductos.number == i}" class="active" th:text="${i+1}"></span>
+            </th:block>
+
+            <a th:if="${paginaProductos.hasNext()}"
+               th:href="@{/administrador/consulta-productos(descripcion=${criteriosBusqueda.descripcion}, categoriaId=${criteriosBusqueda.categoriaId}, precioMin=${criteriosBusqueda.precioMin}, precioMax=${criteriosBusqueda.precioMax}, proveedorId=${criteriosBusqueda.proveedorId}, esPerecedero=${criteriosBusqueda.esPerecedero}, page=${paginaProductos.number+1}, size=${paginaProductos.size}, sortField=${sortField}, sortDir=${sortDir})}">
+                Siguiente &raquo;
+            </a>
+        </div>
+    </div>
+    <div th:if="${paginaProductos == null || paginaProductos.empty}">
+        <p>No se encontraron productos con los criterios seleccionados.</p>
+    </div>
+
+    <hr>
+    <a th:href="@{/administrador/info}" class="btn btn-secondary mt-3">Volver al Área Personal</a>
+
+</div>
+</body>
+</html>
