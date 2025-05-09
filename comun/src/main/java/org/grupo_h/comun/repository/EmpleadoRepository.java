@@ -20,4 +20,6 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, UUID> {
     Optional<Object> findByUsuarioId(UUID id);
 
     Optional<Empleado> findById(UUID etiquetaId);
+
+    List<Empleado> findByNombreContainingOrApellidosContaining(String criterio, String criterio1);
 }

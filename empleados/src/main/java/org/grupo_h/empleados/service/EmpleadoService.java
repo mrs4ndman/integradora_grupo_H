@@ -15,6 +15,8 @@ import java.util.UUID;
 public interface EmpleadoService {
     Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario) throws Exception;
 
+    Optional<Empleado> obtenerEmpleadoPorId(UUID id);
+
     Optional<Empleado> findByNombreEmpleado(String nombreEmpleado);
 
     Optional<EmpleadoDetalleDTO> obtenerDetalleEmpleado(UUID id);

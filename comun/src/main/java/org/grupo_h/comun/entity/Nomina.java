@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,15 +20,17 @@ public class Nomina {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "anio_nomina")
-    @Min(0)
-    private int anioNomina;
+    @Column(name = "fecha_inicio_nomina")
+    private LocalDate fechaInicio;
 
-    @Column(name = "mes_nomina")
-    @Min(1)
-    @Max(12)
-    private int mesNomina;
+    @Column(name = "fecha_fin_nomina")
+    private LocalDate fechaFin;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<LineaNomina> lineas;
+
+    @ManyToOne
+    @JoinColumn(name = "empleado_id", nullable = false)
+    private Empleado empleado; // Relación inversa
+
 }

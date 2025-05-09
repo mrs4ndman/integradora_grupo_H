@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Nóminas de <span th:text="${empleado.nombre + ' ' + empleado.apellidos}"></span></title>
+</head>
+<body>
+<h1>Nóminas de <span th:text="${empleado.nombre + ' ' + empleado.apellidos}"></span></h1>
+<a th:href="@{/administrador/nominas/dashboard}">Volver al Dashboard</a>
+
+<h2>Lista de Nóminas</h2>
+<ul th:if="${not #lists.isEmpty(nominas)}">
+  <li th:each="nomina : ${nominas}">
+    <a th:href="@{/administrador/nominas/detalle/{id}(id=${nomina.id})}">
+      <span th:text="${'Nómina del ' + nomina.fechaInicio + ' al ' + nomina.fechaFin}"></span>
+    </a>
+  </li>
+</ul>
+<p th:if="${#lists.isEmpty(nominas)}">No se encontraron nóminas para este empleado.</p>
+</body>
+</html>

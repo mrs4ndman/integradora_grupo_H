@@ -57,8 +57,6 @@ public class Empleado {
             foreignKey = @ForeignKey(name = "FK_EMPLEADO_GENERO")) // Opcional: Nombre explícito FK
     private Genero genero; // <-- CAMBIO DE NOMBRE AQUÍ
 
-    @Column(name="email")
-    private String email;
 
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
@@ -120,9 +118,9 @@ public class Empleado {
     // Tabla Secundaria Datos Económicos
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "tiposTarjetaCredito", column = @Column(table = "datos_Economicos", name = "tipo_tarjeta_credito")),
+            @AttributeOverride(name = "tiposTarjetaCredito", column = @Column(table = "datos_Economicos", name = "tipo_tarjeta_id")),
             @AttributeOverride(name = "numeroTarjetaCredito", column = @Column(table = "datos_Economicos", name = "numero_tarjeta_credito")),
-            @AttributeOverride(name = "cvv", column = @Column(table = "datos_Economicos", name = "cvv")),
+            @AttributeOverride(name = "cvc", column = @Column(table = "datos_Economicos", name = "cvc")),
             @AttributeOverride(name = "mesCaducidad", column = @Column(table = "datos_Economicos", name = "mes_caducidad")),
             @AttributeOverride(name = "anioCaducidad", column = @Column(table = "datos_Economicos", name = "anio_caducidad"))
     })
@@ -152,6 +150,12 @@ public class Empleado {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<Empleado> subordinados = new HashSet<>();
+
+
+    @OneToMany(mappedBy = "empleado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Nomina> nominas = new ArrayList<>();
 
     @Version
     private Integer version;
