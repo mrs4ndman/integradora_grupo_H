@@ -1,10 +1,10 @@
-package org.grupo_h.administracion.controller;
+package org.grupo_h.empleados.controller;
 
-import org.grupo_h.administracion.dto.CategoriaSimpleDTO;
-import org.grupo_h.administracion.dto.ProductoCriteriosBusquedaDTO;
-import org.grupo_h.administracion.dto.ProductoResultadoDTO;
-import org.grupo_h.administracion.dto.ProveedorSimpleDTO;
-import org.grupo_h.administracion.service.ProductoService;
+import org.grupo_h.empleados.dto.CategoriaSimpleDTO;
+import org.grupo_h.empleados.dto.ProductoCriteriosBusquedaDTO;
+import org.grupo_h.empleados.dto.ProductoResultadoDTO;
+import org.grupo_h.empleados.dto.ProveedorSimpleDTO;
+import org.grupo_h.empleados.service.ProductoService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,12 +17,18 @@ import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/administrador/productos")
+@RequestMapping("/api/empleado/productos")
 public class ProductoRestController {
 
     private final ProductoService productoService;
@@ -143,67 +149,5 @@ public class ProductoRestController {
     public ResponseEntity<List<ProveedorSimpleDTO>> obtenerProveedoresParaFiltro() {
         List<ProveedorSimpleDTO> proveedores = productoService.listarTodosLosProveedores();
         return ResponseEntity.ok(proveedores);
-    }
-
-    @DeleteMapping("/borrar/{id}")
-    public ResponseEntity<Map<String, Object>> eliminarProducto(@PathVariable UUID id) {
-        logger.info("Recibida solicitud DELETE /api/productos/{}", id);
-        Map<String, Object> response = new HashMap<>();
-        try {
-            productoService.eliminarProductoPorId(id);
-            response.put("message", "Producto con ID " + id + " eliminado correctamente.");
-            response.put("status", HttpStatus.OK.value());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) { // Considera capturar excepciones más específicas si las defines
-            logger.error("Error al eliminar producto con ID {}: {}", id, e.getMessage());
-            response.put("message", "Error al eliminar el producto: " + e.getMessage());
-            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            // Podrías tener una excepción ProductoNoEncontradoException y devolver NOT_FOUND
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    /**
-     * Endpoint para eliminar todos los productos de una categoría específica.
-     * @param categoriaId El ID de la categoría.
-     * @return ResponseEntity con el resultado de la operación.
-     */
-    @DeleteMapping("/borrar/categoria/{categoriaId}")
-    public ResponseEntity<Map<String, Object>> eliminarProductosPorCategoria(@PathVariable UUID categoriaId) {
-        logger.info("Recibida solicitud DELETE /api/productos/categoria/{}", categoriaId);
-        Map<String, Object> response = new HashMap<>();
-        try {
-            int eliminados = productoService.eliminarProductosPorCategoria(categoriaId);
-            response.put("message", "Se eliminaron " + eliminados + " productos de la categoría ID " + categoriaId + ".");
-            response.put("eliminados", eliminados);
-            response.put("status", HttpStatus.OK.value());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error al eliminar productos de la categoría ID {}: {}", categoriaId, e.getMessage());
-            response.put("message", "Error al eliminar productos por categoría: " + e.getMessage());
-            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    /**
-     * Endpoint para eliminar TODOS los productos.
-     * @return ResponseEntity con el resultado de la operación.
-     */
-    @DeleteMapping("/borrar/todos")
-    public ResponseEntity<Map<String, Object>> eliminarTodosLosProductos() {
-        logger.info("Recibida solicitud DELETE /api/productos (eliminar todos)");
-        Map<String, Object> response = new HashMap<>();
-        try {
-            productoService.eliminarTodosLosProductos();
-            response.put("message", "Todos los productos han sido eliminados correctamente.");
-            response.put("status", HttpStatus.OK.value());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error al eliminar todos los productos: {}", e.getMessage());
-            response.put("message", "Error al eliminar todos los productos: " + e.getMessage());
-            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
     }
 }

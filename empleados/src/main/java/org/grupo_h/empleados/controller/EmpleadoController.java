@@ -2,9 +2,11 @@ package org.grupo_h.empleados.controller;
 
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.grupo_h.comun.auxiliar.RestPage;
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.Etiqueta;
 import org.grupo_h.comun.entity.Usuario;
@@ -17,6 +19,12 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +34,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.ui.Model;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -81,10 +91,12 @@ public class EmpleadoController {
     private final TipoViaService tipoViaService;
     @Autowired
     private final TipoDocumentoService tipoDocumentoService;
+    @Autowired
+    private final RestTemplate restTemplate;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, TipoDocumentoService tipoDocumentoService) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, TipoDocumentoService tipoDocumentoService, RestTemplate restTemplate) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
@@ -104,6 +116,7 @@ public class EmpleadoController {
         this.modelMapper = modelMapper;
         this.tipoViaService = tipoViaService;
         this.tipoDocumentoService = tipoDocumentoService;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -661,9 +674,7 @@ public class EmpleadoController {
                                            BindingResult bindingResult,
                                            Model model,
                                            RedirectAttributes redirectAttributes) {
-        // ... (código sin cambios, sigue redirigiendo a /empleados/etiquetado-masivo) ...
         if (bindingResult.hasErrors()) {
-            // Recargar datos necesarios para volver a mostrar el formulario con errores
             try {
                 List<Empleado> subordinados = empleadoService.getSubordinadosDelJefeAutenticado();
                 List<EmpleadoSimpleDTO> subordinadosDTO = subordinados.stream()
@@ -700,7 +711,128 @@ public class EmpleadoController {
         return "redirect:/empleados/etiquetado-masivo";
     }
 
+    @GetMapping("/consulta-productos")
+    public String mostrarConsultaProductosParaEmpleado(
+            @ModelAttribute("criteriosBusquedaProductos") ProductoCriteriosBusquedaDTO criterios,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "descripcion") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Model model,
+            HttpServletRequest request,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
+        logger.info("[EmpleadoController] Vista consulta productos: sortField='{}', sortDir='{}', page={}, size={}", sortField, sortDir, page, size);
+
+        // Verificar si el empleado está autenticado (adapta según tu lógica de sesión de empleado)
+        if (session.getAttribute("emailAutenticado") == null && session.getAttribute("emailAutenticado") == null ) { // Ajusta el nombre del atributo de sesión
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            return "redirect:/empleados/inicio-sesion"; // Ajusta a tu URL de login de empleado
+        }
+
+        // Lista de campos válidos para ordenar Producto
+        List<String> camposDeProductoValidos = Arrays.asList(
+                "id", "descripcion", "precio", "marca",
+                "categoria.nombre", "proveedor.nombre",
+                "unidades", "valoracion", "fechaAlta", "esPerecedero"
+        );
+
+        if (!camposDeProductoValidos.contains(sortField)) {
+            logger.warn("[EmpleadoController] CAMPO DE ORDENACIÓN NO VÁLIDO para productos: '{}'. Revirtiendo a 'descripcion'.", sortField);
+            model.addAttribute("errorAlOrdenar", "El campo de ordenación '" + sortField + "' no es válido. Se ha ordenado por descripción.");
+            sortField = "descripcion";
+            sortDir = "asc";
+        }
+
+        String currentSortField = sortField;
+        Sort.Direction currentSortDirection = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        String baseUrlApi = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String apiUrlProductos = baseUrlApi + "/api/empleado/productos";
+        String apiUrlCategorias = baseUrlApi + "/api/empleado/productos/categorias";
+        String apiUrlProveedores = baseUrlApi + "/api/empleado/productos/proveedores";
+
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(apiUrlProductos)
+                .queryParam("page", page)
+                .queryParam("size", size)
+                .queryParam("sort", currentSortField + "," + (currentSortDirection == Sort.Direction.DESC ? "desc" : "asc"));
+
+        if (criterios.getDescripcion() != null && !criterios.getDescripcion().isEmpty()) {
+            builder.queryParam("descripcion", criterios.getDescripcion());
+        }
+        if (criterios.getCategoriaId() != null) {
+            builder.queryParam("categoriaId", criterios.getCategoriaId().toString());
+        }
+        if (criterios.getPrecioMin() != null) {
+            builder.queryParam("precioMin", criterios.getPrecioMin());
+        }
+        if (criterios.getPrecioMax() != null) {
+            builder.queryParam("precioMax", criterios.getPrecioMax());
+        }
+        if (criterios.getProveedorId() != null) {
+            builder.queryParam("proveedorId", criterios.getProveedorId().toString());
+        }
+        if (criterios.getEsPerecedero() != null) {
+            builder.queryParam("esPerecedero", criterios.getEsPerecedero());
+        }
+
+        Page<ProductoResultadoDTO> paginaProductos = null;
+        List<CategoriaSimpleDTO> categorias = Collections.emptyList();
+        List<ProveedorSimpleDTO> proveedores = Collections.emptyList();
+
+        try {
+            String apiUrlCompletaProductos = builder.toUriString();
+            logger.info("[EmpleadoController] URL API completa construida para productos (desde empleado): {}", apiUrlCompletaProductos);
+
+            // Llamada para obtener productos
+            ResponseEntity<RestPage<ProductoResultadoDTO>> responseEntity = restTemplate.exchange(
+                    apiUrlCompletaProductos,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<RestPage<ProductoResultadoDTO>>() {}
+            );
+            if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
+                paginaProductos = responseEntity.getBody();
+            } else {
+                logger.error("[EmpleadoController] Error al cargar productos desde API admin. Código: {}", responseEntity.getStatusCode());
+                paginaProductos = new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
+                model.addAttribute("errorApi", "No se pudieron cargar los productos (código: " + responseEntity.getStatusCode() + ")");
+            }
+
+            // Llamada para obtener categorías
+            ResponseEntity<List<CategoriaSimpleDTO>> responseCategorias = restTemplate.exchange(
+                    apiUrlCategorias, HttpMethod.GET, null, new ParameterizedTypeReference<List<CategoriaSimpleDTO>>() {});
+            if (responseCategorias.getStatusCode().is2xxSuccessful()) {
+                categorias = responseCategorias.getBody();
+            } else {
+                model.addAttribute("errorApiFiltros", "No se pudieron cargar las categorías.");
+            }
+
+            // Llamada para obtener proveedores
+            ResponseEntity<List<ProveedorSimpleDTO>> responseProveedores = restTemplate.exchange(
+                    apiUrlProveedores, HttpMethod.GET, null, new ParameterizedTypeReference<List<ProveedorSimpleDTO>>() {});
+            if (responseProveedores.getStatusCode().is2xxSuccessful()) {
+                proveedores = responseProveedores.getBody();
+            } else {
+                model.addAttribute("errorApiFiltros", (model.containsAttribute("errorApiFiltros") ? model.getAttribute("errorApiFiltros") + " " : "") + "No se pudieron cargar los proveedores.");
+            }
+
+        } catch (Exception e) {
+            logger.error("[EmpleadoController] Excepción al llamar a la API de productos: {}", e.getMessage(), e);
+            paginaProductos = new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
+            model.addAttribute("errorApi", "Error al conectar con el servicio de productos: " + e.getMessage());
+        }
+
+        model.addAttribute("paginaProductos", paginaProductos);
+        model.addAttribute("categorias", categorias);
+        model.addAttribute("proveedores", proveedores);
+        model.addAttribute("estadoActualSortField", currentSortField); // Para la lógica de los enlaces de ordenación
+        model.addAttribute("estadoActualSortDir", (currentSortDirection == Sort.Direction.DESC ? "desc" : "asc"));
+
+        return "consultaProductos";
+    }
 }
 
 
