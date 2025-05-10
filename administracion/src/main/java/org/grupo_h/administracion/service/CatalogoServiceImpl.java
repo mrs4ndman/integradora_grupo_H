@@ -1,9 +1,13 @@
+// src/main/java/org/grupo_h/administracion/service/CatalogoServiceImpl.java
 package org.grupo_h.administracion.service;
 
+import com.fasterxml.jackson.core.type.TypeReference; // Necesario para listas
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.grupo_h.administracion.dto.CatalogoDTO;
 import org.grupo_h.administracion.dto.ProductoImportDTO;
+// Importa tu excepción personalizada si la tienes
+import org.grupo_h.administracion.exception.CatalogoImportValidationException;
 import org.grupo_h.comun.entity.*;
 import org.grupo_h.comun.entity.auxiliar.Dimensiones;
 import org.grupo_h.comun.repository.CategoriaRepository;
@@ -49,78 +53,156 @@ public class CatalogoServiceImpl implements CatalogoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String importarCatalogo(MultipartFile archivoJson) throws Exception {
-        CatalogoDTO catalogoDto;
+        List<CatalogoDTO> listaCatalogosDto;
         try {
-            catalogoDto = objectMapper.readValue(archivoJson.getInputStream(), CatalogoDTO.class);
+            // Deserializar el JSON como una LISTA de CatalogoDTO
+            listaCatalogosDto = objectMapper.readValue(archivoJson.getInputStream(), new TypeReference<List<CatalogoDTO>>() {});
         } catch (IOException e) {
             logger.error("Error de sintaxis en el archivo JSON o error de lectura: {}", e.getMessage());
-            throw new Exception("Error de sintaxis en el archivo JSON: " + e.getMessage());
+            throw new Exception("Error de sintaxis en el archivo JSON (esperaba una lista de catálogos): " + e.getMessage());
         }
 
-        validarDatosCatalogo(catalogoDto); // Ya no valida fechaEnvioCatalogo
-        Proveedor proveedor = proveedorRepository.findByNombre(catalogoDto.getProveedor())
-                .orElseThrow(() -> new Exception("Proveedor '" + catalogoDto.getProveedor() + "' no encontrado en la BD."));
+        if (listaCatalogosDto == null || listaCatalogosDto.isEmpty()) {
+            throw new Exception("El archivo JSON está vacío o no contiene catálogos válidos.");
+        }
 
-        AtomicInteger productosInsertados = new AtomicInteger(0);
-        AtomicInteger productosActualizados = new AtomicInteger(0);
-        List<String> erroresValidacionProductos = new ArrayList<>();
-        List<Producto> productosAProcesar = new ArrayList<>();
+        AtomicInteger totalProductosInsertados = new AtomicInteger(0);
+        AtomicInteger totalProductosActualizados = new AtomicInteger(0);
+        List<String> resumenResultadosPorProveedor = new ArrayList<>();
+        List<String> erroresGlobalesValidacion = new ArrayList<>();
 
-        for (int i = 0; i < catalogoDto.getProductos().size(); i++) {
-            ProductoImportDTO productoDto = catalogoDto.getProductos().get(i);
-            String logPrefix = "Producto #" + (i + 1) + " (" + (productoDto.getDescripcion() != null ? productoDto.getDescripcion() : "N/A") + "): ";
+        // Iterar sobre cada catálogo de proveedor en la lista
+        for (int catIdx = 0; catIdx < listaCatalogosDto.size(); catIdx++) {
+            CatalogoDTO catalogoDto = listaCatalogosDto.get(catIdx);
+            String proveedorNombre = catalogoDto.getProveedor();
+            String logPrefixCatalogo = "Catálogo #" + (catIdx + 1) + " (Proveedor: " + (proveedorNombre != null ? proveedorNombre : "N/A") + "): ";
+
             try {
-                validarProductoDto(productoDto, i + 1);
-                Producto productoEntidad = convertirDtoAEntidad(productoDto, proveedor);
-                productosAProcesar.add(productoEntidad);
-            } catch (Exception e) {
-                erroresValidacionProductos.add(logPrefix + e.getMessage());
-            }
-        }
+                validarDatosCatalogo(catalogoDto); // Valida cada catálogo individualmente
+                Proveedor proveedor = proveedorRepository.findByNombre(proveedorNombre)
+                        .orElseThrow(() -> new Exception(logPrefixCatalogo + "Proveedor '" + proveedorNombre + "' no encontrado en la BD."));
 
-        if (!erroresValidacionProductos.isEmpty()) {
-            String errorSummary = "Errores de validación en los productos.";
-            logger.warn("{}\n{}", errorSummary, String.join("\n", erroresValidacionProductos));
-            throw new Exception(errorSummary + "\n" + String.join("\n", erroresValidacionProductos));
-        }
+                AtomicInteger productosInsertadosProveedor = new AtomicInteger(0);
+                AtomicInteger productosActualizadosProveedor = new AtomicInteger(0);
+                List<String> erroresValidacionProductosProveedor = new ArrayList<>();
+                List<Producto> productosAProcesarProveedor = new ArrayList<>();
 
-        for (Producto entidadAGuardar : productosAProcesar) {
-            Optional<Producto> existenteOpt = productoRepository.findByDescripcionAndProveedor(entidadAGuardar.getDescripcion(), proveedor);
-            if (existenteOpt.isPresent()) {
-                Producto existente = existenteOpt.get();
-                existente.setPrecio(entidadAGuardar.getPrecio());
-                existente.setUnidades(existente.getUnidades() + entidadAGuardar.getUnidades());
-                if (entidadAGuardar.getFechaFabricacion() != null) {
-                    existente.setFechaFabricacion(entidadAGuardar.getFechaFabricacion());
+                if (catalogoDto.getProductos() == null || catalogoDto.getProductos().isEmpty()) {
+                    logger.warn(logPrefixCatalogo + "No hay productos para procesar para este proveedor.");
+                    resumenResultadosPorProveedor.add(logPrefixCatalogo + "Sin productos para procesar.");
+                    continue; // Saltar al siguiente catálogo si no hay productos
                 }
-                existente.setMarca(entidadAGuardar.getMarca());
-                existente.setEsPerecedero(entidadAGuardar.getEsPerecedero());
-                if(entidadAGuardar.getCategoria() != null) existente.setCategoria(entidadAGuardar.getCategoria());
 
-                productoRepository.save(existente);
-                productosActualizados.incrementAndGet();
-            } else {
-                productoRepository.save(entidadAGuardar);
-                productosInsertados.incrementAndGet();
+                for (int i = 0; i < catalogoDto.getProductos().size(); i++) {
+                    ProductoImportDTO productoDto = catalogoDto.getProductos().get(i);
+                    String logPrefixProducto = logPrefixCatalogo + "Producto #" + (i + 1) + " (" + (productoDto.getDescripcion() != null ? productoDto.getDescripcion() : "N/A") + "): ";
+                    try {
+                        validarProductoDto(productoDto, i + 1); // numProducto es solo para logging dentro de la validación
+                        Producto productoEntidad = convertirDtoAEntidad(productoDto, proveedor);
+                        productosAProcesarProveedor.add(productoEntidad);
+                    } catch (Exception e) {
+                        // Acumular errores de este producto para este proveedor
+                        erroresValidacionProductosProveedor.add(logPrefixProducto + e.getMessage());
+                    }
+                }
+
+                // Si hubo errores de validación para los productos de ESTE proveedor, los añadimos a los errores globales
+                // y podríamos decidir saltar el procesamiento de este proveedor.
+                if (!erroresValidacionProductosProveedor.isEmpty()) {
+                    erroresGlobalesValidacion.addAll(erroresValidacionProductosProveedor);
+                    // Opcional: si un producto de un proveedor falla, ¿debería fallar toda la importación de ese proveedor?
+                    // Por ahora, continuamos con los productos válidos de este proveedor si los hubiera,
+                    // pero los errores se reportarán. O podrías lanzar una excepción aquí para este proveedor.
+                    // Para un manejo más estricto:
+                    // throw new CatalogoImportValidationException(logPrefixCatalogo + "Errores de validación en productos.", erroresValidacionProductosProveedor);
+                }
+
+                // Procesar y guardar/actualizar productos para este proveedor
+                for (Producto entidadAGuardar : productosAProcesarProveedor) {
+                    Optional<Producto> existenteOpt = productoRepository.findByDescripcionAndProveedor(entidadAGuardar.getDescripcion(), proveedor);
+                    if (existenteOpt.isPresent()) {
+                        Producto existente = existenteOpt.get();
+                        // Lógica de actualización (igual que antes)
+                        existente.setPrecio(entidadAGuardar.getPrecio());
+                        existente.setUnidades(existente.getUnidades() + entidadAGuardar.getUnidades()); // Sumar unidades
+                        if (entidadAGuardar.getFechaFabricacion() != null) {
+                            existente.setFechaFabricacion(entidadAGuardar.getFechaFabricacion());
+                        }
+                        existente.setMarca(entidadAGuardar.getMarca());
+                        existente.setEsPerecedero(entidadAGuardar.getEsPerecedero());
+                        if(entidadAGuardar.getCategoria() != null) existente.setCategoria(entidadAGuardar.getCategoria());
+
+                        // Actualizar campos específicos de subclases si es necesario
+                        if (existente instanceof Libro && entidadAGuardar instanceof Libro) {
+                            Libro libroExistente = (Libro) existente;
+                            Libro libroNuevo = (Libro) entidadAGuardar;
+                            libroExistente.setTitulo(libroNuevo.getTitulo());
+                            libroExistente.setAutor(libroNuevo.getAutor());
+                            libroExistente.setEditorial(libroNuevo.getEditorial());
+                            libroExistente.setTapa(libroNuevo.getTapa());
+                            libroExistente.setNumeroPaginas(libroNuevo.getNumeroPaginas());
+                            libroExistente.setSegundaMano(libroNuevo.getSegundaMano());
+                        } else if (existente instanceof Mueble && entidadAGuardar instanceof Mueble) {
+                            Mueble muebleExistente = (Mueble) existente;
+                            Mueble muebleNuevo = (Mueble) entidadAGuardar;
+                            muebleExistente.setDimensiones(muebleNuevo.getDimensiones());
+                            muebleExistente.setColores(muebleNuevo.getColores());
+                            muebleExistente.setPeso(muebleNuevo.getPeso());
+                        } else if (existente instanceof Ropa && entidadAGuardar instanceof Ropa) {
+                            Ropa ropaExistente = (Ropa) existente;
+                            Ropa ropaNueva = (Ropa) entidadAGuardar;
+                            ropaExistente.setTalla(ropaNueva.getTalla());
+                            ropaExistente.setColoresDisponibles(ropaNueva.getColoresDisponibles());
+                        }
+
+                        productoRepository.save(existente);
+                        productosActualizadosProveedor.incrementAndGet();
+                        totalProductosActualizados.incrementAndGet();
+                    } else {
+                        productoRepository.save(entidadAGuardar);
+                        productosInsertadosProveedor.incrementAndGet();
+                        totalProductosInsertados.incrementAndGet();
+                    }
+                }
+                resumenResultadosPorProveedor.add(String.format("Proveedor '%s': %d nuevos, %d actualizados.",
+                        proveedorNombre, productosInsertadosProveedor.get(), productosActualizadosProveedor.get()));
+
+            } catch (Exception e) { // Errores a nivel de procesamiento de un catálogo de proveedor (ej. proveedor no encontrado)
+                erroresGlobalesValidacion.add(logPrefixCatalogo + e.getMessage());
             }
+        } // Fin del bucle de catálogos
+
+        // Si hubo errores de validación acumulados de cualquier catálogo/producto
+        if (!erroresGlobalesValidacion.isEmpty()) {
+            String errorSummary = "Errores de validación durante la importación de uno o más catálogos.";
+            logger.warn("{}\n{}", errorSummary, String.join("\n", erroresGlobalesValidacion));
+            // Lanza la excepción personalizada si la tienes, pasando todos los errores acumulados
+            throw new CatalogoImportValidationException(errorSummary, erroresGlobalesValidacion);
+            // O la excepción genérica:
+            // throw new Exception(errorSummary + "\n" + String.join("\n", erroresGlobalesValidacion));
         }
 
-        return String.format("Importación completada. Productos nuevos: %d. Productos actualizados: %d.",
-                productosInsertados.get(), productosActualizados.get());
+        return String.format("Importación global completada. Total productos nuevos: %d. Total productos actualizados: %d. Detalles por proveedor:\n%s",
+                totalProductosInsertados.get(), totalProductosActualizados.get(), String.join("\n", resumenResultadosPorProveedor));
     }
+
+    // validarDatosCatalogo, validarProductoDto, convertirDtoAEntidad, parsearFecha
+    // permanecen mayormente iguales, pero se llaman dentro del bucle.
+    // Asegúrate de que no dependan de un estado global del servicio que se resetee incorrectamente.
 
     private void validarDatosCatalogo(CatalogoDTO catalogoDto) throws Exception {
         if (catalogoDto.getProveedor() == null || catalogoDto.getProveedor().trim().isEmpty()) {
             throw new Exception("El campo 'proveedor' del catálogo es obligatorio.");
         }
-
-        if (catalogoDto.getProductos() == null || catalogoDto.getProductos().isEmpty()) {
-            throw new Exception("El catálogo debe contener al menos un producto.");
-        }
+        // Ya no hay fechaEnvioCatalogo a nivel de catálogo principal en este DTO
+        // if (catalogoDto.getProductos() == null || catalogoDto.getProductos().isEmpty()) {
+        //     // Esta validación se hace antes de iterar los productos del proveedor
+        //     throw new Exception("El catálogo del proveedor " + catalogoDto.getProveedor() + " debe contener al menos un producto.");
+        // }
     }
 
-    // Método actualizado
     private void validarProductoDto(ProductoImportDTO dto, int numProducto) throws Exception {
+        // Validaciones comunes
         if (dto.getDescripcion() == null || dto.getDescripcion().trim().isEmpty()) {
             throw new Exception("Descripción es obligatoria.");
         }
@@ -144,43 +226,59 @@ public class CatalogoServiceImpl implements CatalogoService {
             throw new Exception("Fecha de fabricación es obligatoria y debe ser una fecha pasada o presente.");
         }
 
-        // Validaciones específicas por tipo (sin cambios aquí)
-        if (dto.getTitulo() != null) {
-            if (dto.getTitulo().trim().isEmpty()) throw new Exception("Título de libro no puede ser vacío.");
-        } else if (dto.getDimensiones() != null) {
+        // Validaciones específicas por tipo (inferido por campos presentes)
+        boolean esLibro = dto.getTitulo() != null && !dto.getTitulo().isEmpty();
+        boolean esMueble = dto.getDimensiones() != null &&
+                (dto.getDimensiones().getAncho() != null || dto.getDimensiones().getProfundo() != null || dto.getDimensiones().getAlto() != null);
+        boolean esRopa = dto.getTalla() != null && !dto.getTalla().isEmpty();
+
+        if (esLibro) {
+            if (dto.getAutor() == null || dto.getAutor().trim().isEmpty()) throw new Exception("Autor del libro es obligatorio.");
+            if (dto.getEditorial() == null || dto.getEditorial().trim().isEmpty()) throw new Exception("Editorial del libro es obligatoria.");
+            if (dto.getNumeroPaginas() == null || dto.getNumeroPaginas() <=0) throw new Exception("Número de páginas del libro debe ser mayor a 0.");
+        } else if (esMueble) {
             if (dto.getDimensiones().getAncho() == null || dto.getDimensiones().getAncho() <= 0 ||
                     dto.getDimensiones().getProfundo() == null || dto.getDimensiones().getProfundo() <= 0 ||
                     dto.getDimensiones().getAlto() == null || dto.getDimensiones().getAlto() <= 0) {
                 throw new Exception("Dimensiones de mueble (ancho, profundo, alto) son obligatorias y deben ser mayores que 0.");
             }
-        } else if (dto.getTalla() != null) {
-            if (dto.getTalla().trim().isEmpty()) throw new Exception("Talla de ropa no puede ser vacía.");
+        } else if (esRopa) {
+            // Validaciones para Ropa si es necesario
+        } else {
+            // Si no se puede inferir el tipo y es necesario, lanzar error.
+            // O permitir productos "genéricos" si tu modelo lo soporta.
+            // Por ahora, si no es libro, mueble o ropa, y no hay un tipo explícito, podría ser un problema.
+            // Esta lógica de inferencia ya está en convertirDtoAEntidad.
         }
     }
 
     private Producto convertirDtoAEntidad(ProductoImportDTO dto, Proveedor proveedor) throws Exception {
         Categoria categoriaPrincipal = null;
         if (dto.getCategorias() != null && !dto.getCategorias().isEmpty()) {
-            String nombreCategoriaPrincipal = dto.getCategorias().get(0);
+            String nombreCategoriaPrincipal = dto.getCategorias().get(0); // Tomar la primera como principal
             Optional<Categoria> catOpt = categoriaRepository.findByNombre(nombreCategoriaPrincipal);
             if (catOpt.isPresent()) {
                 categoriaPrincipal = catOpt.get();
             } else {
+                logger.info("Creando nueva categoría: {}", nombreCategoriaPrincipal);
                 Categoria nuevaCategoria = new Categoria();
                 nuevaCategoria.setNombre(nombreCategoriaPrincipal);
+                // Aquí podrías querer establecer una categoría padre si el DTO lo incluyera
+                // nuevaCategoria.setCategoriaPadre(null); // o buscarla
                 categoriaPrincipal = categoriaRepository.save(nuevaCategoria);
             }
         } else {
-            throw new Exception("El producto debe tener al menos una categoría.");
+            throw new Exception("El producto '" + dto.getDescripcion() + "' debe tener al menos una categoría.");
         }
 
         LocalDate fechaFabricacion = (dto.getFechaFabricacion() != null && !dto.getFechaFabricacion().trim().isEmpty())
                 ? parsearFecha(dto.getFechaFabricacion(), "fechaFabricacion") : null;
         if (fechaFabricacion == null) {
-            throw new Exception("La fecha de fabricación es obligatoria.");
+            throw new Exception("La fecha de fabricación es obligatoria para el producto '" + dto.getDescripcion() + "'.");
         }
 
         Producto producto;
+        // Inferencia de tipo basada en campos distintivos
         if (dto.getTitulo() != null && !dto.getTitulo().isEmpty()) {
             Libro libro = new Libro();
             libro.setTitulo(dto.getTitulo());
@@ -188,10 +286,10 @@ public class CatalogoServiceImpl implements CatalogoService {
             libro.setEditorial(dto.getEditorial());
             libro.setTapa(dto.getTapa());
             libro.setNumeroPaginas(dto.getNumeroPaginas());
-            libro.setSegundaMano(dto.getSegundaMano());
+            libro.setSegundaMano(dto.getSegundaMano() != null ? dto.getSegundaMano() : false);
             producto = libro;
         } else if (dto.getDimensiones() != null &&
-                (dto.getDimensiones().getAncho() != null || dto.getDimensiones().getProfundo() != null || dto.getDimensiones().getAlto() != null) ) {
+                (dto.getDimensiones().getAncho() != null || dto.getDimensiones().getProfundo() != null || dto.getDimensiones().getAlto() != null)) {
             Mueble mueble = new Mueble();
             if (dto.getDimensiones() != null) {
                 mueble.setDimensiones(new Dimensiones(dto.getDimensiones().getAncho(), dto.getDimensiones().getProfundo(), dto.getDimensiones().getAlto()));
@@ -205,30 +303,37 @@ public class CatalogoServiceImpl implements CatalogoService {
             ropa.setColoresDisponibles(dto.getColoresRopa());
             producto = ropa;
         } else {
+            // Si no se puede inferir y no quieres un producto genérico, lanza error
             throw new Exception("No se pudo determinar el tipo de producto para: " + dto.getDescripcion() +
-                    ". Asegúrese de que el JSON incluye campos distintivos (titulo, dimensiones, talla) o un campo 'tipoProducto'.");
+                    ". Asegúrese de que el JSON incluye campos distintivos (titulo, dimensiones, talla).");
+            // O, si tienes una clase base `Producto` que puede ser instanciada (aunque la tuya es abstracta):
+            // producto = new ProductoConcreto(); // Necesitarías una clase no abstracta
         }
 
         producto.setDescripcion(dto.getDescripcion());
         producto.setPrecio(dto.getPrecio());
         producto.setMarca(dto.getMarca());
         producto.setUnidades(dto.getUnidades());
-        producto.setEsPerecedero(dto.getEsPerecedero());
+        producto.setEsPerecedero(dto.getEsPerecedero() != null ? dto.getEsPerecedero() : false);
         producto.setFechaFabricacion(fechaFabricacion);
         producto.setProveedor(proveedor);
         producto.setCategoria(categoriaPrincipal);
+        // El campo 'valoracion' y 'fechaAlta' se manejan con @PrePersist en la entidad Producto
 
         return producto;
     }
 
     private LocalDate parsearFecha(String fechaStr, String nombreCampo) throws Exception {
         if (fechaStr == null || fechaStr.trim().isEmpty()) {
-            return null;
+            // Considera si debe ser obligatorio o no. Si es opcional, devuelve null.
+            // Si es obligatorio, lanza una excepción aquí o en la validación.
+            // throw new Exception("El campo de fecha '" + nombreCampo + "' es obligatorio.");
+            return null; // O lanza excepción si es mandatorio
         }
         try {
-            return LocalDate.parse(fechaStr); // Asume formato YYYY-MM-DD
+            return LocalDate.parse(fechaStr); // Asume formato yyyy-MM-dd
         } catch (DateTimeParseException e) {
-            throw new Exception("Formato de fecha inválido para '" + nombreCampo + "': '" + fechaStr + "'. Usar YYYY-MM-DD.");
+            throw new Exception("Formato de fecha inválido para '" + nombreCampo + "': '" + fechaStr + "'. Usar yyyy-MM-dd.");
         }
     }
 }

@@ -1,24 +1,18 @@
-package org.grupo_h.administracion.service;
+package org.grupo_h.empleados.service;
 
-import org.grupo_h.administracion.dto.CategoriaSimpleDTO;
-import org.grupo_h.administracion.dto.ProductoCriteriosBusquedaDTO;
-import org.grupo_h.administracion.dto.ProductoResultadoDTO;
-import org.grupo_h.administracion.dto.ProveedorSimpleDTO;
-import org.grupo_h.administracion.specs.ProductoSpecification;
+import org.grupo_h.empleados.dto.CategoriaSimpleDTO;
+import org.grupo_h.empleados.dto.ProductoCriteriosBusquedaDTO;
+import org.grupo_h.empleados.dto.ProductoResultadoDTO;
+import org.grupo_h.empleados.dto.ProveedorSimpleDTO;
+import org.grupo_h.empleados.specs.ProductoSpecification;
 import org.grupo_h.comun.entity.Producto;
 import org.grupo_h.comun.repository.CategoriaRepository;
 import org.grupo_h.comun.repository.ProductoRepository;
-// Si implementas listarCategorias/Proveedores, importa sus repositorios y DTOs
-// import org.grupo_h.comun.repository.CategoriaRepository;
-// import org.grupo_h.comun.repository.ProveedorRepository;
-// import org.grupo_h.administracion.dto.CategoriaDTO;
-// import org.grupo_h.administracion.dto.ProveedorDTO;
 import org.grupo_h.comun.repository.ProveedorRepository;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 // import java.util.List;
@@ -112,58 +105,4 @@ public class ProductoServiceImpl implements ProductoService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional
-    public void eliminarProductoPorId(UUID id) {
-        logger.info("Intentando eliminar producto con ID: {}", id);
-        if (!productoRepository.existsById(id)) {
-            logger.warn("Intento de eliminar un producto no existente con ID: {}", id);
-            // Podrías lanzar una excepción personalizada aquí si lo prefieres
-            // throw new ProductoNoEncontradoException("Producto con ID " + id + " no encontrado.");
-            return; // O simplemente no hacer nada si no existe
-        }
-        productoRepository.deleteById(id);
-        logger.info("Producto con ID: {} eliminado correctamente.", id);
-    }
-
-    @Override
-    @Transactional
-    public int eliminarProductosPorCategoria(UUID categoriaId) {
-        logger.info("Intentando eliminar todos los productos de la categoría ID: {}", categoriaId);
-        if (!categoriaRepository.existsById(categoriaId)) {
-            logger.warn("Intento de eliminar productos de una categoría no existente con ID: {}", categoriaId);
-            return 0;
-        }
-
-        List<Producto> productosEnCategoria = productoRepository.findByCategoriaId(categoriaId);
-        if (productosEnCategoria.isEmpty()) {
-            logger.info("No se encontraron productos en la categoría ID: {}", categoriaId);
-            return 0;
-        }
-
-        logger.info("Encontrados {} productos en la categoría {}. Procesando dependencias...", productosEnCategoria.size(), categoriaId);
-
-        int contadorEliminados = 0;
-        for (Producto producto : productosEnCategoria) {
-            try {
-                productoRepository.delete(producto);
-                contadorEliminados++;
-            } catch (Exception e) {
-                logger.error("Error al eliminar el producto con ID {}: {}", producto.getId(), e.getMessage(), e);
-            }
-        }
-
-        logger.info("{} productos eliminados de la categoría ID: {}.", contadorEliminados, categoriaId);
-        return contadorEliminados;
-    }
-
-    @Override
-    @Transactional
-    public void eliminarTodosLosProductos() {
-        logger.info("Intentando eliminar TODOS los productos del catálogo.");
-        long cantidadAntes = productoRepository.count();
-        productoRepository.deleteAll(); // deleteAllInBatch() podría ser más eficiente para grandes cantidades
-        long cantidadDespues = productoRepository.count();
-        logger.info("Todos los productos eliminados. Antes: {}, Después: {}. Total eliminados: {}", cantidadAntes, cantidadDespues, cantidadAntes - cantidadDespues);
-    }
 }
