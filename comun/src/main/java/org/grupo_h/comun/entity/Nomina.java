@@ -33,4 +33,5 @@ public class Nomina {
     @JoinColumn(name = "empleado_id", nullable = false)
     private Empleado empleado; // Relación inversa
 
-}
+    @Version
+    private Integer version;}

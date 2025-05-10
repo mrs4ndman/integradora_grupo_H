@@ -10,13 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import java.util.ArrayList;
 
 @Controller
 @RequestMapping("/administrador/nominas")
@@ -27,6 +23,15 @@ public class NominasController {
 
     @Autowired
     private NominaRepository nominaRepository;
+
+    @Autowired
+    private LineaNominaRepository lineaNominaRepository;
+
+    // Método para manejar la raíz /administrador/nominas
+    @GetMapping("")
+    public String redirigirAlDashboard() {
+        return "redirect:/administrador/nominas/dashboard";
+    }
 
     // Método para mostrar el dashboard de búsqueda de empleados
     @GetMapping("/dashboard")
@@ -49,5 +54,46 @@ public class NominasController {
         model.addAttribute("empleado", empleado);
         model.addAttribute("nominas", empleado.getNominas());
         return "empleado-nominas";
+    }
+
+    // Método para mostrar el formulario de creación de nómina
+    @GetMapping("/empleado/{id}/crear-nomina")
+    public String mostrarFormularioCrearNomina(@PathVariable UUID id, Model model) {
+        Empleado empleado = empleadoRepository.findById(id).orElseThrow();
+        model.addAttribute("empleado", empleado);
+        model.addAttribute("nomina", new Nomina());
+        return "formulario-crear-nomina";
+    }
+
+    // Método para procesar la creación de la nómina
+    @PostMapping("/empleado/{id}/crear-nomina")
+    public String crearNomina(@PathVariable UUID id, @ModelAttribute Nomina nomina, Model model) {
+        Empleado empleado = empleadoRepository.findById(id).orElseThrow();
+        nomina.setEmpleado(empleado);
+        nomina.setVersion(0);
+        Nomina savedNomina = nominaRepository.saveAndFlush(nomina);
+        System.out.println(empleado);
+        System.out.println(savedNomina);
+        return "redirect:/administrador/nominas/empleado/" + id + "/nominas";
+    }
+
+    // Método para mostrar el formulario de añadir línea de nómina
+    @GetMapping("/nomina/{id}/aniadir-linea")
+    public String mostrarFormularioAniadirLinea(@PathVariable UUID id, Model model) {
+        Nomina nomina = nominaRepository.findById(id).orElseThrow();
+        model.addAttribute("nomina", nomina);
+        model.addAttribute("lineaNomina", new LineaNomina());
+        return "formulario-aniadir-linea";
+    }
+
+    // Método para procesar la adición de línea de nómina
+    @PostMapping("/nomina/{id}/aniadir-linea")
+    public String aniaadirLineaNomina(@PathVariable UUID id, @ModelAttribute LineaNomina lineaNomina, Model model) {
+        Nomina nomina = nominaRepository.findById(id).orElseThrow();
+        lineaNomina.setNomina(nomina);
+        Nomina refreshedNomina = nominaRepository.findById(id).orElseThrow();
+        lineaNomina.setNomina(refreshedNomina);
+        lineaNominaRepository.save(lineaNomina);
+        return "redirect:/administrador/nominas/empleado/" + nomina.getEmpleado().getId() + "/nominas";
     }
 }

@@ -31,6 +31,7 @@ public class Empleado {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId
     @JoinColumn(name = "id") // Ajusta 'usuario_id' al nombre real de tu columna FK
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Usuario usuario;
 
