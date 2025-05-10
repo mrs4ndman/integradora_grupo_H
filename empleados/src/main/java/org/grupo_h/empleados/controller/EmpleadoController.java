@@ -1,7 +1,6 @@
 package org.grupo_h.empleados.controller;
 
 
-
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -390,9 +389,21 @@ public class EmpleadoController {
             empleadoRegistroDTO = new EmpleadoRegistroDTO();
         }
 
+        if (empleadoRegistroDTO.getGeneroSeleccionadoDTO() == null) {
+            empleadoRegistroDTO.setGeneroSeleccionadoDTO(new GeneroDTO());
+        }
+
+        if (empleadoRegistroDTO.getTipoDocumentoDTO() == null) {
+            empleadoRegistroDTO.setTipoDocumentoDTO(new TipoDocumentoDTO());
+        }
+
         // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
         if (empleadoRegistroDTO.getDireccionDTO() == null) {
             empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
+        }
+
+        if (empleadoRegistroDTO.getDireccionDTO().getTipoViaDireccionPpalDTO() == null) {
+            empleadoRegistroDTO.getDireccionDTO().setTipoViaDireccionPpalDTO(new TipoViaDTO());
         }
 
         if (empleadoRegistroDTO.getCuentaCorrienteDTO() == null) {
@@ -402,7 +413,6 @@ public class EmpleadoController {
         if (empleadoRegistroDTO.getTarjetasCreditoDTO() == null) {
             empleadoRegistroDTO.setTarjetasCreditoDTO(new TarjetaCreditoDTO());
         }
-
 
         model.addAttribute("datos", empleadoRegistroDTO);
 
@@ -440,7 +450,8 @@ public class EmpleadoController {
         if (usuario.isPresent()) {
             logger.info("Se ha encontrado el ID del usuario autenticado.");
         } else {
-            logger.error("No se pudo obtener el ID del usuario autenticado.");
+            logger.error("No se pudo obtener el ID del usuario autenticado. Hola");
+            return "redirect:/usuarios/inicio-sesion";
         }
 
         try {
@@ -462,19 +473,25 @@ public class EmpleadoController {
      * @param session La sesion del navegador
      * @return La vista de detalles del empleado.
      */
-    // TODO: Implementar la restriccion de acceso a aqui sin iniciar sesion con el usuario
     @GetMapping("/detalle")
-    public String obtenerDetalleEmpleado(Model model, HttpSession session) {
-//        EmpleadoDetalleDTO empDTO = (EmpleadoDetalleDTO) session.getAttribute("empleadoDetalleDTO");
-//        UUID id = empDTO.getId();
-//        Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.obtenerDetalleEmpleado(id);
-//        if (empleadoOpt.isPresent()) {
-//            model.addAttribute("empleado", empleadoOpt.get());
-//            return "detalleEmpleado";
-//        } else {
-//            return "detalleEmpleado";
-//        }
-        return "";
+    public String obtenerDetalleEmpleado(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String emailUsuario = (String) session.getAttribute("emailAutenticado");
+        Optional<Usuario> usuario = usuarioService.findByEmail(emailUsuario);
+        if (usuario.isPresent()) {
+            Optional<Empleado> detallado = empleadoRepository.findById(usuario.get().getId());
+            if (detallado.isPresent()) {
+                EmpleadoDetalleDTO empDTO = modelMapper.map(detallado.get(), EmpleadoDetalleDTO.class);
+                if (empDTO != null) {
+                    model.addAttribute("empleadoDTO", empDTO);
+                    return "detalleEmpleado";
+                } else {
+                    redirectAttributes.addFlashAttribute("error",
+                            "No hay un empleado cargado en la sesion. Inicia sesion con tu usuario");
+                    return "redirect:/usuarios/inicio-sesion";
+                }
+            }
+        }
+        return "redirect:/usuarios/inicio-sesion";
     }
 
     private void cargarEspecialidades(@ModelAttribute("empleadoRegistroDTO") @Validated(DatosDepartamento.class) EmpleadoRegistroDTO empleadoRegistroDTO, Model model) {

@@ -42,5 +42,5 @@ public class TarjetaCreditoDTO {
             regexp = "^\\d{3,4}$",
             message = "{Validacion.tarjetaCredito.cvc}",
     groups = DatosFinancieros.class)
-    private String CVCDTO;
+    private String cvcDTO;
 }

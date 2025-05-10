@@ -17,7 +17,7 @@
 </div>
 
 <form th:action="@{/empleados/registro-finales}" th:object="${empleadoRegistroDTO}" method="post"
-      onsubmit="return confirmarAccionFormulario(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
+      onsubmit="return confirmarAccionFormularioRegistroEmpleado(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
 
 
     <h2>Empleado</h2>
@@ -60,7 +60,7 @@
     <p th:text="'Número de Tarjeta: ' + *{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}"></p>
     <p th:text="'Caducidad de la Tarjeta: Mes:' + *{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}
     + ' Año:' + *{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}"></p>
-    <p th:text="'CVC: ' + *{tarjetasCreditoDTO.CVCDTO}"></p>
+    <p th:text="'CVC: ' + *{tarjetasCreditoDTO.cvcDTO}"></p>
 
     <label for="aceptaInformacionDTO" th:text="#{Validacion.Consentimiento.true}"></label>
     <input type="checkbox"
