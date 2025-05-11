@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Empleado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Editar Empleado</h1>
+
+<form th:action="@{/administrador/editar-empleado}" th:object="${empleado}" method="post">
+    <label for="nombre">Nombre</label>
+    <input type="text" th:field="*{nombre}" id="nombre" required/>
+
+    <label for="apellidos">Apellidos</label>
+    <input type="text" th:field="*{apellido}" id="apellidos" required/>
+
+    <label for="edad">Edad</label>
+    <input type="number" th:field="*{edad}" id="edad" min="18" required/>
+
+    <label for="numeroDocumento">DNI</label>
+    <input type="text" th:field="*{numeroDni}" id="numeroDocumento" disabled/>
+
+    <label for="departamentoId">Departamento</label>
+    <select th:field="*{nombreDepartamento}" id="departamentoId" required>
+        <option th:each="departamento : ${departamentos}"
+                th:value="${departamento.id}"
+                th:text="${departamento.nombreDept}"></option>
+    </select>
+
+    <button type="submit">Guardar cambios</button>
+
+    <div th:if="${#fields.hasErrors('nombre')}" class="error">
+        <p th:errors="*{nombre}">Nombre es obligatorio.</p>
+    </div>
+    <div th:if="${#fields.hasErrors('apellidos')}" class="error">
+        <p th:errors="*{apellido}">Apellidos son obligatorios.</p>
+    </div>
+    <div th:if="${#fields.hasErrors('edad')}" class="error">
+        <p th:errors="*{edad}">Edad debe ser un número válido mayor de 18.</p>
+    </div>
+</form>
+
+</body>
+</html>

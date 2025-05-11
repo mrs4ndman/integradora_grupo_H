@@ -17,6 +17,4 @@ public class TipoDocumento {
 
     @Column(name = "Cod_Tipo_Doc", length = 3)
     private String tipoDocumento;
-
-
 }

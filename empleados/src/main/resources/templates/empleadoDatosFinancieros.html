@@ -82,11 +82,6 @@
              th:errors="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}" class="error"></div>
         <br><br>
 
-<!--        <label for="mesCaducidadTarjetaCredito" th:text="#{Datos.Economicos.mesCaducidad}"/>-->
-<!--        <input type="text" id="mesCaducidadTarjetaCredito" th:field="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}"  />-->
-<!--        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO')}"-->
-<!--             th:errors="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" class="error"></div>-->
-<!--        <br><br>-->
 
         <!-- Tarjeta de Crédito - Fecha Caducidad (Separado en Mes y Año) -->
         <label for="mesCaducidadTarjetaCredito" th:text="#{Datos.Economicos.mesCaducidad}"/>
@@ -108,11 +103,6 @@
         <span th:if="${#fields.hasErrors('tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO')}" th:errors="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" style="color:red"></span>
         <br><br>
 
-<!--        <label for="anioCaducidadTarjetaCredito" th:text="#{Datos.Economicos.anioCaducidad}"/>-->
-<!--        <input type="text" id="anioCaducidadTarjetaCredito" th:field="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}"  />-->
-<!--        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO')}"-->
-<!--             th:errors="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" class="error"></div>-->
-<!--        <br><br>-->
 
         <label for="anioCaducidadTarjetaCredito" th:text="#{Datos.Economicos.anioCaducidad}"/>
         <select th:field="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" id="anioCaducidadTarjetaCredito">
@@ -127,9 +117,9 @@
         <br><br>
 
         <label for="cvc" th:text="#{Datos.Economicos.cvc}"/>
-        <input type="text" id="cvc" th:field="*{tarjetasCreditoDTO.CVCDTO}"  />
-        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.CVCDTO')}"
-             th:errors="*{tarjetasCreditoDTO.CVCDTO}" class="error"></div>
+        <input type="text" id="cvc" th:field="*{tarjetasCreditoDTO.cvcDTO}"  />
+        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.cvcDTO')}"
+             th:errors="*{tarjetasCreditoDTO.cvcDTO}" class="error"></div>
         <br><br>
 
 

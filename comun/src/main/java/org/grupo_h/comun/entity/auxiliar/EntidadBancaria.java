@@ -19,5 +19,4 @@ public class EntidadBancaria {
 
     @Column(name = "nombre_entidad")
     private String nombreEntidad;
-
 }

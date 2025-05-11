@@ -13,13 +13,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CuentaCorriente {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(name = "numero_cuenta", nullable = false)
     private String numeroCuenta;
-
-//    @Column(name = "iban", nullable = false, unique = true)
-//    private String iban;
 
     // Relación con Entidad Bancaria
     @ManyToOne(cascade = CascadeType.PERSIST)

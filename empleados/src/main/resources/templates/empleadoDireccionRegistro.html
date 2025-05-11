@@ -26,8 +26,9 @@
     <div th:each="tipo : ${tiposDocumento}">
         <input type="radio"
                th:field="*{tipoDocumentoDTO.id}"
-               th:value="${tipo.id}"/>
-        <label th:for="${'tipoDocumento-input-' + tipo.tipoDocumento}"
+               th:value="${tipo.id}"
+                id="tipoDocumento"/>
+        <label for="tipoDocumento"
                th:text="${tipo.tipoDocumento}"></label><br>
         <div th:if="${#fields.hasErrors('tipoDocumentoDTO.tipoDocumento')}" th:errors="*{tipoDocumentoDTO.tipoDocumento}" class="error"></div>
     </div>

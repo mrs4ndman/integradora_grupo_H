@@ -118,6 +118,17 @@ public class Empleado {
     private List<EspecialidadesEmpleado> especialidadesEmpleado;
 
     // Tabla Secundaria Datos Económicos
+
+    @Column(table = "datos_Economicos")
+    private double salario;
+
+    @Column(table = "datos_Economicos")
+    private double comision;
+
+    @ManyToOne
+    private CuentaCorriente cuentaCorriente;
+
+
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "tiposTarjetaCredito", column = @Column(table = "datos_Economicos", name = "tipo_tarjeta_credito")),

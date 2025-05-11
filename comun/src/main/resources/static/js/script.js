@@ -49,6 +49,29 @@ function vaciarFormulario() {
     });
 }
 
+// Resetea el formulario en cada paso del registro
+function resetFormulario() {
+    document.getElementById("formulario").reset();
+}
+
+
+// Selecciona el radio del Género Femenino
+function seleccionarGeneroF() {
+    const radio = document.querySelector('input[type="radio"][name="generoSeleccionadoDTO.codigoGenero"][value="F"]');
+    if (radio) {
+        radio.checked = true;
+    }
+}
+
+
+function deseleccionaTodosGeneros() {
+    const radios = document.querySelectorAll('input[type="radio"][name="generoSeleccionadoDTO.codigoGenero"]');
+    radios.forEach(r => r.checked = false);
+}
+
+
+
+
 // Validar contraseñas en registro
 function validarRegistro() {
     const contrasena = document.getElementById('contrasena');
@@ -83,6 +106,7 @@ function validarRegistro() {
 // Highlight de los botones del NavBar en Registro Empleados
 document.addEventListener("DOMContentLoaded", function() {
     let links = document.querySelectorAll("nav ul li a");
+    let tipoDocumento = document.getElementById('tipoDocumento');
     let currentPath = window.location.pathname;
     console.log(currentPath)
 
@@ -95,6 +119,10 @@ document.addEventListener("DOMContentLoaded", function() {
             link.classList.add("active");
         }
     });
+
+    if(tipoDocumento){
+        tipoDocumento.checked = true;
+    }
 });
 
 

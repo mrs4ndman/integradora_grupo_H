@@ -17,9 +17,8 @@ public class Direccion {
     /**
      * Tipo de vía (calle, avenida, etc.).
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_via_direccion_ppal_id",
-            referencedColumnName = "tipoVia",
             foreignKey = @ForeignKey(name = "FK_TIPOVIA_DIRECCION"))
     private TipoVia tipoViaDireccionPpal;
 

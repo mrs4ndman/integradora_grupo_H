@@ -36,7 +36,7 @@
     <p th:text="'Teléfono Móvil: ' + *{prefijoTelefono} + ' ' + *{telefonoMovil}"></p>
 
     <h2>Dirección</h2>
-    <p th:text="'Tipo de vía: ' + *{direccionDTO.tipoViaDireccionPpalDTO.tipoVia}"></p>
+    <p th:text="'Tipo de vía: ' + *{direccionDTO.tipoViaDireccionPpalDTO.id}"></p>
     <p th:text="'Nombre de vía: ' + *{direccionDTO.nombreViaDireccionPpalDTO}"></p>
     <p th:text="'Número de vía: ' + *{direccionDTO.numeroViaDireccionPpalDTO}"></p>
     <p th:text="'Planta: ' + *{direccionDTO.plantaDireccionPpalDTO}"></p>
@@ -60,7 +60,7 @@
     <p th:text="'Número de Tarjeta: ' + *{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}"></p>
     <p th:text="'Caducidad de la Tarjeta: Mes:' + *{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}
     + ' Año:' + *{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}"></p>
-    <p th:text="'CVC: ' + *{tarjetasCreditoDTO.CVCDTO}"></p>
+    <p th:text="'CVC: ' + *{tarjetasCreditoDTO.cvcDTO}"></p>
 
     <label for="aceptaInformacionDTO" th:text="#{Validacion.Consentimiento.true}"></label>
     <input type="checkbox"

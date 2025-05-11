@@ -2,14 +2,21 @@ package org.grupo_h.administracion.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.grupo_h.administracion.dto.EmpleadoConsultaDTO;
+import org.grupo_h.administracion.dto.EmpleadoDTO;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
+import org.grupo_h.administracion.specs.EmpleadoSpecs;
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -119,5 +126,47 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro) {
+        List<Empleado> empleados;
+
+        Specification<Empleado> spec = Specification.where(null);
+
+        if (filtro.getNombreDTO() != null && !filtro.getNombreDTO().isBlank()) {
+            spec = spec.and(EmpleadoSpecs.nombreContiene(filtro.getNombreDTO()));
+        }
+
+        if (filtro.getEdadMin() != null || filtro.getEdadMax() != null) {
+            spec = spec.and(EmpleadoSpecs.edadEntre(filtro.getEdadMin(), filtro.getEdadMax()));
+        }
+
+        if (filtro.getDepartamentoDTO() != null) {
+            spec = spec.and(EmpleadoSpecs.departamentoContiene(filtro.getDepartamentoDTO()));
+        }
+
+        if (filtro.getNumeroDni() != null && !filtro.getNumeroDni().isBlank()) {
+            spec = spec.and(EmpleadoSpecs.numeroDocumentoContiene(filtro.getNumeroDni()));
+        }
+
+        Sort sort = Sort.by("nombre").ascending();
+        empleados = empleadosRepository.findAll(spec, sort);
+            // Convertimos a DTO
+            return empleados.stream()
+                    .map(e -> new EmpleadoDTO(
+                            e.getNombre(),
+                            e.getApellidos(),
+                            e.getEdad(),
+                            e.getDepartamento().getNombreDept(),
+                            e.getNumeroDocumento()
+                    ))
+                    .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Empleado> buscarPorDni(String dni) {
+        return empleadosRepository.findByNumeroDocumento(dni);
+    }
+
 
 }

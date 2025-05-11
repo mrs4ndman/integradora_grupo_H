@@ -2,15 +2,22 @@ package org.grupo_h.administracion.controller;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.*;
+import org.grupo_h.administracion.dto.EmpleadoConsultaDTO;
+import org.grupo_h.administracion.dto.EmpleadoDTO;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
 import org.grupo_h.administracion.service.*;
 import org.grupo_h.comun.entity.Administrador;
 import org.grupo_h.administracion.service.ParametrosService;
 import org.grupo_h.administracion.service.AdministradorService;
+import org.grupo_h.comun.entity.Departamento;
+import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.repository.AdministradorRepository;
+import org.grupo_h.comun.repository.DepartamentoRepository;
+import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.grupo_h.comun.repository.UsuarioRepository;
+import org.grupo_h.comun.service.DepartamentoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +51,9 @@ public class AdministradorController {
     private final BCryptPasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioService usuarioService;
+    private final DepartamentoService departamentoService;
+    private final EmpleadoRepository empleadoRepository;
+    private final DepartamentoRepository departamentoRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(AdministradorController.class);
 
@@ -55,7 +65,7 @@ public class AdministradorController {
                                    ParametrosService parametrosService,
                                    BCryptPasswordEncoder passwordEncoder,
                                    UsuarioRepository usuarioRepository,
-                                   UsuarioService usuarioService) {
+                                   UsuarioService usuarioService, DepartamentoService departamentoService, EmpleadoRepository empleadoRepository, DepartamentoRepository departamentoRepository) {
         this.administradorService = administradorService;
         this.administradorRepository = administradorRepository;
         this.empleadoService = empleadoService;
@@ -63,6 +73,9 @@ public class AdministradorController {
         this.passwordEncoder = passwordEncoder;
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
+        this.departamentoService = departamentoService;
+        this.empleadoRepository = empleadoRepository;
+        this.departamentoRepository = departamentoRepository;
     }
 
 
@@ -799,6 +812,9 @@ public class AdministradorController {
         return "redirect:/administrador/gestion-subordinados";
     }
 
+
+    /* ------------------------ GESTION DE PRODUCTOS ----------------------------- */
+
     @GetMapping("/gestion-productos/importar-catalogo")
     public String vistaImportarCatalogo(HttpSession session, RedirectAttributes redirectAttributes) {
         if (session.getAttribute("emailAutenticadoAdmin") == null) {
@@ -807,4 +823,116 @@ public class AdministradorController {
         }
         return "importarCatalogo";
     }
+
+
+    /* ------------------------ GESTION DE EMPLEADOS ----------------------------- */
+    /* ------------------------ Búsqueda Parametrizada de Empleados ----------------------------- */
+
+        @GetMapping("/consulta-empleado")
+        public String busquedaParametrizadaEmpleado(HttpSession session,
+                                                    RedirectAttributes redirectAttributes,
+                                                    Model model){
+            if (session.getAttribute("emailAutenticadoAdmin") == null) {
+                redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+                return "redirect:/administrador/inicio-sesion";
+            }
+
+            List<Departamento> departamentos = departamentoService.obtenerTodosDepartamentos();
+            model.addAttribute("departamentos", departamentos);
+
+            model.addAttribute("filtro",new EmpleadoConsultaDTO() );
+
+            System.out.println("Estoy en el GEt de Consulta");
+
+             return "consultaParametrizadaEmpleado";
+        }
+
+    @PostMapping("/consulta-empleado")
+    public String procesarBusquedaEmpleado(@ModelAttribute("filtro") EmpleadoConsultaDTO filtro,
+                                           HttpSession session,
+                                           RedirectAttributes redirectAttributes,
+                                           Model model) {
+
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            System.out.println("Me sacó");
+            return "redirect:/administrador/inicio-sesion";
+        }
+
+        System.out.println("Estoy en el POST de Consulta");
+        System.out.println("DNI recibido en el filtro: " + filtro.getNumeroDni());
+
+
+        List<Departamento> departamentos = departamentoService.obtenerTodosDepartamentos();
+        model.addAttribute("departamentos", departamentos);
+
+        List<EmpleadoDTO> resultados = empleadoService.buscarEmpleados(filtro);
+
+        model.addAttribute("resultados", resultados);
+        return "consultaParametrizadaEmpleado";
+    }
+
+
+    @GetMapping("/administrador/editar-empleado/{dni}")
+    public String mostrarFormularioEdicion(@PathVariable("dni") String dni, Model model, RedirectAttributes redirectAttributes) {
+        Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dni);
+
+        if (empleadoOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado.");
+            return "redirect:/administrador/consulta-empleado";
+        }
+
+        Empleado empleado = empleadoOpt.get();
+
+        EmpleadoDTO dto = new EmpleadoDTO();
+        dto.setNombre(empleado.getNombre());
+        dto.setApellido(empleado.getApellidos());
+        dto.setEdad(empleado.getEdad());
+        dto.setNumeroDni(empleado.getNumeroDocumento());
+        dto.setNombreDepartamento(empleado.getDepartamento().getNombreDept());
+        // Agrega los campos que quieras editar
+
+        model.addAttribute("empleado", dto);
+        model.addAttribute("departamentos", departamentoService.obtenerTodosDepartamentos());
+
+        return "edicion-empleado"; // Nombre del HTML/Thymeleaf para editar
+    }
+
+    @PostMapping("/administrador/editar-empleado")
+    public String procesarEdicionEmpleado(@ModelAttribute("empleado") EmpleadoDTO dto,
+                                          RedirectAttributes redirectAttributes) {
+        Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dto.getNumeroDni());
+
+        if (empleadoOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado.");
+            return "redirect:/administrador/consulta-empleado";
+        }
+
+        Empleado empleado = empleadoOpt.get();
+
+        empleado.setNombre(dto.getNombre());
+        empleado.setApellidos(dto.getApellido());
+        empleado.setEdad(dto.getEdad());
+
+        Departamento departamento = null;
+        try {
+            departamento = departamentoRepository.findByNombreDept(dto.getNombreDepartamento())
+                    .map(obj -> (Departamento) obj)
+                    .orElse(null);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        empleado.setDepartamento(departamento);
+
+        // Guarda los cambios
+        empleadoRepository.save(empleado);
+
+        redirectAttributes.addFlashAttribute("exito", "Empleado actualizado correctamente.");
+        return "redirect:/administrador/consulta-empleado";
+    }
+
+
+
+
+
 }

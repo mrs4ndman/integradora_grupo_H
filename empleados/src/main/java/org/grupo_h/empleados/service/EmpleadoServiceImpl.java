@@ -15,6 +15,8 @@ import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.modelmapper.ModelMapper;
 import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.comun.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,11 +25,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 
 @Service
 public class EmpleadoServiceImpl implements EmpleadoService {
@@ -40,6 +44,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository;
     private final DepartamentoRepository departamentoRepository;
     private final ModelMapper modelMapper;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public EmpleadoServiceImpl(EmpleadoRepository empleadosRepository,
@@ -68,6 +73,18 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         if (usuario.isPresent()) {
             empleado.setUsuario(usuario.get());
+        }
+
+        System.out.println("imagen="+empleadoDTO.getFotografiaDTO());
+
+        // Convertir MultipartFile a byte[] y asignar
+        try {
+            System.out.println("size="+empleadoDTO.getFotografiaDTO().getSize());
+            empleado.setFotografia(empleadoDTO.getFotografiaDTO().getBytes());
+            log.info("La fotografia del empleado se procesó correctamente");
+        } catch (IOException e) {
+            log.warn("Error al procesar la fotografia del empleado");
+            System.out.println("Error al procesar la imagen"+ e.toString());
         }
 
         if (empleado.getTarjetas() != null && empleado.getTarjetas().getTipoTarjetaCredito() != null) {

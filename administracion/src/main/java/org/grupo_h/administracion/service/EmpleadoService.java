@@ -1,7 +1,10 @@
 package org.grupo_h.administracion.service;
 
+import org.grupo_h.administracion.dto.EmpleadoConsultaDTO;
+import org.grupo_h.administracion.dto.EmpleadoDTO;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
+import org.grupo_h.comun.entity.Empleado;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,4 +31,8 @@ public interface EmpleadoService {
 
     List<EmpleadoSimpleDTO> obtenerTodosLosEmpleadosParaSeleccion();
 
+    List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro);
+
+
+    Optional<Empleado> buscarPorDni(String dni);
 }

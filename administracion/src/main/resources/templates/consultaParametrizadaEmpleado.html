@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Búsqueda Empleados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 20px;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button[type="submit"] {
+            margin-top: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        h3 {
+            text-align: center;
+            margin-top: 40px;
+            color: #333;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<form th:action="@{/administrador/consulta-empleado}" th:object="${filtro}" method="post">
+    <label>Nombre:</label>
+    <input type="text" th:field="*{nombreDTO}" />
+
+    <label>DNI:</label>
+    <input type="text" th:field="*{numeroDni}" />
+
+    <label for="departamentoDTO">Departamento</label>
+    <select th:field="*{departamentoDTO}" id="departamentoDTO">
+        <option value="">Selecciona un departamento</option>
+        <option th:each="departamento : ${departamentos}"
+                th:value="${departamento.id}"
+                th:text="${departamento.nombreDept}"></option>
+    </select>
+
+    <label>Edad mínima:</label>
+    <input type="number" th:field="*{edadMin}" />
+
+    <label>Edad máxima:</label>
+    <input type="number" th:field="*{edadMax}" />
+
+    <button type="submit">Buscar</button>
+</form>
+
+<h3>Resultados:</h3>
+<div th:if="${resultados != null}">
+
+    <!-- Tabla de resultados si hay empleados -->
+    <div th:if="${!#lists.isEmpty(resultados)}">
+        <table>
+            <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>Edad</th>
+                <th>Departamento</th>
+                <th>DNI</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="emp : ${resultados}">
+                <td th:text="${emp.nombre}">Nombre</td>
+                <td th:text="${emp.apellido}">Apellido</td>
+                <td th:text="${emp.edad}">Edad</td>
+                <td th:text="${emp.nombreDepartamento}">Depto</td>
+                <td th:text="${emp.numeroDni}">DNI</td>
+                <td>
+                    <a th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
+                        <button type="button">Editar</button>
+                    </a>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Si no hay empleados -->
+    <div th:if="${#lists.isEmpty(resultados)}">
+        <p>No hay resultados</p>
+    </div>
+
+</div>
+
+</body>
+</html>
