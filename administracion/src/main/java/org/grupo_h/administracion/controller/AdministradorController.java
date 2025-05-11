@@ -78,7 +78,7 @@ public class AdministradorController {
                                    UsuarioService usuarioService,
                                    DepartamentoService departamentoService,
                                    EmpleadoRepository empleadoRepository,
-                                   DepartamentoRepository departamentoRepository, RestTemplate restTemplate) {
+                                   DepartamentoRepository departamentoRepository) {
         this.administradorService = administradorService;
         this.administradorRepository = administradorRepository;
         this.empleadoService = empleadoService;
@@ -826,7 +826,19 @@ public class AdministradorController {
         return "redirect:/administrador/gestion-subordinados";
     }
 
-    @GetMapping("/importar-catalogo")
+//    @GetMapping("/importar-catalogo")
+//    public String vistaImportarCatalogo(HttpSession session, RedirectAttributes redirectAttributes) {
+//        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+//            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+//            return "redirect:/administrador/inicio-sesion";
+//        }
+//        return "importarCatalogo";
+//    }
+
+
+    /* ------------------------ GESTION DE PRODUCTOS ----------------------------- */
+
+    @GetMapping("/gestion-productos/importar-catalogo")
     public String vistaImportarCatalogo(HttpSession session, RedirectAttributes redirectAttributes) {
         if (session.getAttribute("emailAutenticadoAdmin") == null) {
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
@@ -835,10 +847,7 @@ public class AdministradorController {
         return "importarCatalogo";
     }
 
-
-    /* ------------------------ GESTION DE PRODUCTOS ----------------------------- */
-
-    @GetMapping("/gestion-productos/importar-catalogo")
+    @GetMapping("/consulta-productos")
     public String mostrarVistaProductos(
             @ModelAttribute("criteriosBusqueda") ProductoCriteriosBusquedaDTO criterios,
             @RequestParam(defaultValue = "0") int page,
@@ -919,8 +928,7 @@ public class AdministradorController {
                     builder.toUriString(),
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<RestPage<ProductoResultadoDTO>>() {
-                    }
+                    new ParameterizedTypeReference<RestPage<ProductoResultadoDTO>>() {}
             );
             if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
                 paginaProductos = responseEntity.getBody();
@@ -933,8 +941,7 @@ public class AdministradorController {
                     apiUrlCategorias,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<CategoriaSimpleDTO>>() {
-                    }
+                    new ParameterizedTypeReference<List<CategoriaSimpleDTO>>() {}
             );
             if (responseEntityCategorias.getStatusCode().is2xxSuccessful()) {
                 categorias = responseEntityCategorias.getBody();
@@ -947,8 +954,7 @@ public class AdministradorController {
                     apiUrlProveedores,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<ProveedorSimpleDTO>>() {
-                    }
+                    new ParameterizedTypeReference<List<ProveedorSimpleDTO>>() {}
             );
             if (responseEntityProveedores.getStatusCode().is2xxSuccessful()) {
                 proveedores = responseEntityProveedores.getBody();
@@ -970,26 +976,6 @@ public class AdministradorController {
         model.addAttribute("reverseSortDir", currentSortDirection == Sort.Direction.ASC ? "desc" : "asc");
 
         return "consultaProductos";
-    }
-
-
-    @GetMapping("/consulta-productos")
-    public String busquedaParametrizadaEmpleado(HttpSession session,
-                                                RedirectAttributes redirectAttributes,
-                                                Model model) {
-        if (session.getAttribute("emailAutenticadoAdmin") == null) {
-            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
-            return "redirect:/administrador/inicio-sesion";
-        }
-
-        List<Departamento> departamentos = departamentoService.obtenerTodosDepartamentos();
-        model.addAttribute("departamentos", departamentos);
-
-        model.addAttribute("filtro", new EmpleadoConsultaDTO());
-
-        System.out.println("Estoy en el GEt de Consulta");
-
-        return "consultaParametrizadaEmpleado";
     }
 
 
@@ -1020,8 +1006,6 @@ public class AdministradorController {
         return "consultaParametrizadaEmpleado";
     }
 
-
-
     @PostMapping("/consulta-empleado")
     public String procesarBusquedaEmpleado(@ModelAttribute("filtro") EmpleadoConsultaDTO filtro,
                                            HttpSession session,
@@ -1046,7 +1030,6 @@ public class AdministradorController {
         model.addAttribute("resultados", resultados);
         return "consultaParametrizadaEmpleado";
     }
-
 
 
     @GetMapping("/administrador/editar-empleado/{dni}")
