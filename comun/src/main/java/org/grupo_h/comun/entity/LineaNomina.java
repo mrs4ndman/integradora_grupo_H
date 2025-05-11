@@ -17,5 +17,10 @@ public class LineaNomina {
     private UUID id;
 
     private String concepto;
-    private int importe;
+    private int cantidad;
+    private Double importe;
+
+    @ManyToOne
+    @JoinColumn(name = "nomina_id", nullable = false)
+    private Nomina nomina; // Relación inversa
 }

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Productos - Administración</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        /* Estilos en línea: Úsalos con moderación. Si algo aquí es muy general, podría interferir. */
+        .action-buttons-header {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+        }
+        .sortable-header {
+            cursor: pointer;
+        }
+        .sortable-header:hover {
+            background-color: #495057; /* Un poco más claro que el fondo oscuro de la cabecera */
+        }
+        .sortable-header .sort-icon {
+            margin-left: 7px;
+            display: inline-block;
+            width: 1em; /* Espacio reservado para el icono, evita que el texto salte */
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h1 class="my-4 text-center">Consulta de Productos</h1>
+
+    <form id="searchForm" class="search-form mb-4 p-3 border rounded bg-light">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="descripcion" class="form-label">Descripción:</label>
+                <input type="text" id="descripcion" name="descripcion" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="categoria" class="form-label">Categoría:</label>
+                <select id="categoria" name="categoriaId" class="form-select">
+                    <option value="">-- Todas --</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="precioMin" class="form-label">Precio Mín.:</label>
+                <input type="number" step="0.01" id="precioMin" name="precioMin" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="precioMax" class="form-label">Precio Máx.:</label>
+                <input type="number" step="0.01" id="precioMax" name="precioMax" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="proveedor" class="form-label">Proveedor:</label>
+                <select id="proveedor" name="proveedorId" class="form-select">
+                    <option value="">-- Todos --</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="esPerecedero" class="form-label">Estado:</label>
+                <select id="esPerecedero" name="esPerecedero" class="form-select">
+                    <option value="">-- Todos --</option>
+                    <option value="true">Perecedero</option>
+                    <option value="false">No Perecedero</option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-3 text-center">
+            <button type="button" id="btnBuscar" class="btn btn-primary">Buscar</button>
+            <button type="button" id="btnLimpiar" class="btn btn-secondary">Limpiar Filtros</button>
+        </div>
+    </form>
+
+    <div class="action-buttons-header text-center">
+        <h5 class="mb-3">Acciones Masivas</h5>
+        <div class="row justify-content-center g-2">
+            <div class="col-md-auto">
+                <div class="input-group">
+                    <select id="categoriaEliminar" class="form-select">
+                        <option value="">Seleccione Categoría a Eliminar</option>
+                    </select>
+                    <button type="button" class="btn btn-warning" onclick="confirmarEliminarPorCategoria()">Eliminar Productos por Categoría</button>
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <button type="button" class="btn btn-danger" onclick="confirmarEliminarTodos()">Eliminar Todos los Productos</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive mt-4">
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="table-dark">
+            <tr>
+                <th id="header-id" class="sortable-header" data-sort-field="id">ID <span class="sort-icon"></span></th>
+                <th id="header-descripcion" class="sortable-header" data-sort-field="descripcion">Descripción <span class="sort-icon"></span></th>
+                <th id="header-precio" class="sortable-header" data-sort-field="precio">Precio (€) <span class="sort-icon"></span></th>
+                <th id="header-categoria-nombre" class="sortable-header" data-sort-field="categoria.nombre">Categoría <span class="sort-icon"></span></th>
+                <th id="header-proveedor-nombre" class="sortable-header" data-sort-field="proveedor.nombre">Proveedor <span class="sort-icon"></span></th>
+                <th id="header-marca" class="sortable-header" data-sort-field="marca">Marca <span class="sort-icon"></span></th>
+                <th id="header-valoracion" class="sortable-header" data-sort-field="valoracion">Valoración <span class="sort-icon"></span></th>
+                <th id="header-unidades" class="sortable-header" data-sort-field="unidades">Unidades <span class="sort-icon"></span></th>
+                <th id="header-esPerecedero" class="sortable-header" data-sort-field="esPerecedero">Perecedero <span class="sort-icon"></span></th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody id="productTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center" id="paginationControls">
+        </ul>
+    </nav>
+
+    <hr class="my-4">
+    <div class="text-center">
+        <a th:href="@{/administrador/areaPersonal}" class="btn btn-outline-secondary mt-3">Volver al Área Personal</a>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = '/api/administrador/productos';
+    const CATEGORIAS_API_URL = `${API_BASE_URL}/categorias`;
+    const PROVEEDORES_API_URL = `${API_BASE_URL}/proveedores`;
+
+    let currentPage = 0;
+    const pageSize = 10;
+    let currentSortField = 'descripcion';
+    let currentSortDirection = 'asc';
+
+    function getCsrfHeaders() {
+        const headers = {};
+        const token = document.querySelector('meta[name="_csrf"]')?.content;
+        const headerName = document.querySelector('meta[name="_csrf_header"]')?.content;
+        if (token && headerName) {
+            headers[headerName] = token;
+        }
+        return headers;
+    }
+
+    async function cargarCategorias() {
+        try {
+            const response = await fetch(CATEGORIAS_API_URL);
+            if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+            const categorias = await response.json();
+            const categoriaSelect = $('#categoria');
+            const categoriaEliminarSelect = $('#categoriaEliminar');
+
+            categoriaSelect.empty().append('<option value="">-- Todas --</option>');
+            categoriaEliminarSelect.empty().append('<option value="">Seleccione Categoría</option>');
+
+            categorias.forEach(cat => {
+                categoriaSelect.append(`<option value="${cat.id}">${cat.nombre}</option>`);
+                categoriaEliminarSelect.append(`<option value="${cat.id}">${cat.nombre}</option>`);
+            });
+        } catch (error) {
+            console.error('Error cargando categorías:', error);
+        }
+    }
+
+    async function cargarProveedores() {
+        try {
+            const response = await fetch(PROVEEDORES_API_URL);
+            if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+            const proveedores = await response.json();
+            const proveedorSelect = $('#proveedor');
+            proveedorSelect.empty().append('<option value="">-- Todos --</option>');
+
+            proveedores.forEach(prov => {
+                proveedorSelect.append(`<option value="${prov.id}">${prov.nombre}</option>`);
+            });
+        } catch (error) {
+            console.error('Error cargando proveedores:', error);
+        }
+    }
+
+    async function buscarProductos(page = 0, sortField = currentSortField, sortDirection = currentSortDirection) {
+        currentPage = page;
+        currentSortField = sortField;
+        currentSortDirection = sortDirection;
+
+        const criterios = {
+            descripcion: $('#descripcion').val(),
+            categoriaId: $('#categoria').val() || null,
+            proveedorId: $('#proveedor').val() || null,
+            precioMin: $('#precioMin').val() ? parseFloat($('#precioMin').val()) : null,
+            precioMax: $('#precioMax').val() ? parseFloat($('#precioMax').val()) : null,
+            esPerecedero: $('#esPerecedero').val() === "true" ? true : ($('#esPerecedero').val() === "false" ? false : null)
+        };
+
+        Object.keys(criterios).forEach(key => {
+            if (criterios[key] == null || criterios[key] === '') {
+                if (key === 'esPerecedero' && criterios[key] === null) {
+                    delete criterios[key];
+                } else if (criterios[key] !== null && criterios[key] !== '') {
+                } else {
+                    delete criterios[key];
+                }
+            }
+        });
+
+        const queryParams = new URLSearchParams();
+        for (const key in criterios) {
+            if (criterios[key] !== null && criterios[key] !== undefined) {
+                queryParams.append(key, criterios[key]);
+            }
+        }
+        queryParams.append('page', currentPage);
+        queryParams.append('size', pageSize);
+        queryParams.append('sort', `${currentSortField},${currentSortDirection}`);
+
+        updateSortHeadersUI();
+        try {
+            const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error en la búsqueda (${response.status}): ${errorText}`);
+            }
+            const data = await response.json();
+            mostrarResultados(data.content);
+            actualizarPaginacion(data);
+        } catch (error) {
+            console.error('Error al buscar productos:', error);
+            $('#productTableBody').html(`<tr><td colspan="10" class="text-center text-danger">Error al cargar productos: ${error.message}</td></tr>`);
+        }
+    }
+
+    function updateSortHeadersUI() {
+        $('.sortable-header .sort-icon').html('');
+        const headerIdSelector = `#header-${currentSortField.replace(/\./g, '-')}`;
+        const iconClass = currentSortDirection === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+        $(headerIdSelector).find('.sort-icon').html(`<i class="${iconClass}"></i>`);
+    }
+
+
+    function mostrarResultados(productos) {
+        const tbody = $('#productTableBody');
+        tbody.empty();
+        if (productos && productos.length > 0) {
+            productos.forEach(producto => {
+                const id = producto.idProducto || producto.id;
+                const descripcion = producto.descripcion || 'N/A';
+                const precio = producto.precio;
+                const categoriaNombre = producto.categoriaNombre || producto.categoria?.nombre || 'N/A';
+                const proveedorNombre = producto.proveedorNombre || producto.proveedor?.nombre || 'N/A';
+                const marca = producto.marca || 'N/A';
+                const valoracionMedia = producto.valoracionMedia !== undefined && producto.valoracionMedia !== null ? parseFloat(producto.valoracionMedia).toFixed(1) : 'N/A';
+                const unidadesDisponibles = producto.unidadesDisponibles !== undefined && producto.unidadesDisponibles !== null ? producto.unidadesDisponibles : 'N/A';
+                const esPerecederoTexto = typeof producto.esPerecedero === 'boolean' ? (producto.esPerecedero ? 'Sí' : 'No') : 'N/A';
+
+                const fila = `
+                        <tr>
+                            <td>${id}</td>
+                            <td>${descripcion}</td>
+                            <td>${precio != null ? precio.toFixed(2) : 'N/A'}</td>
+                            <td>${categoriaNombre}</td>
+                            <td>${proveedorNombre}</td>
+                            <td>${marca}</td>
+                            <td>${valoracionMedia}</td>
+                            <td>${unidadesDisponibles}</td>
+                            <td>${esPerecederoTexto}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="confirmarEliminarProducto('${id}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                    </svg>
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                tbody.append(fila);
+            });
+        } else {
+            tbody.html('<tr><td colspan="10" class="text-center">No se encontraron productos.</td></tr>');
+        }
+    }
+
+    function actualizarPaginacion(pageData) {
+        const paginationControls = $('#paginationControls');
+        paginationControls.empty();
+        if (pageData.totalPages > 1) {
+            paginationControls.append(
+                `<li class="page-item ${pageData.first ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="buscarProductos(0)">Primero</a>
+                    </li>`
+            );
+            paginationControls.append(
+                `<li class="page-item ${pageData.first ? 'disabled' : ''}">
+                        <a class="page-link" href="#" aria-label="Anterior" onclick="buscarProductos(${pageData.number - 1})"><span aria-hidden="true">&laquo;</span></a>
+                    </li>`
+            );
+            const RANGO_PAGINAS = 2;
+            let inicio = Math.max(0, pageData.number - RANGO_PAGINAS);
+            let fin = Math.min(pageData.totalPages - 1, pageData.number + RANGO_PAGINAS);
+            if (pageData.number < RANGO_PAGINAS) {
+                fin = Math.min(pageData.totalPages - 1, RANGO_PAGINAS * 2);
+            }
+            if (pageData.number > pageData.totalPages - 1 - RANGO_PAGINAS) {
+                inicio = Math.max(0, pageData.totalPages - 1 - (RANGO_PAGINAS * 2));
+            }
+            for (let i = inicio; i <= fin; i++) {
+                paginationControls.append(
+                    `<li class="page-item ${i === pageData.number ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="buscarProductos(${i})">${i + 1}</a>
+                        </li>`
+                );
+            }
+            paginationControls.append(
+                `<li class="page-item ${pageData.last ? 'disabled' : ''}">
+                        <a class="page-link" href="#" aria-label="Siguiente" onclick="buscarProductos(${pageData.number + 1})"><span aria-hidden="true">&raquo;</span></a>
+                    </li>`
+            );
+            paginationControls.append(
+                `<li class="page-item ${pageData.last ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="buscarProductos(${pageData.totalPages - 1})">Último</a>
+                    </li>`
+            );
+        }
+    }
+
+    function confirmarEliminarProducto(productoId) {
+        if (confirm(`¿Está seguro de que desea eliminar el producto con ID ${productoId}?`)) {
+            eliminarProducto(productoId);
+        }
+    }
+
+    async function eliminarProducto(productoId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/borrar/${productoId}`, {
+                method: 'DELETE',
+                headers: getCsrfHeaders()
+            });
+            if (response.ok) {
+                const result = await response.json().catch(() => ({ message: 'Producto eliminado correctamente.' }));
+                alert(result.message || 'Producto eliminado correctamente.');
+                buscarProductos(currentPage, currentSortField, currentSortDirection);
+            } else {
+                const errorData = await response.json().catch(() => ({ message: 'Error al eliminar el producto.' }));
+                alert(`Error (${response.status}): ${errorData.message || response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error al eliminar producto:', error);
+            alert('Ocurrió un error de red o servidor al intentar eliminar el producto.');
+        }
+    }
+
+    function confirmarEliminarPorCategoria() {
+        const categoriaId = $('#categoriaEliminar').val();
+        const categoriaNombre = $('#categoriaEliminar option:selected').text();
+        if (!categoriaId) {
+            alert('Por favor, seleccione una categoría.');
+            return;
+        }
+        if (confirm(`¿Seguro que desea eliminar TODOS los productos de la categoría "${categoriaNombre}"?`)) {
+            eliminarProductosPorCategoria(categoriaId);
+        }
+    }
+
+    async function eliminarProductosPorCategoria(categoriaId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/borrar/categoria/${categoriaId}`, {
+                method: 'DELETE',
+                headers: getCsrfHeaders()
+            });
+            if (response.ok) {
+                const result = await response.json().catch(() => ({ message: 'Productos de la categoría eliminados.' }));
+                alert(result.message || `Productos de la categoría eliminados.`);
+                buscarProductos(0, currentSortField, currentSortDirection);
+            } else {
+                const errorData = await response.json().catch(() => ({ message: 'Error al eliminar productos por categoría.' }));
+                alert(`Error (${response.status}): ${errorData.message || response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error al eliminar productos por categoría:', error);
+            alert('Ocurrió un error de red o servidor.');
+        }
+    }
+
+    function confirmarEliminarTodos() {
+        if (confirm('¿Está ABSOLUTAMENTE SEGURO de eliminar TODOS los productos? Esta acción es IRREVERSIBLE.')) {
+            if (confirm('CONFIRMACIÓN FINAL: ¿Realmente desea proceder?')) {
+                eliminarTodosLosProductos();
+            }
+        }
+    }
+
+    async function eliminarTodosLosProductos() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/borrar/todos`, {
+                method: 'DELETE',
+                headers: getCsrfHeaders()
+            });
+            if (response.ok) {
+                const result = await response.json().catch(() => ({ message: 'Todos los productos eliminados.' }));
+                alert(result.message || 'Todos los productos han sido eliminados.');
+                buscarProductos(0, currentSortField, currentSortDirection);
+            } else {
+                const errorData = await response.json().catch(() => ({ message: 'Error al eliminar todos los productos.' }));
+                alert(`Error (${response.status}): ${errorData.message || response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error al eliminar todos los productos:', error);
+            alert('Ocurrió un error de red o servidor.');
+        }
+    }
+
+    $(document).ready(function() {
+        if (!document.querySelector('meta[name="_csrf"]') || !document.querySelector('meta[name="_csrf_header"]')) {
+            console.warn("Meta tags CSRF no encontradas. Operaciones DELETE/POST/PUT podrían fallar si CSRF está habilitado.");
+        }
+
+        cargarCategorias();
+        cargarProveedores();
+        buscarProductos(0, currentSortField, currentSortDirection);
+
+        $('#btnBuscar').click(() => buscarProductos(0, currentSortField, currentSortDirection));
+        $('#btnLimpiar').click(() => {
+            $('#searchForm')[0].reset();
+            $('#categoria').val('');
+            $('#proveedor').val('');
+            $('#esPerecedero').val('');
+            currentSortField = 'descripcion';
+            currentSortDirection = 'asc';
+            buscarProductos(0, currentSortField, currentSortDirection);
+        });
+
+        $('.sortable-header').on('click', function() {
+            const newSortField = $(this).data('sort-field');
+            let newSortDirection = 'asc';
+
+            if (currentSortField === newSortField) {
+                newSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                newSortDirection = 'asc';
+            }
+            buscarProductos(0, newSortField, newSortDirection);
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

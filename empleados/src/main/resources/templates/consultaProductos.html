@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Consulta de Productos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" th:href="@{/css/estilos.css}">
+
+  <style>
+    /* Estilos para los iconos de ordenación en las cabeceras de Thymeleaf */
+    .table th.is-sortable { /* Nueva clase para THs que son ordenables */
+      padding: 0; /* Eliminar padding del TH para que el A lo llene */
+    }
+    .table a.sortable-header {
+      display: block; /* Hacer que el enlace llene la celda */
+      padding: 0.75rem; /* Padding estándar de celda de Bootstrap (ajustar si es necesario) */
+      text-decoration: none;
+      color: inherit;
+    }
+    .table a.sortable-header:hover {
+      background-color: #495057; /* Efecto hover similar al de la versión JS */
+      /* Asegúrate que este color contraste bien con el texto de la cabecera oscura */
+    }
+    .table a.sortable-header .sort-icon {
+      margin-left: 5px;
+      display: inline-block;
+      width: 1em;
+    }
+    .search-form .form-label {
+      font-weight: 500;
+    }
+    /* Alineación de texto para cabeceras y celdas específicas */
+    .text-end { text-align: right !important; }
+    .text-center { text-align: center !important; }
+  </style>
+</head>
+<body>
+<div class="container mt-4">
+  <h1 class="my-4 text-center">Consulta de Productos</h1>
+
+  <div th:if="${errorApi}" class="alert alert-danger error-api" role="alert" th:text="${errorApi}"></div>
+  <div th:if="${errorApiFiltros}" class="alert alert-warning error-api" role="alert" th:text="${errorApiFiltros}"></div>
+
+  <form th:action="@{/empleados/consulta-productos}" method="get" class="search-form mb-4 p-3 border rounded bg-light">
+    <input type="hidden" name="sortField" th:value="${estadoActualSortField}">
+    <input type="hidden" name="sortDir" th:value="${estadoActualSortDir}">
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="descripcion" class="form-label">Descripción:</label>
+        <input type="text" id="descripcion" name="descripcion" th:value="${criteriosBusquedaProductos?.descripcion}" class="form-control">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="categoriaId" class="form-label">Categoría:</label>
+        <select id="categoriaId" name="categoriaId" class="form-select">
+          <option value="">-- Todas --</option>
+          <option th:each="cat : ${categorias}"
+                  th:value="${cat.id}"
+                  th:text="${cat.nombre}"
+                  th:selected="${criteriosBusquedaProductos?.categoriaId != null && criteriosBusquedaProductos.categoriaId.equals(cat.id)}"></option>
+        </select>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-md-3 mb-3">
+        <label for="precioMin" class="form-label">Precio Mín.:</label>
+        <input type="number" step="0.01" id="precioMin" name="precioMin" th:value="${criteriosBusquedaProductos?.precioMin}" class="form-control">
+      </div>
+      <div class="col-md-3 mb-3">
+        <label for="precioMax" class="form-label">Precio Máx.:</label>
+        <input type="number" step="0.01" id="precioMax" name="precioMax" th:value="${criteriosBusquedaProductos?.precioMax}" class="form-control">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="proveedorId" class="form-label">Proveedor:</label>
+        <select id="proveedorId" name="proveedorId" class="form-select">
+          <option value="">-- Todos --</option>
+          <option th:each="prov : ${proveedores}"
+                  th:value="${prov.id}"
+                  th:text="${prov.nombre}"
+                  th:selected="${criteriosBusquedaProductos?.proveedorId != null && criteriosBusquedaProductos.proveedorId.equals(prov.id)}"></option>
+        </select>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-md-6 mb-3">
+        <label for="esPerecedero" class="form-label">Estado:</label>
+        <select id="esPerecedero" name="esPerecedero" class="form-select">
+          <option value="">-- Todos --</option>
+          <option value="true" th:selected="${criteriosBusquedaProductos?.esPerecedero == true}">Perecedero</option>
+          <option value="false" th:selected="${criteriosBusquedaProductos?.esPerecedero == false}">No Perecedero</option>
+        </select>
+      </div>
+    </div>
+    <div class="mt-3 text-center">
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      <a th:href="@{/empleados/consulta-productos(sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir})}" class="btn btn-secondary">Limpiar Filtros</a>
+    </div>
+  </form>
+
+  <div th:if="${paginaProductos != null && !paginaProductos.empty}">
+    <div class="table-responsive mt-4">
+      <table class="table table-striped table-bordered table-hover">
+        <thead class="table-dark">
+        <tr>
+          <th class="is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='id', sortDir=${estadoActualSortField == 'id' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">ID
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'id'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'id'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='descripcion', sortDir=${estadoActualSortField == 'descripcion' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Descripción
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'descripcion'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'descripcion'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="text-end is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='precio', sortDir=${estadoActualSortField == 'precio' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Precio
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'precio'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'precio'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='categoria.nombre', sortDir=${estadoActualSortField == 'categoria.nombre' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Categoría
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'categoria.nombre'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'categoria.nombre'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='proveedor.nombre', sortDir=${estadoActualSortField == 'proveedor.nombre' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Proveedor
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'proveedor.nombre'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'proveedor.nombre'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='marca', sortDir=${estadoActualSortField == 'marca' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Marca
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'marca'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'marca'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="text-center is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='valoracionMedia', sortDir=${estadoActualSortField == 'valoracionMedia' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Valoración
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'valoracionMedia'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'valoracionMedia'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="text-center is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='unidadesDisponibles', sortDir=${estadoActualSortField == 'unidadesDisponibles' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Unidades
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'unidadesDisponibles'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'unidadesDisponibles'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+          <th class="text-center is-sortable">
+            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='esPerecedero', sortDir=${estadoActualSortField == 'esPerecedero' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
+               class="sortable-header">Perecedero
+              <span class="sort-icon">
+                                    <i th:if="${estadoActualSortField == 'esPerecedero'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
+                                    <i th:unless="${estadoActualSortField == 'esPerecedero'}" class="fa-solid fa-sort text-muted"></i>
+                                </span>
+            </a>
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="producto : ${paginaProductos.content}">
+          <td class="text-center" th:text="${producto.id}"></td>
+          <td th:text="${#strings.abbreviate(producto.descripcion, 70)}"></td>
+          <td class="text-end" th:text="${#numbers.formatCurrency(producto.precio)}"></td>
+          <td th:text="${producto.categoriaNombre}"></td>
+          <td th:text="${producto.proveedorNombre}"></td>
+          <td th:text="${producto.marca}"></td>
+          <td class="text-center" th:text="${producto.valoracionMedia == null ? 'N/A' : #numbers.formatDecimal(producto.valoracionMedia, 1, 1, ',', '.')}"></td>
+          <td class="text-center" th:text="${producto.unidadesDisponibles}"></td>
+          <td class="text-center" th:text="${producto.esPerecedero ? 'Sí' : 'No'}"></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-controls mt-3" th:if="${paginaProductos.totalPages > 0}">
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" th:classappend="${paginaProductos.first ? 'disabled' : ''}">
+            <a class="page-link" th:href="@{/empleados/consulta-productos(page=0, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">Primero</a>
+          </li>
+          <li class="page-item" th:classappend="${paginaProductos.first ? 'disabled' : ''}">
+            <a class="page-link" th:href="@{/empleados/consulta-productos(page=${paginaProductos.number-1}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">&laquo;</a>
+          </li>
+
+          <th:block th:each="i : ${#numbers.sequence( T(java.lang.Math).max(0, paginaProductos.number - 2), T(java.lang.Math).min(paginaProductos.totalPages - 1, paginaProductos.number + 2) )}">
+            <li class="page-item" th:classappend="${i == paginaProductos.number ? 'active' : ''}">
+              <a class="page-link" th:href="@{/empleados/consulta-productos(page=${i}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}" th:text="${i+1}"></a>
+            </li>
+          </th:block>
+
+          <li class="page-item" th:classappend="${paginaProductos.last ? 'disabled' : ''}">
+            <a class="page-link" th:href="@{/empleados/consulta-productos(page=${paginaProductos.number+1}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">&raquo;</a>
+          </li>
+          <li class="page-item" th:classappend="${paginaProductos.last ? 'disabled' : ''}">
+            <a class="page-link" th:href="@{/empleados/consulta-productos(page=${paginaProductos.totalPages-1}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorId=${criteriosBusquedaProductos?.proveedorId}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">Último</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+  <div th:if="${paginaProductos == null || paginaProductos.empty}" class="alert alert-info mt-3">
+    No se encontraron productos con los criterios seleccionados.
+  </div>
+
+  <hr class="my-4">
+  <a th:href="@{/usuarios/info}" class="btn btn-outline-secondary mt-3">Volver al Área Personal</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

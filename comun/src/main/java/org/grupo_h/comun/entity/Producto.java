@@ -38,7 +38,7 @@ public abstract class Producto { // Clase abstracta
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", foreignKey = @ForeignKey(name = "FK_PRODUCTO_CATEGORIA"))
-    private Categoria categoria; // Categoría Principal
+    private Categoria categoria;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proveedor_id", foreignKey = @ForeignKey(name = "FK_PRODUCTO_PROVEEDOR"))

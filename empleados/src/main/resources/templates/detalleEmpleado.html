@@ -7,34 +7,133 @@
 <body>
 <h1>Detalle del Empleado</h1>
 
-<div th:if="${empleado}">
-    <!--
-    <p><strong>ID:</strong> <span th:text="${empleado.id}"></span></p>
-    <p><strong>Fecha de Alta en BD:</strong> <span th:text="${empleado.fechaAltaEnBaseDeDatos}"></span></p>
-    -->
-    <p><strong>Nombre:</strong> <span th:text="${empleado.nombre}"></span></p>
-    <p><strong>Apellidos:</strong> <span th:text="${empleado.apellidos}"></span></p>
-    <p><strong>Fecha de Nacimiento:</strong> <span th:text="${empleado.fechaNacimiento}"></span></p>
-    <p><strong>Dirección:</strong></p>
-    <ul>
-        <li><strong>Tipo de Vía:</strong> <span th:text="${empleado.direccion.tipoVia}"></span></li>
-        <li><strong>Vía:</strong> <span th:text="${empleado.direccion.via}"></span></li>
-        <li><strong>Número:</strong> <span th:text="${empleado.direccion.numero}"></span></li>
-        <li><strong>Piso:</strong> <span th:text="${empleado.direccion.piso}"></span></li>
-        <li><strong>Puerta:</strong> <span th:text="${empleado.direccion.puerta}"></span></li>
-        <li><strong>Localidad:</strong> <span th:text="${empleado.direccion.localidad}"></span></li>
-        <li><strong>Código Postal:</strong> <span th:text="${empleado.direccion.codigoPostal}"></span></li>
-        <li><strong>Región:</strong> <span th:text="${empleado.direccion.region}"></span></li>
-        <li><strong>País:</strong> <span th:text="${empleado.direccion.pais}"></span></li>
-    </ul>
-    <p><strong>Cuenta Corriente:</strong></p>
-    <ul>
-        <li><strong>Banco:</strong> <span th:text="${empleado.cuentaCorriente.banco}"></span></li>
-        <li><strong>Cuenta Corriente:</strong> <span th:text="${empleado.cuentaCorriente.cuentaCorriente}"></span></li>
-    </ul>
+<div th:if="${empleadoDTO}">
+    <!-- Datos personales -->
+    <h2>Datos Personales</h2>
+    <p><strong>Nombre:</strong> <span th:text="${empleadoDTO.nombre}"></span></p>
+    <p><strong>Apellidos:</strong> <span th:text="${empleadoDTO.apellidos}"></span></p>
+    <p><strong>Fecha de Nacimiento:</strong> <span th:text="${empleadoDTO.fechaNacimiento}"></span></p>
+    <p><strong>Edad:</strong> <span th:text="${empleadoDTO.edad}"></span></p>
+    <p><strong>País de Nacimiento:</strong> <span th:text="${empleadoDTO.paisNacimiento.nombrePais}"></span></p>
+    <p><strong>Comentarios:</strong> <span th:text="${empleadoDTO.comentarios}"></span></p>
+
+    <!-- Fotografía -->
+    <h2>Fotografía</h2>
+    <div th:if="${empleadoDTO.fotografia}">
+        <img th:src="'data:image/jpeg;base64,' + ${#strings.toBase64(empleadoDTO.fotografia)}" alt="Fotografía del empleado" style="max-width: 200px;"/>
+    </div>
+    <div th:unless="${empleadoDTO.fotografia}">
+        <p>No hay fotografía disponible.</p>
+    </div>
+
+    <!-- Datos de contacto -->
+    <h2>Datos de Contacto</h2>
+    <p><strong>Tipo de Documento:</strong> <span th:text="${empleadoDTO.tipoDocumento.tipoDocumento}"></span></p>
+    <p><strong>Prefijo Internacional Teléfono:</strong> <span th:text="${empleadoDTO.prefijoTelefono}"></span></p>
+    <p><strong>Teléfono Móvil:</strong> <span th:text="${empleadoDTO.telefonoMovil}"></span></p>
+
+    <!-- Dirección -->
+    <h2>Dirección</h2>
+    <div th:if="${empleadoDTO.direccion}">
+        <ul>
+            <li><strong>Tipo de Vía:</strong> <span th:text="${empleadoDTO.direccion.tipoViaDireccionPpal.tipoVia}"></span></li>
+            <li><strong>Vía:</strong> <span th:text="${empleadoDTO.direccion.nombreViaDireccionPpal}"></span></li>
+            <li><strong>Número:</strong> <span th:text="${empleadoDTO.direccion.numeroViaDireccionPpal}"></span></li>
+            <li><strong>Planta:</strong> <span th:text="${empleadoDTO.direccion.plantaDireccionPpal}"></span></li>
+            <li><strong>Puerta:</strong> <span th:text="${empleadoDTO.direccion.puertaDireccionPpal}"></span></li>
+            <li><strong>Localidad:</strong> <span th:text="${empleadoDTO.direccion.localidadDireccionPpal}"></span></li>
+            <li><strong>Código Postal:</strong> <span th:text="${empleadoDTO.direccion.codigoPostalDireccionPpal}"></span></li>
+            <li><strong>Región:</strong> <span th:text="${empleadoDTO.direccion.regionDireccionPpal}"></span></li>
+        </ul>
+    </div>
+    <div th:unless="${empleadoDTO.direccion}">
+        <p>No hay dirección disponible.</p>
+    </div>
+
+    <!-- Datos económicos -->
+    <h2>Datos Económicos</h2>
+    <div th:if="${empleadoDTO.tarjetas}">
+        <p><strong>Tipo de Tarjeta:</strong> <span th:text="${empleadoDTO.tarjetas.tipoTarjetaCredito.nombreTipoTarjeta}"></span></p>
+        <p><strong>Número de Tarjeta:</strong> <span th:text="${empleadoDTO.tarjetas.numeroTarjetaCredito}"></span></p>
+        <!-- TODO: NO FUNCIONA -->
+        <!-- <p><strong>CVC:</strong> <span th:text="${empleadoDTO.tarjetas.cvc}"></span></p> -->
+        <p><strong>Mes de Caducidad:</strong> <span th:text="${empleadoDTO.tarjetas.mesCaducidad}"></span></p>
+        <p><strong>Año de Caducidad:</strong> <span th:text="${empleadoDTO.tarjetas.anioCaducidad}"></span></p>
+    </div>
+    <div th:unless="${empleadoDTO.tarjetas}">
+        <p>No hay información de tarjetas disponible.</p>
+    </div>
+
+    <!-- Cuenta Corriente -->
+    <h2>Cuenta Corriente</h2>
+    <div th:if="${empleadoDTO.cuentaCorriente}">
+        <p><strong>Banco:</strong> <span th:text="${empleadoDTO.cuentaCorriente.entidadBancaria.nombreEntidad}"></span></p>
+        <p><strong>Número de Cuenta:</strong> <span th:text="${empleadoDTO.cuentaCorriente.numeroCuenta}"></span></p>
+    </div>
+    <div th:unless="${empleadoDTO.cuentaCorriente}">
+        <p>No hay información de cuenta corriente disponible.</p>
+    </div>
+
+    <!-- Departamento -->
+    <h2>Departamento</h2>
+    <div th:if="${empleadoDTO.departamento}">
+        <p><strong>Nombre del Departamento:</strong> <span th:text="${empleadoDTO.departamento.nombreDept}"></span></p>
+    </div>
+    <div th:unless="${empleadoDTO.departamento}">
+        <p>No hay departamento asignado.</p>
+    </div>
+
+    <!-- Especialidades -  TODO: NO FUNCIONA
+    <h2>Especialidades</h2>
+    <div th:if="${!empleadoDTO.especialidadesEmpleado.isEmpty()}">
+        <ul>
+            <li th:each="especialidad : ${empleadoDTO.especialidadesEmpleado}">
+                <span th:text="${especialidad.}"></span>
+            </li>
+        </ul>
+    </div>
+    <div th:unless="${!empleadoDTO.especialidadesEmpleado.isEmpty()}">
+        <p>No hay especialidades asignadas.</p>
+    </div>
+     -->
+
+    <!-- Etiquetas -->
+    <h2>Etiquetas</h2>
+    <div th:if="${!empleadoDTO.etiquetas.isEmpty()}">
+        <ul>
+            <li th:each="etiqueta : ${empleadoDTO.etiquetas}">
+                <span th:text="${etiqueta.nombre}"></span>
+            </li>
+        </ul>
+    </div>
+    <div th:unless="${!empleadoDTO.etiquetas.isEmpty()}">
+        <p>No hay etiquetas asignadas.</p>
+    </div>
+
+    <!-- Jefe -->
+    <h2>Jefe</h2>
+    <div th:if="${empleadoDTO.jefe}">
+        <p><strong>Nombre del Jefe:</strong> <span th:text="${empleadoDTO.jefe.nombre + ' ' + empleadoDTO.jefe.apellidos}"></span></p>
+    </div>
+    <div th:unless="${empleadoDTO.jefe}">
+        <p>No hay jefe asignado.</p>
+    </div>
+
+    <!-- Subordinados -->
+    <h2>Subordinados</h2>
+    <div th:if="${!empleadoDTO.subordinados.isEmpty()}">
+        <ul>
+            <li th:each="subordinado : ${empleadoDTO.subordinados}">
+                <span th:text="${subordinado.nombre + ' ' + subordinado.apellidos}"></span>
+            </li>
+        </ul>
+    </div>
+    <div th:unless="${!empleadoDTO.subordinados.isEmpty()}">
+        <p>No hay subordinados asignados.</p>
+    </div>
 </div>
 
-<div th:unless="${empleado}">
+<div th:unless="${empleadoDTO}">
     <p>Empleado no encontrado.</p>
 </div>
 
