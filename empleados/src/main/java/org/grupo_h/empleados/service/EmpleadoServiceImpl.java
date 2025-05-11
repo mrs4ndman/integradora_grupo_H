@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
+import org.yaml.snakeyaml.events.Event;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -121,6 +122,10 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         return empleadosRepository.save(empleado);
     }
 
+    @Override
+    public Optional<Empleado> obtenerEmpleadoPorId(UUID id) {
+        return empleadosRepository.findById(id);
+    }
 
 
     /**

@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Properties;
 
@@ -38,6 +39,7 @@ public class Configuraciones {
                         .requestMatchers(
                                 "/usuarios/**",
                                 "/empleados/**",
+                                "/api/**",
                                 "/sendMail",
                                 "/prueba",
                                 "/css/**", "/js/**", "/img/**").permitAll()
@@ -81,5 +83,9 @@ public class Configuraciones {
         return new ModelMapper();
     }
 
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
 }

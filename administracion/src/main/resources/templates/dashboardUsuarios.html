@@ -3,17 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard de Usuarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw=="
+          crossorigin="anonymous"/>
     <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
+
         table, th, td {
-            border: 1px solid black;
+            border: 1px solid #ccc;
         }
+
         th, td {
-            padding: 8px;
-            text-align: left;
+            padding: 10px;
+            text-align: center;
         }
         .acciones {
             white-space: nowrap;
@@ -39,8 +49,53 @@
             background-color: #0056b3;
         }
 
-        .motivo-bloqueo {
-            margin-top: 10px;
+        .locker {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .locker i {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* ventana modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .modal {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal input,
+        .modal textarea {
+            width: 90%;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+
+        .botones-modales {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -51,7 +106,7 @@
     <!-- Campo de búsqueda -->
     <div class="search-container">
         <form th:action="@{/administrador/dashboardGestionUsuarios}" method="get">
-            <input type="text" name="filtro" th:value="${filtro}" placeholder="Buscar por correo" />
+            <input type="text" name="filtro" th:value="${filtro}" placeholder="Buscar por correo"/>
             <button type="submit">Buscar</button>
         </form>
     </div>
@@ -70,7 +125,11 @@
         <tbody>
         <tr th:each="usuario : ${usuarios}">
             <td th:text="${usuario.email}"></td>
-            <td th:text="${usuario.cuentaBloqueada ? 'Bloqueado' : 'Desbloqueado'}"></td>
+<td class="estado-bloqueo">
+    <span class="locker" th:data-id="${usuario.id}">
+        <i th:class="${usuario.cuentaBloqueada ? 'fa-solid fa-lock' : 'fa-solid fa-lock-open'}"></i>
+    </span>
+</td>
             <td th:text="${usuario.tiempoHastaDesbloqueo != null} ? ${#temporals.format(usuario.tiempoHastaDesbloqueo, 'dd/MM/yyyy HH:mm')} : ''"></td>
             <td th:text="${usuario.motivoBloqueo}"></td>
             <td class="acciones">
@@ -78,24 +137,112 @@
                 <button>
                     <a th:href="@{/administrador/editar-usuario/{id}(id=${usuario.id})}">Ajustes</a>
                 </button>
-                <!-- Botón para bloquear -->
-                <form th:action="@{/administrador/bloquear-usuario}" method="post" style="display: inline;">
-                    <input type="hidden" name="id" th:value="${usuario.id}">
-                    <div class="motivo-bloqueo">
-                        <label for="motivoBloqueo">Motivo de Bloqueo:</label>
-                        <input type="text" id="motivoBloqueo" name="motivoBloqueo" required>
-                    </div>
-                    <button type="submit">Bloquear</button>
-                </form>
-                <!-- Botón para desbloquear -->
-                <form th:action="@{/administrador/desbloquear-usuario}" method="post" style="display: inline;">
-                    <input type="hidden" name="id" th:value="${usuario.id}">
-                    <button type="submit">Desbloquear</button>
-                </form>
             </td>
         </tr>
         </tbody>
     </table>
 </div>
+
+<!-- ventana modal de bloqueo -->
+<div class="modal-overlay" id="ventanaModalBloqueo">
+    <div class="modal">
+        <h3>Bloqueo de usuario</h3>
+        <textarea id="motivoBloqueo" placeholder="Escribe el motivo del bloqueo"></textarea>
+        <input type="date" id="fechaFinBloqueo" />
+        <div class="botones-modales">
+            <button onclick="cierraVentanaModalBloqueo()">Cancelar</button>
+            <button onclick="confirmaBloqueo()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ventana modal de desbloqueo -->
+<div class="modal-overlay" id="ventanaModalDesbloqueo">
+    <div class="modal">
+        <h3>Desbloqueo de usuario</h3>
+        <p>Esto eliminará el bloqueo: motivo y fecha límite</p>
+        <div class="botones-modales">
+            <button onclick="cierraVentanaModalDesbloqueo()">Cancelar</button>
+            <button onclick="confirmaDesbloqueo()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    let idUsuarioActual = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll('.locker').forEach((icono) => {
+            icono.addEventListener('click', () => {
+                idUsuarioActual = icono.getAttribute('data-id');
+                const esBloqueado = icono.querySelector('i').classList.contains('fa-lock');
+
+                if (esBloqueado) {
+                    document.getElementById('ventanaModalDesbloqueo').style.display = 'flex';
+                } else {
+                    document.getElementById('ventanaModalBloqueo').style.display = 'flex';
+                }
+            });
+        });
+    });
+
+    function cierraVentanaModalBloqueo() {
+        document.getElementById('ventanaModalBloqueo').style.display = 'none';
+        document.getElementById('motivoBloqueo').value = '';
+        document.getElementById('fechaFinBloqueo').value = '';
+    }
+
+    function cierraVentanaModalDesbloqueo() {
+        document.getElementById('ventanaModalDesbloqueo').style.display = 'none';
+    }
+
+    function confirmaBloqueo() {
+        const motivo = document.getElementById('motivoBloqueo').value;
+        const fechaFin = document.getElementById('fechaFinBloqueo').value;
+
+        if (!motivo || !fechaFin) {
+            alert("Por favor, rellena ambos campos");
+            return;
+        }
+
+        // Enviar petición al servidor para bloquear
+        fetch('/administrador/bloquear-usuario', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${idUsuarioActual}&motivoBloqueo=${encodeURIComponent(motivo)}&fechaFinBloqueo=${encodeURIComponent(fechaFin)}`
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al bloquear el usuario');
+            }
+        });
+
+        cierraVentanaModalBloqueo();
+    }
+
+    function confirmaDesbloqueo() {
+        // Enviar petición al servidor para desbloquear
+        fetch('/administrador/desbloquear-usuario', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${idUsuarioActual}`
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al desbloquear el usuario');
+            }
+        });
+
+        cierraVentanaModalDesbloqueo();
+    }
+</script>
 </body>
 </html>

@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface EmpleadoRepository extends JpaRepository<Empleado, UUID>, JpaSpecificationExecutor<Empleado> {
+public interface EmpleadoRepository extends JpaRepository<Empleado, UUID> {
     Optional<Empleado> findByNombre(String nombreEmpleado);
 //    Optional<Empleado> findByNombreEmpleado(String nombreEmpleado);
 
@@ -24,6 +24,8 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, UUID>, JpaSp
     Optional<Object> findByUsuarioId(UUID id);
 
     Optional<Empleado> findById(UUID etiquetaId);
+
+    List<Empleado> findByNombreContainingOrApellidosContaining(String criterio, String criterio1);
 
     List<Empleado> findByNombreContainingIgnoreCase(String nombreDTO);
 

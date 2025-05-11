@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Dashboard de Nóminas</title>
+</head>
+<body>
+<h1>Buscar Empleado</h1>
+<form th:action="@{/administrador/nominas/buscar}" method="get">
+  <input type="text" name="criterio" placeholder="Nombre o Apellido" required>
+  <button type="submit">Buscar</button>
+</form>
+
+<h2>Resultados de la Búsqueda</h2>
+<ul th:if="${not #lists.isEmpty(empleados)}">
+  <li th:each="empleado : ${empleados}">
+    <a th:href="@{/administrador/nominas/empleado/{id}/nominas(id=${empleado.id})}">
+      <span th:text="${empleado.nombre + ' ' + empleado.apellidos}"></span>
+    </a>
+  </li>
+</ul>
+<p th:if="${#lists.isEmpty(empleados)}">No se encontraron empleados.</p>
+</body>
+</html>

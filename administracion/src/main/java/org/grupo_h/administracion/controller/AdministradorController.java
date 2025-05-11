@@ -1,5 +1,6 @@
 package org.grupo_h.administracion.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.*;
 import org.grupo_h.administracion.dto.EmpleadoConsultaDTO;
@@ -7,6 +8,8 @@ import org.grupo_h.administracion.dto.EmpleadoDTO;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
 import org.grupo_h.administracion.service.*;
+import org.grupo_h.administracion.dto.*;
+import org.grupo_h.administracion.auxiliar.RestPage;
 import org.grupo_h.comun.entity.Administrador;
 import org.grupo_h.administracion.service.ParametrosService;
 import org.grupo_h.administracion.service.AdministradorService;
@@ -21,6 +24,9 @@ import org.grupo_h.comun.service.DepartamentoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -29,7 +35,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -54,6 +63,7 @@ public class AdministradorController {
     private final DepartamentoService departamentoService;
     private final EmpleadoRepository empleadoRepository;
     private final DepartamentoRepository departamentoRepository;
+    private final RestTemplate restTemplate;
 
     private static final Logger logger = LoggerFactory.getLogger(AdministradorController.class);
 
@@ -65,7 +75,10 @@ public class AdministradorController {
                                    ParametrosService parametrosService,
                                    BCryptPasswordEncoder passwordEncoder,
                                    UsuarioRepository usuarioRepository,
-                                   UsuarioService usuarioService, DepartamentoService departamentoService, EmpleadoRepository empleadoRepository, DepartamentoRepository departamentoRepository) {
+                                   UsuarioService usuarioService,
+                                   DepartamentoService departamentoService,
+                                   EmpleadoRepository empleadoRepository,
+                                   DepartamentoRepository departamentoRepository) {
         this.administradorService = administradorService;
         this.administradorRepository = administradorRepository;
         this.empleadoService = empleadoService;
@@ -76,6 +89,7 @@ public class AdministradorController {
         this.departamentoService = departamentoService;
         this.empleadoRepository = empleadoRepository;
         this.departamentoRepository = departamentoRepository;
+        this.restTemplate = restTemplate;
     }
 
 
@@ -812,6 +826,7 @@ public class AdministradorController {
         return "redirect:/administrador/gestion-subordinados";
     }
 
+    @GetMapping("/importar-catalogo")
 
     /* ------------------------ GESTION DE PRODUCTOS ----------------------------- */
 
@@ -822,6 +837,137 @@ public class AdministradorController {
             return "redirect:/administrador/inicio-sesion";
         }
         return "importarCatalogo";
+    }
+
+    @GetMapping("/consulta-productos")
+    public String mostrarVistaProductos(
+            @ModelAttribute("criteriosBusqueda") ProductoCriteriosBusquedaDTO criterios,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "descripcion") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Model model,
+            HttpServletRequest request,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        logger.info("[AdminController] Petición inicial: sortField='{}', sortDir='{}', page={}, size={}", sortField, sortDir, page, size);
+
+        List<String> camposDeEntidadValidos = Arrays.asList(
+                "id", "descripcion", "precio", "marca",
+                "categoria.nombre", "proveedor.nombre",
+                "unidades", "valoracion", "fechaAlta", "esPerecedero"
+        );
+
+        if (!camposDeEntidadValidos.contains(sortField)) {
+            logger.warn("[AdminController] CAMPO DE ORDENACIÓN NO VÁLIDO: '{}'. Revirtiendo a 'descripcion'.", sortField);
+            model.addAttribute("errorAlOrdenar", "El campo de ordenación '" + sortField + "' no es válido. Se ha ordenado por descripción.");
+            sortField = "descripcion";
+            sortDir = "asc";
+        }
+
+        logger.info("[AdminController] Usando para Pageable: sortField='{}', sortDir='{}'", sortField, sortDir);
+
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortField));
+        logger.info("[AdminController] Pageable Sort Config: {}", pageable.getSort());
+
+
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+
+        String currentSortField = sortField;
+        Sort.Direction currentSortDirection = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+        String apiUrl = baseUrl + "/api/administrador/productos";
+        String apiUrlCategorias = baseUrl + "/api/administrador/productos/categorias";
+        String apiUrlProveedores = baseUrl + "/api/administrador/productos/proveedores";
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(apiUrl)
+                .queryParam("page", page)
+                .queryParam("size", size)
+                .queryParam("sort", currentSortField + "," + (currentSortDirection == Sort.Direction.DESC ? "desc" : "asc"));
+        String apiUrlCompleta = builder.toUriString();
+        logger.info("[AdminController] URL API completa construida para productos: {}", apiUrlCompleta);
+        if (criterios.getDescripcion() != null && !criterios.getDescripcion().isEmpty()) {
+            builder.queryParam("descripcion", criterios.getDescripcion());
+        }
+        if (criterios.getCategoriaId() != null) {
+            builder.queryParam("categoriaId", criterios.getCategoriaId().toString());
+        }
+        if (criterios.getPrecioMin() != null) {
+            builder.queryParam("precioMin", criterios.getPrecioMin());
+        }
+        if (criterios.getPrecioMax() != null) {
+            builder.queryParam("precioMax", criterios.getPrecioMax());
+        }
+        if (criterios.getProveedorId() != null) {
+            builder.queryParam("proveedorId", criterios.getProveedorId().toString());
+        }
+        if (criterios.getEsPerecedero() != null) {
+            builder.queryParam("esPerecedero", criterios.getEsPerecedero());
+        }
+
+        Page<ProductoResultadoDTO> paginaProductos = null;
+        List<CategoriaSimpleDTO> categorias = Collections.emptyList();
+        List<ProveedorSimpleDTO> proveedores = Collections.emptyList();
+        try {
+            // Llamada para obtener productos
+            ResponseEntity<RestPage<ProductoResultadoDTO>> responseEntity = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<RestPage<ProductoResultadoDTO>>() {}
+            );
+            if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
+                paginaProductos = responseEntity.getBody();
+            } else {
+                paginaProductos = new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
+                model.addAttribute("errorApi", "No se pudieron cargar los productos desde la API (código: " + responseEntity.getStatusCode() + ")");
+            }
+            // Llamada para obtener categorías
+            ResponseEntity<List<CategoriaSimpleDTO>> responseEntityCategorias = restTemplate.exchange(
+                    apiUrlCategorias,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<CategoriaSimpleDTO>>() {}
+            );
+            if (responseEntityCategorias.getStatusCode().is2xxSuccessful()) {
+                categorias = responseEntityCategorias.getBody();
+            } else {
+                model.addAttribute("errorApiFiltros", "No se pudieron cargar las categorías para los filtros.");
+            }
+
+            // Llamada para obtener proveedores
+            ResponseEntity<List<ProveedorSimpleDTO>> responseEntityProveedores = restTemplate.exchange(
+                    apiUrlProveedores,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<ProveedorSimpleDTO>>() {}
+            );
+            if (responseEntityProveedores.getStatusCode().is2xxSuccessful()) {
+                proveedores = responseEntityProveedores.getBody();
+            } else {
+                model.addAttribute("errorApiFiltros", (model.containsAttribute("errorApiFiltros") ? model.getAttribute("errorApiFiltros") + " " : "") + "No se pudieron cargar los proveedores para los filtros.");
+            }
+        } catch (Exception e) {
+            paginaProductos = new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
+            model.addAttribute("errorApi", "Error inesperado al obtener productos: " + e.getMessage());
+            System.err.println("Error llamando a la API de productos: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        model.addAttribute("paginaProductos", paginaProductos);
+        model.addAttribute("categorias", categorias);
+        model.addAttribute("proveedores", proveedores);
+        model.addAttribute("sortField", currentSortField);
+        model.addAttribute("sortDir", currentSortDirection == Sort.Direction.DESC ? "desc" : "asc");
+        model.addAttribute("reverseSortDir", currentSortDirection == Sort.Direction.ASC ? "desc" : "asc");
+
+        return "consultaProductos";
     }
 
 
