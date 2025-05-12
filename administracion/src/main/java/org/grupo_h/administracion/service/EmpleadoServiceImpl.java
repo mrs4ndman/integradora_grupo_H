@@ -154,6 +154,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             // Convertimos a DTO
             return empleados.stream()
                     .map(e -> new EmpleadoDTO(
+                            e.getId(),
                             e.getNombre(),
                             e.getApellidos(),
                             e.getEdad(),
@@ -165,6 +166,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
     @Override
     public Optional<Empleado> buscarPorDni(String dni) {
+        System.err.println("Estoy en el Servicio");
         return empleadosRepository.findByNumeroDocumento(dni);
     }
 

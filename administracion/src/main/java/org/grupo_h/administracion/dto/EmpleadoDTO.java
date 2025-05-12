@@ -10,6 +10,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmpleadoDTO {
+    private UUID id;
     private String nombre;
     private String apellido;
     private Integer edad;
