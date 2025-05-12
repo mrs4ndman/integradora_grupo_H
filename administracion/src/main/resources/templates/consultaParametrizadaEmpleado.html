@@ -136,8 +136,13 @@
                 <td th:text="${emp.nombreDepartamento}">Depto</td>
                 <td th:text="${emp.numeroDni}">DNI</td>
                 <td>
-                    <a th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
-                        <button type="button">Editar</button>
+
+<!--                    <form th:action="/administrador/editar-empleado/*{emp.numeroDni}" method="get">-->
+<!--                        <button type="submit">Editar</button>-->
+<!--                    </form>-->
+
+                    <a th:href="@{'/administrador/editar-empleado/' + ${emp.id}}">
+                        editar
                     </a>
                 </td>
             </tr>

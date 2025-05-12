@@ -869,12 +869,25 @@ public class AdministradorController {
         List<EmpleadoDTO> resultados = empleadoService.buscarEmpleados(filtro);
 
         model.addAttribute("resultados", resultados);
+
+
         return "consultaParametrizadaEmpleado";
     }
 
 
-    @GetMapping("/administrador/editar-empleado/{dni}")
-    public String mostrarFormularioEdicion(@PathVariable("dni") String dni, Model model, RedirectAttributes redirectAttributes) {
+    @GetMapping("/editar-empleado/{id}")
+    public String mostrarFormularioEdicion(@PathVariable("dni") String dni,
+                                           Model model,
+                                           RedirectAttributes redirectAttributes,
+                                           HttpSession session) {
+        System.err.println("Estoy en editar empleado");
+
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            System.out.println("Me sacó");
+            return "redirect:/administrador/inicio-sesion";
+        }
+
         Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dni);
 
         if (empleadoOpt.isEmpty()) {
@@ -898,34 +911,39 @@ public class AdministradorController {
         return "edicion-empleado"; // Nombre del HTML/Thymeleaf para editar
     }
 
-    @PostMapping("/administrador/editar-empleado")
+    @PostMapping("/editar-empleado")
     public String procesarEdicionEmpleado(@ModelAttribute("empleado") EmpleadoDTO dto,
                                           RedirectAttributes redirectAttributes) {
-        Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dto.getNumeroDni());
 
+        Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dto.getNumeroDni());
         if (empleadoOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Empleado no encontrado.");
             return "redirect:/administrador/consulta-empleado";
         }
 
-        Empleado empleado = empleadoOpt.get();
+        if(empleadoOpt.isPresent()){
+            Empleado empleado = empleadoOpt.get();
+            empleado.setNombre(dto.getNombre());
+            empleado.setApellidos(dto.getApellido());
+            empleado.setEdad(dto.getEdad());
+            Departamento departamento = null;
+            try {
+                departamento = departamentoRepository.findByNombreDept(dto.getNombreDepartamento())
+                        .map(obj -> (Departamento) obj)
+                        .orElse(null);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+            empleado.setDepartamento(departamento);
 
-        empleado.setNombre(dto.getNombre());
-        empleado.setApellidos(dto.getApellido());
-        empleado.setEdad(dto.getEdad());
-
-        Departamento departamento = null;
-        try {
-            departamento = departamentoRepository.findByNombreDept(dto.getNombreDepartamento())
-                    .map(obj -> (Departamento) obj)
-                    .orElse(null);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+            empleadoRepository.save(empleado);
         }
-        empleado.setDepartamento(departamento);
+
+
+
+
 
         // Guarda los cambios
-        empleadoRepository.save(empleado);
 
         redirectAttributes.addFlashAttribute("exito", "Empleado actualizado correctamente.");
         return "redirect:/administrador/consulta-empleado";

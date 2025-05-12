@@ -73,7 +73,7 @@
     <div th:if="${#fields.hasErrors('nombre')}" class="error">
         <p th:errors="*{nombre}">Nombre es obligatorio.</p>
     </div>
-    <div th:if="${#fields.hasErrors('apellidos')}" class="error">
+    <div th:if="${#fields.hasErrors('apellido')}" class="error">
         <p th:errors="*{apellido}">Apellidos son obligatorios.</p>
     </div>
     <div th:if="${#fields.hasErrors('edad')}" class="error">

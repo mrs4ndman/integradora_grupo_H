@@ -14,6 +14,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class EmpleadoConsultaDTO {
+    private UUID id;
 
     private String nombreDTO;
 
