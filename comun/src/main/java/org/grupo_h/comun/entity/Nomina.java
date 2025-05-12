@@ -36,4 +36,25 @@ public class Nomina {
     @ManyToOne
     @JoinColumn(name = "empleado_id", nullable = false)
     private Empleado empleado; // Relación inversa
+
+    @Transient // No persistido, calculado al vuelo
+    public Double getTotalDevengos() {
+        return lineas.stream()
+                .filter(l -> l.getCantidad() > 0)
+                .mapToDouble(LineaNomina::getCantidad)
+                .sum();
+    }
+
+    @Transient
+    public Double getTotalDeducciones() {
+        return lineas.stream()
+                .filter(l -> l.getCantidad() < 0)
+                .mapToDouble(LineaNomina::getCantidad)
+                .sum();
+    }
+
+    @Transient
+    public Double getSalarioNeto() {
+        return getTotalDevengos() + getTotalDeducciones();
+    }
 }

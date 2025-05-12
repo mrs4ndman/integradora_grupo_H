@@ -1,24 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Nóminas de <span th:text="${empleado.nombre + ' ' + empleado.apellidos}"></span></title>
+    <title>Nóminas de <span th:text="${empleado.nombre + ' ' + empleado.apellidos}"></span></title>
 </head>
 <body>
 <h1>Nóminas de <span th:text="${empleado.nombre + ' ' + empleado.apellidos}"></span></h1>
-<a th:href="@{/administrador/nominas/dashboard}">Volver al Dashboard</a>
+<button>
+    <a th:href="@{/administrador/nominas/dashboard}">Volver al Dashboard</a>
+</button>
 
 <h2>Lista de Nóminas</h2>
-<a th:href="@{/administrador/nominas/empleado/{id}/crear-nomina(id=${empleado.id})}">Crear Nueva Nómina</a>
+<button>
+    <a th:href="@{/administrador/nominas/empleado/{id}/crear-nomina(id=${empleado.id})}">Crear Nueva Nómina</a>
+</button>
 <ul th:if="${not #lists.isEmpty(nominas)}">
-  <li th:each="nomina : ${nominas}">
-    <a th:href="@{/administrador/nominas/detalle/{id}(id=${nomina.id})}">
-      <span th:text="${'Nómina del ' + nomina.fechaInicio + ' al ' + nomina.fechaFin}"></span>
-    </a>
-    <a th:href="@{/administrador/nominas/nomina/{id}/aniadir-linea(id=${nomina.id})}">Añadir Línea</a>
-    <form th:action="@{/administrador/nominas/nomina/{id}/borrar(id=${nomina.id})}" method="post" style="display:inline;">
-      <button type="submit">Borrar Nómina</button>
-    </form>
-  </li>
+    <li th:each="nomina : ${nominas}">
+        <a th:href="@{/administrador/nominas/detalle/{id}(id=${nomina.id})}">
+            <span th:text="${'Nómina del ' + nomina.fechaInicio + ' al ' + nomina.fechaFin}"></span>
+        </a>
+        <button>
+            <a th:href="@{/administrador/nominas/nomina/{id}/aniadir-linea(id=${nomina.id})}">Añadir Línea</a>
+        </button>
+        <form th:action="@{/administrador/nominas/nomina/{id}/borrar(id=${nomina.id})}" method="post"
+              style="display:inline;">
+            <button type="submit">Borrar Nómina</button>
+        </form>
+    </li>
 </ul>
 <p th:if="${#lists.isEmpty(nominas)}">No se encontraron nóminas para este empleado.</p>
 </body>

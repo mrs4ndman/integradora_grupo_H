@@ -113,31 +113,25 @@ public class AdministradorController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                // Si existe una cookie con los datos de logins anteriores
                 if ("loginsAnterioresAdmin".equals(cookie.getName())) {
                     String cookieValue = cookie.getValue();
-                    // Comprobar que el valor de la cookie no sea nulo ni esté vacío antes de procesar
                     if (cookieValue != null && !cookieValue.isEmpty()) {
                         try {
                             String decodedValue = new String(Base64.getUrlDecoder().decode(cookieValue));
-                            // Dividir Y FILTRAR cadenas vacías o nulas
                             loginsAnteriores = Arrays.stream(decodedValue.split(","))
-                                    .map(String::trim) // Opcional: quitar espacios blancos alrededor
-                                    .filter(email -> email != null && !email.isEmpty()) // <-- Filtrar vacíos
-                                    .collect(Collectors.toList()); // Recolectar en la lista
+                                    .map(String::trim)
+                                    .filter(email -> email != null && !email.isEmpty())
+                                    .collect(Collectors.toList());
                         } catch (IllegalArgumentException e) {
-                            // Manejar posible error en Base64 si la cookie está corrupta
                             System.err.println("Error al decodificar cookie loginsAnterioresAdmin: " + e.getMessage());
-                            // Dejar loginsAnteriores vacía
                         }
                     }
-                    break; // Encontrada la cookie, salir del bucle
+                    break;
                 }
             }
         }
         model.addAttribute("loginsAnterioresAdmin", loginsAnteriores);
 
-        // Si el atributo de logout no es nulo, mostramos el mensaje de Logout
         if (logout != null) {
             model.addAttribute("mensaje", "Has cerrado sesión exitosamente.");
             if (logoutReferer != null && !logoutReferer.isEmpty()) {
@@ -150,6 +144,7 @@ public class AdministradorController {
         model.addAttribute("pedirEmail", true);
         return "autenticacionPorPasos";
     }
+
 
     /**
      * Procesa el email de administrador para el inicio de sesión.
@@ -178,19 +173,15 @@ public class AdministradorController {
         }
 
         if (rememberMeTokenValue != null && !rememberMeTokenValue.isEmpty()) {
-            System.out.println("Encontrada cookie remember-me-token-admin: " + rememberMeTokenValue);
-            Optional<Administrador> administradorOptByToken =
-                    administradorRepository.findByRememberMeToken(rememberMeTokenValue);
+            Optional<Administrador> administradorOptByToken = administradorRepository.findByRememberMeToken(rememberMeTokenValue);
 
             if (administradorOptByToken.isPresent()) {
                 Administrador administradorRecordado = administradorOptByToken.get();
-                System.out.println("Administrador encontrado por token: " + administradorRecordado.getEmail());
                 if (administradorRecordado.getEmail().equalsIgnoreCase(email) &&
                         administradorRecordado.getRememberMeTokenExpiry() != null &&
                         administradorRecordado.getRememberMeTokenExpiry().isAfter(LocalDateTime.now()) &&
                         administradorRecordado.isHabilitado() && !administradorRecordado.isCuentaBloqueada()) {
 
-                    System.out.println("Token válido para " + email + ". Re-autenticando.");
                     session.setAttribute("emailAutenticadoAdmin", administradorRecordado.getEmail());
                     Integer contadorActual = (Integer) session.getAttribute("contadorConexionesAdmin");
                     int nuevoContador = (contadorActual == null) ? 1 : contadorActual + 1;
@@ -202,8 +193,6 @@ public class AdministradorController {
 
                     return "redirect:/administrador/info";
                 } else {
-                    System.out.println("Token inválido (expirado, email no coincide, cuenta no activa) para: " + email);
-                    // Token inválido, expirado, email no coincide o cuenta bloqueada/deshabilitada.
                     if (administradorRecordado.getRememberMeToken() != null) {
                         administradorRecordado.setRememberMeToken(null);
                         administradorRecordado.setRememberMeTokenExpiry(null);
@@ -214,7 +203,6 @@ public class AdministradorController {
                     removeCookie.setMaxAge(0);
                 }
             } else {
-                System.out.println("Token de cookie no encontrado en BD.");
                 Cookie removeCookie = new Cookie("remember-me-token-admin", "");
                 removeCookie.setPath("/");
                 removeCookie.setMaxAge(0);
@@ -222,24 +210,18 @@ public class AdministradorController {
         }
         // --- Fin Comprobación Remember Me ---
 
-
-        // Comprobamos que el administrador que nos proporciona el usuario con email existe
         Optional<Administrador> administradorOpt = administradorRepository.findByEmail(email);
 
-        // SI NO EXISTE
         if (administradorOpt.isEmpty() || !administradorOpt.get().isHabilitado()) {
             redirectAttributes.addFlashAttribute("error", "Administrador no encontrado o deshabilitado");
             return "redirect:/administrador/inicio-sesion?error=true";
         }
 
-        // SI EXISTE
         Administrador administrador = administradorOpt.get();
 
         if (administrador.isCuentaBloqueada()) {
             LocalDateTime horaDesbloqueo = administrador.getTiempoHastaDesbloqueo();
-            // SI ESTA BLOQUEADO Y NO SE HA PASADO EL TIEMPO
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
-                // Todavía bloqueada: Mostrar mensaje específico
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                         .withLocale(Locale.of("es", "ES"));
                 String unlockTimeString = horaDesbloqueo.format(formatter);
@@ -247,15 +229,14 @@ public class AdministradorController {
                 redirectAttributes.addFlashAttribute("error", mensajeError);
                 return "redirect:/administrador/inicio-sesion?error=true";
             } else {
-                // SI ESTA BLOQUEADO Y YA SE HA PASADO EL TIEMPO
                 administradorService.desbloquearCuenta(email);
             }
         }
 
-        // LO AÑADIMOS COMO ATRIBUTO A LA SESION PARA EL SIGUIENTE PASO
         session.setAttribute("emailParaLoginAdmin", email);
         return "redirect:/administrador/inicio-sesion/password";
     }
+
 
     /**
      * Muestra el formulario de contraseña para el inicio de sesión.
@@ -297,8 +278,7 @@ public class AdministradorController {
         String email = (String) session.getAttribute("emailParaLoginAdmin");
 
         if (email == null) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Error de sesión. Por favor, inicia sesión de nuevo.");
+            redirectAttributes.addFlashAttribute("error", "Error de sesión. Por favor, inicia sesión de nuevo.");
             return "redirect:/administrador/inicio-sesion";
         }
 
@@ -312,24 +292,21 @@ public class AdministradorController {
 
         Administrador administrador = administradorOpt.get();
 
-        // A la hora de autenticarse con el servidor hay un error, este booleano confirma la redireccion como necesaria
         boolean debeRedirigirPorErrorPrevio = false;
         String mensajeErrorPrevio = null;
+
         if (!administrador.isHabilitado()) {
             mensajeErrorPrevio = "La cuenta no está disponible (deshabilitada).";
             debeRedirigirPorErrorPrevio = true;
         } else if (administrador.isCuentaBloqueada()) {
             LocalDateTime horaDesbloqueo = administrador.getTiempoHastaDesbloqueo();
-            // SI LA HORA ES ANTIGUA, SE DEJA BLOQUEADO Y SE COMUNICA CUANDO SE DESBLOQUEARA
             if (horaDesbloqueo != null && LocalDateTime.now().isBefore(horaDesbloqueo)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                         .withLocale(Locale.of("es", "ES"));
                 String unlockTimeString = horaDesbloqueo.format(formatter);
-                mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las "
-                        + unlockTimeString;
+                mensajeErrorPrevio = "Su cuenta está bloqueada temporalmente. Podrá intentar de nuevo después de las " + unlockTimeString;
                 debeRedirigirPorErrorPrevio = true;
             } else {
-                // SI LA HORA YA PASO, SE ABRE
                 administradorService.desbloquearCuenta(email);
                 administrador = administradorRepository.findByEmail(email).orElse(administrador);
             }
@@ -341,9 +318,7 @@ public class AdministradorController {
             return "redirect:/administrador/inicio-sesion?error=true";
         }
 
-        // SI LA CONTRASEÑA COINCIDE CON LA DADA POR EL ADMINISTRADOR
         if (passwordEncoder.matches(contrasena, administrador.getContrasena())) {
-            // --- Inicio: Lógica de Cookies ---
             Set<String> logins = new LinkedHashSet<>();
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
@@ -365,7 +340,6 @@ public class AdministradorController {
             loginCookie.setMaxAge(60 * 60 * 24 * 30); //30 días de duración
             loginCookie.setHttpOnly(true);
             response.addCookie(loginCookie);
-            // --- Fin: Lógica de Cookies ---
 
             administrador.setSesionesTotales(administrador.getSesionesTotales() + 1);
             if (administrador.getIntentosFallidos() > 0) {
@@ -385,38 +359,30 @@ public class AdministradorController {
             session.setAttribute("contadorConexionesAdmin", 1);
             session.setAttribute("userAgentAdmin", request.getHeader("User-Agent"));
 
-            // --- Lógica Remember Me ---
             try {
                 String rememberMeTokenValue = UUID.randomUUID().toString();
-                // Duración de la cookie/token (14 días)
                 LocalDateTime rememberMeExpiry = LocalDateTime.now().plusDays(14);
 
                 administrador.setRememberMeToken(rememberMeTokenValue);
                 administrador.setRememberMeTokenExpiry(rememberMeExpiry);
-                administradorRepository.save(administrador); // Guardar token en BD
+                administradorRepository.save(administrador);
 
                 Cookie rememberMeCookie = new Cookie("remember-me-token-admin", rememberMeTokenValue);
                 rememberMeCookie.setPath("/");
                 rememberMeCookie.setMaxAge(14 * 24 * 60 * 60); // 14 días
                 rememberMeCookie.setHttpOnly(true);
                 response.addCookie(rememberMeCookie);
-                System.out.println("Cookie remember-me-token-admin creada para: " + email);
-
             } catch (Exception e) {
                 System.err.println("Error al crear cookie remember-me-token-admin: " + e.getMessage());
             }
-            // --- Fin Lógica Remember Me ---
 
             return "redirect:/administrador/info";
         } else {
-            // Llama al servicio para manejar el fallo
             administradorService.procesarLoginFallido(email);
-            // Comprueba si la cuenta está ahora bloqueada para el mensaje de error
-            Administrador administradorActualizado = administradorRepository.findByEmail(email).orElse(administrador); // Recarga para obtener estado actualizado
+            Administrador administradorActualizado = administradorRepository.findByEmail(email).orElse(administrador);
             String mensajeErrorFallido;
             int maxIntentos = parametrosService.getMaxIntentosFallidos();
             if (administradorActualizado.isCuentaBloqueada()) {
-                // ¡LA CUENTA SE ACABA DE BLOQUEAR!
                 LocalDateTime horaDesbloqueo = administradorActualizado.getTiempoHastaDesbloqueo();
                 if (horaDesbloqueo != null) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
@@ -424,23 +390,21 @@ public class AdministradorController {
                     String unlockTimeString = horaDesbloqueo.format(formatter);
                     mensajeErrorFallido = "Contraseña incorrecta. Cuenta bloqueada. Podrá intentar de nuevo después de las " + unlockTimeString;
                 } else {
-                    mensajeErrorFallido = "Contraseña incorrecta. Cuenta bloqueada."; // Fallback
+                    mensajeErrorFallido = "Contraseña incorrecta. Cuenta bloqueada.";
                 }
 
                 redirectAttributes.addFlashAttribute("error", mensajeErrorFallido);
-                session.removeAttribute("emailParaLoginAdmin"); // Quitar email de la sesión
-                // Redirigir a la página de EMAIL (inicio-sesion)
+                session.removeAttribute("emailParaLoginAdmin");
                 return "redirect:/administrador/inicio-sesion?error=true";
 
             } else {
-                // LA CUENTA NO SE BLOQUEÓ (aún quedan intentos)
                 mensajeErrorFallido = "Contraseña incorrecta. Intentos restantes: " + (maxIntentos - administradorActualizado.getIntentosFallidos());
                 redirectAttributes.addFlashAttribute("error", mensajeErrorFallido);
-                // Redirigir a la página de CONTRASEÑA (como antes)
                 return "redirect:/administrador/inicio-sesion/password?error=true";
             }
         }
     }
+
 
     /**
      * Elimina un email de administrador de la cookie de logins anteriores.
@@ -540,6 +504,7 @@ public class AdministradorController {
         return "areaPersonal";
     }
 
+
     /**
      * Cierra la sesión del administrador.
      *
@@ -553,7 +518,6 @@ public class AdministradorController {
         HttpSession session = request.getSession(false);
         String referer = request.getHeader("Referer");
 
-        // --- Limpiar Remember Me ---
         String email = (session != null) ? (String) session.getAttribute("emailAutenticadoAdmin") : null;
         if (email != null) {
             Optional<Administrador> administradorOpt = administradorRepository.findByEmail(email);
@@ -562,15 +526,12 @@ public class AdministradorController {
                 administrador.setRememberMeToken(null);
                 administrador.setRememberMeTokenExpiry(null);
                 administradorRepository.save(administrador);
-                System.out.println("Token remember-me-token-admin limpiado para: " + email);
             }
+            Cookie removeCookie = new Cookie("remember-me-token-admin", "");
+            removeCookie.setPath("/");
+            removeCookie.setMaxAge(0);
+            response.addCookie(removeCookie);
         }
-        // Borrar la cookie
-        Cookie removeCookie = new Cookie("remember-me-token-admin", "");
-        removeCookie.setPath("/");
-        removeCookie.setMaxAge(0);
-        response.addCookie(removeCookie);
-        // --- Fin Limpiar Remember Me ---
 
         if (session != null) {
             session.invalidate();
@@ -582,6 +543,7 @@ public class AdministradorController {
 
         return "redirect:/administrador/inicio-sesion?logout=true";
     }
+
 
     /**
      * Recupera la contraseña de un administrador (¡Inseguro!).
@@ -1076,7 +1038,7 @@ public class AdministradorController {
             return "redirect:/administrador/consulta-empleado";
         }
 
-        if(empleadoOpt.isPresent()){
+        if (empleadoOpt.isPresent()) {
             Empleado empleado = empleadoOpt.get();
             empleado.setNombre(dto.getNombre());
             empleado.setApellidos(dto.getApellido());
@@ -1093,9 +1055,6 @@ public class AdministradorController {
 
             empleadoRepository.save(empleado);
         }
-
-
-
 
 
         // Guarda los cambios

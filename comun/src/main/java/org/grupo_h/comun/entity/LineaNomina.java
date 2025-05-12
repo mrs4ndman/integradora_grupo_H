@@ -17,10 +17,10 @@ public class LineaNomina {
     private UUID id;
 
     private String concepto;
-    private int cantidad;
-    private Double importe;
+    private Double porcentaje; // Nuevo campo
+    private Double cantidad; // Cambiado de int a Double
 
     @ManyToOne
     @JoinColumn(name = "nomina_id", nullable = false)
-    private Nomina nomina; // Relación inversa
+    private Nomina nomina;
 }
