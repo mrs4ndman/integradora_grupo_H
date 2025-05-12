@@ -32,4 +32,6 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, UUID> {
     List<Empleado> findByFechaNacimientoBetween(LocalDate fechaMin, LocalDate fechaMax);;
 
     Optional<Empleado> findByNumeroDocumento(String numeroDni);
+
+    List<Empleado> findAll(Specification<Empleado> spec, Sort sort);
 }

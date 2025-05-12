@@ -78,7 +78,8 @@ public class AdministradorController {
                                    UsuarioService usuarioService,
                                    DepartamentoService departamentoService,
                                    EmpleadoRepository empleadoRepository,
-                                   DepartamentoRepository departamentoRepository) {
+                                   DepartamentoRepository departamentoRepository,
+                                   RestTemplate restTemplate) {
         this.administradorService = administradorService;
         this.administradorRepository = administradorRepository;
         this.empleadoService = empleadoService;
@@ -826,19 +827,11 @@ public class AdministradorController {
         return "redirect:/administrador/gestion-subordinados";
     }
 
-//    @GetMapping("/importar-catalogo")
-//    public String vistaImportarCatalogo(HttpSession session, RedirectAttributes redirectAttributes) {
-//        if (session.getAttribute("emailAutenticadoAdmin") == null) {
-//            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
-//            return "redirect:/administrador/inicio-sesion";
-//        }
-//        return "importarCatalogo";
-//    }
 
 
     /* ------------------------ GESTION DE PRODUCTOS ----------------------------- */
 
-    @GetMapping("/gestion-productos/importar-catalogo")
+    @GetMapping("/importar-catalogo")
     public String vistaImportarCatalogo(HttpSession session, RedirectAttributes redirectAttributes) {
         if (session.getAttribute("emailAutenticadoAdmin") == null) {
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
@@ -928,7 +921,8 @@ public class AdministradorController {
                     builder.toUriString(),
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<RestPage<ProductoResultadoDTO>>() {}
+                    new ParameterizedTypeReference<RestPage<ProductoResultadoDTO>>() {
+                    }
             );
             if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
                 paginaProductos = responseEntity.getBody();
@@ -941,7 +935,8 @@ public class AdministradorController {
                     apiUrlCategorias,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<CategoriaSimpleDTO>>() {}
+                    new ParameterizedTypeReference<List<CategoriaSimpleDTO>>() {
+                    }
             );
             if (responseEntityCategorias.getStatusCode().is2xxSuccessful()) {
                 categorias = responseEntityCategorias.getBody();
@@ -954,7 +949,8 @@ public class AdministradorController {
                     apiUrlProveedores,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<ProveedorSimpleDTO>>() {}
+                    new ParameterizedTypeReference<List<ProveedorSimpleDTO>>() {
+                    }
             );
             if (responseEntityProveedores.getStatusCode().is2xxSuccessful()) {
                 proveedores = responseEntityProveedores.getBody();
@@ -1089,9 +1085,6 @@ public class AdministradorController {
         redirectAttributes.addFlashAttribute("exito", "Empleado actualizado correctamente.");
         return "redirect:/administrador/consulta-empleado";
     }
-
-
-
 
 
 }

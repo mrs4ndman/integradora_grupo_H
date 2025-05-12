@@ -15,6 +15,9 @@
       <span th:text="${'Nómina del ' + nomina.fechaInicio + ' al ' + nomina.fechaFin}"></span>
     </a>
     <a th:href="@{/administrador/nominas/nomina/{id}/aniadir-linea(id=${nomina.id})}">Añadir Línea</a>
+    <form th:action="@{/administrador/nominas/nomina/{id}/borrar(id=${nomina.id})}" method="post" style="display:inline;">
+      <button type="submit">Borrar Nómina</button>
+    </form>
   </li>
 </ul>
 <p th:if="${#lists.isEmpty(nominas)}">No se encontraron nóminas para este empleado.</p>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Detalle de Nómina</title>
+</head>
+<body>
+<h1>Detalle de Nómina</h1>
+<a th:href="@{/administrador/nominas/empleado/{id}/nominas(id=${nomina.empleado.id})}">Volver a Nóminas</a>
+
+<h2>Información de la Nómina</h2>
+<p><strong>Fecha de Inicio:</strong> <span th:text="${nomina.fechaInicio}"></span></p>
+<p><strong>Fecha de Fin:</strong> <span th:text="${nomina.fechaFin}"></span></p>
+
+<h3>Líneas de Nómina</h3>
+<ul th:if="${not #lists.isEmpty(nomina.lineas)}">
+  <li th:each="linea : ${nomina.lineas}">
+    <p><strong>Concepto:</strong> <span th:text="${linea.concepto}"></span></p>
+    <p><strong>Cantidad:</strong> <span th:text="${linea.cantidad}"></span></p>
+    <p><strong>Importe:</strong> <span th:text="${linea.importe}"></span></p>
+    <form th:action="@{/administrador/nominas/linea/{id}/borrar(id=${linea.id})}" method="post" style="display:inline;">
+      <button type="submit">Borrar Línea</button>
+    </form>
+  </li>
+</ul>
+<p th:if="${#lists.isEmpty(nomina.lineas)}">No se encontraron líneas de nómina.</p>
+</body>
+</html>

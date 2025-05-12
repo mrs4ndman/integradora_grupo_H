@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table
 public class Nomina {
@@ -26,12 +27,13 @@ public class Nomina {
     @Column(name = "fecha_fin_nomina")
     private LocalDate fechaFin;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "nomina",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<LineaNomina> lineas;
 
     @ManyToOne
     @JoinColumn(name = "empleado_id", nullable = false)
     private Empleado empleado; // Relación inversa
-
-    @Version
-    private Integer version;}
+}

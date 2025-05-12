@@ -4,14 +4,16 @@ import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.Nomina;
 import org.grupo_h.comun.entity.LineaNomina;
 import org.grupo_h.comun.repository.EmpleadoRepository;
-import org.grupo_h.comun.repository.NominaRepository;
 import org.grupo_h.comun.repository.LineaNominaRepository;
+import org.grupo_h.comun.repository.NominaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Controller
@@ -22,32 +24,30 @@ public class NominasController {
     private EmpleadoRepository empleadoRepository;
 
     @Autowired
-    private NominaRepository nominaRepository;
-
-    @Autowired
     private LineaNominaRepository lineaNominaRepository;
 
-    // Método para manejar la raíz /administrador/nominas
+    @Autowired
+    private NominaRepository nominaRepository;
+
+    // Ya no necesitas LineaNominaRepository aquí, cascada en Nomina se encarga
+
     @GetMapping("")
     public String redirigirAlDashboard() {
         return "redirect:/administrador/nominas/dashboard";
     }
 
-    // Método para mostrar el dashboard de búsqueda de empleados
     @GetMapping("/dashboard")
     public String mostrarDashboard(Model model) {
         return "dashboardNominas";
     }
 
-    // Método para buscar empleados por nombre o apellido
     @GetMapping("/buscar")
     public String buscarEmpleados(@RequestParam String criterio, Model model) {
-        List<Empleado> empleados = empleadoRepository.findByNombreContainingOrApellidosContaining(criterio, criterio);
-        model.addAttribute("empleados", empleados);
+        model.addAttribute("empleados",
+                empleadoRepository.findByNombreContainingOrApellidosContaining(criterio, criterio));
         return "dashboardNominas";
     }
 
-    // Método para listar las nóminas de un empleado específico
     @GetMapping("/empleado/{id}/nominas")
     public String listarNominasEmpleado(@PathVariable UUID id, Model model) {
         Empleado empleado = empleadoRepository.findById(id).orElseThrow();
@@ -56,44 +56,80 @@ public class NominasController {
         return "empleado-nominas";
     }
 
-    // Método para mostrar el formulario de creación de nómina
+    @GetMapping("/detalle/{id}")
+    public String mostrarDetalleNomina(@PathVariable UUID id, Model model) {
+        Nomina nomina = nominaRepository.findById(id).orElseThrow();
+        model.addAttribute("nomina", nomina);
+        return "detalle-nomina";
+    }
+
     @GetMapping("/empleado/{id}/crear-nomina")
     public String mostrarFormularioCrearNomina(@PathVariable UUID id, Model model) {
         Empleado empleado = empleadoRepository.findById(id).orElseThrow();
         model.addAttribute("empleado", empleado);
-        model.addAttribute("nomina", new Nomina());
         return "formulario-crear-nomina";
     }
 
-    // Método para procesar la creación de la nómina
     @PostMapping("/empleado/{id}/crear-nomina")
-    public String crearNomina(@PathVariable UUID id, @ModelAttribute Nomina nomina, Model model) {
+    @Transactional
+    public String crearNomina(@PathVariable UUID id,
+                              @RequestParam("fechaInicio") String fechaInicio,
+                              @RequestParam("fechaFin") String fechaFin) {
         Empleado empleado = empleadoRepository.findById(id).orElseThrow();
+        Nomina nomina = new Nomina();
+        // No fijamos id ni version: Hibernate los generará
+        nomina.setFechaInicio(LocalDate.parse(fechaInicio));
+        nomina.setFechaFin(LocalDate.parse(fechaFin));
         nomina.setEmpleado(empleado);
-        nomina.setVersion(0);
-        Nomina savedNomina = nominaRepository.saveAndFlush(nomina);
-        System.out.println(empleado);
-        System.out.println(savedNomina);
+        // Inicializar la lista si es null
+        if (nomina.getLineas() != null) {
+            nomina.getLineas().forEach(linea -> linea.setNomina(nomina));
+        }
+        nominaRepository.save(nomina);
         return "redirect:/administrador/nominas/empleado/" + id + "/nominas";
     }
 
-    // Método para mostrar el formulario de añadir línea de nómina
+    @PostMapping("/nomina/{id}/borrar")
+    @Transactional
+    public String borrarNomina(@PathVariable UUID id) {
+        Nomina nomina = nominaRepository.findById(id).orElseThrow();
+        UUID empleadoId = nomina.getEmpleado().getId();
+        nominaRepository.delete(nomina);
+        return "redirect:/administrador/nominas/empleado/" + empleadoId + "/nominas";
+    }
+
     @GetMapping("/nomina/{id}/aniadir-linea")
     public String mostrarFormularioAniadirLinea(@PathVariable UUID id, Model model) {
         Nomina nomina = nominaRepository.findById(id).orElseThrow();
         model.addAttribute("nomina", nomina);
-        model.addAttribute("lineaNomina", new LineaNomina());
         return "formulario-aniadir-linea";
     }
 
-    // Método para procesar la adición de línea de nómina
     @PostMapping("/nomina/{id}/aniadir-linea")
-    public String aniaadirLineaNomina(@PathVariable UUID id, @ModelAttribute LineaNomina lineaNomina, Model model) {
+    @Transactional
+    public String aniadirLineaNomina(@PathVariable UUID id,
+                                     @RequestParam("concepto") String concepto,
+                                     @RequestParam("cantidad") int cantidad,
+                                     @RequestParam("importe") Double importe) {
         Nomina nomina = nominaRepository.findById(id).orElseThrow();
+        LineaNomina lineaNomina = new LineaNomina();
+        lineaNomina.setConcepto(concepto);
+        lineaNomina.setCantidad(cantidad);
+        lineaNomina.setImporte(importe);
         lineaNomina.setNomina(nomina);
-        Nomina refreshedNomina = nominaRepository.findById(id).orElseThrow();
-        lineaNomina.setNomina(refreshedNomina);
-        lineaNominaRepository.save(lineaNomina);
-        return "redirect:/administrador/nominas/empleado/" + nomina.getEmpleado().getId() + "/nominas";
+        nomina.getLineas().add(lineaNomina);
+        // Al hacer save(nomina) con cascade=ALL, Hibernate insertará la nueva línea
+        nominaRepository.save(nomina);
+        return "redirect:/administrador/nominas/empleado/"
+                + nomina.getEmpleado().getId() + "/nominas";
+    }
+
+    @PostMapping("/linea/{id}/borrar")
+    @Transactional
+    public String borrarLineaNomina(@PathVariable UUID id) {
+        LineaNomina lineaNomina = lineaNominaRepository.findById(id).orElseThrow();
+        UUID nominaId = lineaNomina.getNomina().getId();
+        lineaNominaRepository.delete(lineaNomina);
+        return "redirect:/administrador/nominas/detalle/" + nominaId;
     }
 }
