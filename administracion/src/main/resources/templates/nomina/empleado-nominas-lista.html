@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <!--
+    (Esta vista podría quedar obsoleta si la consulta general
+    es suficiente, pero la mantengo por si se accede directamente a
+    las nóminas de un empleado desde otro punto)
+    -->
+    <meta charset="UTF-8">
+    <title>Nóminas de <span th:text="${empleado.getNombreCompleto()}"></span></title>
+    <style> /* Estilos similares a consulta-nominas.html */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    .container {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        font-size: 0.9em;
+    }
+
+    th {
+        background-color: #f0f0f0;
+    }
+
+    .actions a, .actions button {
+        margin-right: 8px;
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+
+    .actions a.view-edit {
+        background-color: #007bff;
+        color: white;
+        border: 1px solid #007bff;
+    }
+
+    .actions form {
+        display: inline;
+    }
+
+    .actions button.delete {
+        background-color: #dc3545;
+        color: white;
+        border: 1px solid #dc3545;
+    }
+
+    .button-like-link {
+        display: inline-block;
+        padding: 8px 12px;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Nóminas de <span th:text="${empleado.getNombreCompleto()}"></span></h1>
+    <p><strong>Documento:</strong> <span th:text="${empleado.tipoDocumento.tipoDocumento + ': ' + empleado.numeroDocumento}"></span>
+    </p>
+
+    <a th:href="@{/administrador/nominas/consultar}" class="button-like-link" style="background-color: #6c757d;">Volver
+        a Consulta General</a>
+    <a th:href="@{/administrador/nominas/empleado/{id}/crear-nomina(id=${empleado.id})}" class="button-like-link"
+       style="background-color: #28a745;">Crear Nueva Nómina</a>
+
+    <h2>Lista de Nóminas</h2>
+    <div th:if="${param.error}" style="color:red; padding:10px; border:1px solid red; margin-bottom:10px;"
+         th:text="${param.error}"></div>
+    <div th:if="${param.success}" style="color:green; padding:10px; border:1px solid green; margin-bottom:10px;"
+         th:text="${param.success}"></div>
+
+    <table th:if="${not #lists.isEmpty(nominas)}">
+        <thead>
+        <tr>
+            <th>Período Inicio</th>
+            <th>Período Fin</th>
+            <th>Nº S.S. Empleado</th>
+            <th>Salario Neto</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="nomina : ${nominas}">
+            <td th:text="${#temporals.format(nomina.fechaInicio, 'dd/MM/yyyy')}"></td>
+            <td th:text="${#temporals.format(nomina.fechaFin, 'dd/MM/yyyy')}"></td>
+            <td th:text="${nomina.numeroSeguridadSocialEmpleado ?: '-'}"></td>
+            <td th:text="${#numbers.formatDecimal(nomina.getSalarioNeto(), 1, 'POINT', 2, 'COMMA') + ' €'}"></td>
+            <td class="actions">
+                <a th:href="@{/administrador/nominas/detalle/{id}(id=${nomina.id})}" class="view-edit">Ver/Editar</a>
+                <form th:action="@{/administrador/nominas/nomina/{id}/borrar(id=${nomina.id})}" method="post"
+                      onsubmit="return confirm('¿Está seguro de que desea borrar esta nómina?');">
+                    <button type="submit" class="delete">Borrar</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <p th:if="${#lists.isEmpty(nominas)}">No se encontraron nóminas para este empleado.</p>
+</div>
+</body>
+</html>

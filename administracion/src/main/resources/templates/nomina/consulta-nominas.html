@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Nóminas - <span th:text="${empresaNombre}"></span></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        .container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-form div {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-form label {
+            min-width: 120px;
+        }
+
+        .filter-form input[type="date"], .filter-form select, .filter-form input[type="text"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            flex-grow: 1;
+            min-width: 150px;
+        }
+
+        .filter-form button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-form button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .actions a {
+            margin-right: 8px;
+            text-decoration: none;
+            font-size: 0.9em;
+            padding: 4px 8px;
+            border-radius: 3px;
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .actions a.pdf {
+            background-color: #f0ad4e;
+        }
+
+        .actions a.new {
+            background-color: #5cb85c;
+        }
+
+        .pagination {
+            margin-top: 20px;
+        }
+
+        .pagination a, .pagination span {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .pagination .active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .messages div {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a th:href="@{/administrador/info}"
+       style="display: inline-block; margin-bottom: 15px; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">
+        ← Volver al Dashboard
+    </a>
+
+    <h1>Consulta Parametrizada de Nóminas</h1>
+
+    <div th:if="${error}" class="messages error" th:text="${error}"></div>
+    <div th:if="${success}" class="messages success" th:text="${success}"></div>
+
+    <form th:action="@{/administrador/nominas/consultar}" method="get" class="filter-form">
+        <div>
+            <label for="empleadoId">Empleado:</label>
+            <select id="empleadoId" name="empleadoId">
+                <option value="">-- Todos --</option>
+                <option th:each="emp : ${listaEmpleados}"
+                        th:value="${emp.id}"
+                        th:text="${emp.getNombreCompleto()}"
+                        th:selected="${param.empleadoId != null && emp.id.toString() == param.empleadoId.toString()}"></option>
+            </select>
+        </div>
+        <div>
+            <label for="nombreEmpleado">O buscar por nombre:</label>
+            <input type="text" id="nombreEmpleado" name="nombreEmpleado" th:value="${param.nombreEmpleado}"
+                   placeholder="Parte del nombre o apellidos"/>
+        </div>
+        <div>
+            <label for="fechaDesde">Período Desde:</label>
+            <input type="date" id="fechaDesde" name="fechaDesde"
+                   th:value="${fechaDesde != null ? #dates.format(fechaDesde, 'yyyy-MM-dd') : ''}">
+        </div>
+        <div>
+            <label for="fechaHasta">Período Hasta:</label>
+            <input type="date" id="fechaHasta" name="fechaHasta"
+                   th:value="${fechaHasta != null ? #dates.format(fechaHasta, 'yyyy-MM-dd') : ''}">
+        </div>
+        <div style="justify-content: flex-start;">
+            <button type="submit">Buscar Nóminas</button>
+            <a th:href="@{/administrador/nominas/consultar}"
+               style="margin-left: 10px; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Limpiar
+                Filtros</a>
+        </div>
+    </form>
+
+    <h2>Resultados (<span th:text="${paginaNominas?.totalElements ?: 0}"></span>)</h2>
+    <p th:if="${paginaNominas == null || paginaNominas.isEmpty()}">No se encontraron nóminas con los criterios
+        seleccionados.</p>
+
+    <table th:if="${paginaNominas != null && not paginaNominas.isEmpty()}">
+        <thead>
+        <tr>
+            <th>Empleado</th>
+            <th>Documento</th>
+            <th>Período Inicio</th>
+            <th>Período Fin</th>
+            <th>Nº S.S. Empleado</th>
+            <th>Salario Neto</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="nomina : ${nominas}">
+            <td th:text="${nomina.empleado.getNombreCompleto()}"></td>
+            <td th:text="${nomina.empleado.tipoDocumento.tipoDocumento + ': ' + nomina.empleado.numeroDocumento}"></td>
+            <td th:text="${#temporals.format(nomina.fechaInicio, 'dd/MM/yyyy')}"></td>
+            <td th:text="${#temporals.format(nomina.fechaFin, 'dd/MM/yyyy')}"></td>
+            <td th:text="${nomina.numeroSeguridadSocialEmpleado ?: '-'}"></td>
+            <td th:text="${#numbers.formatDecimal(nomina.getSalarioNeto(), 1, 'POINT', 2, 'COMMA') + ' €'}"></td>
+            <td class="actions">
+                <a th:href="@{/administrador/nominas/detalle/{id}(id=${nomina.id})}">Ver/Editar</a>
+                <a th:href="@{/administrador/nominas/detalle/{id}/pdf(id=${nomina.id})}" target="_blank"
+                   class="pdf">PDF</a>
+                <a th:href="@{/administrador/nominas/empleado/{empId}/crear-nomina(empId=${nomina.empleado.id})}"
+                   title="Crear nueva nómina para este empleado" class="new">Nueva Nómina</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${paginaNominas != null && paginaNominas.totalPages > 1}" class="pagination">
+        <a th:if="${paginaNominas.hasPrevious()}"
+           th:href="@{/administrador/nominas/consultar(page=${paginaNominas.number - 1}, size=${paginaNominas.size}, empleadoId=${param.empleadoId}, nombreEmpleado=${param.nombreEmpleado}, fechaDesde=${#temporals.formatISO(param.fechaDesde)}, fechaHasta=${#temporals.formatISO(param.fechaHasta)})}">&laquo;
+            Anterior</a>
+
+        <th:block th:each="i : ${#numbers.sequence(0, paginaNominas.totalPages - 1)}">
+            <a th:if="${i == paginaNominas.number}" class="active" href="#" th:text="${i+1}"></a>
+            <a th:if="${i != paginaNominas.number}"
+               th:href="@{/administrador/nominas/consultar(page=${i}, size=${paginaNominas.size}, empleadoId=${param.empleadoId}, nombreEmpleado=${param.nombreEmpleado}, fechaDesde=${#temporals.formatISO(param.fechaDesde)}, fechaHasta=${#temporals.formatISO(param.fechaHasta)})}"
+               th:text="${i+1}"></a>
+        </th:block>
+
+        <a th:if="${paginaNominas.hasNext()}"
+           th:href="@{/administrador/nominas/consultar(page=${paginaNominas.number+1}, size=${paginaNominas.size}, empleadoId=${param.empleadoId}, nombreEmpleado=${param.nombreEmpleado}, fechaDesde=${#temporals.formatISO(param.fechaDesde)}, fechaHasta=${#temporals.formatISO(param.fechaHasta)})}">Siguiente
+            &raquo;</a>
+    </div>
+</div>
+</body>
+</html>

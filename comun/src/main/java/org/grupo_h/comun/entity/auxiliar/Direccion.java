@@ -70,4 +70,42 @@ public class Direccion {
     @Column(name = "cod_postal")
     private String codigoPostalDireccionPpal;
 
+    public String toStringBonito() {
+        StringBuilder sb = new StringBuilder();
+        if (tipoViaDireccionPpal != null && nombreViaDireccionPpal != null) {
+            sb.append(tipoViaDireccionPpal.getTipoVia())
+                    .append(" ")
+                    .append(nombreViaDireccionPpal);
+        }
+
+        if (numeroViaDireccionPpal != null) {
+            sb.append(" | Nº ").append(numeroViaDireccionPpal);
+        }
+
+        if (portalDireccionPpal != null && !portalDireccionPpal.isEmpty()) {
+            sb.append(" | Portal: ").append(portalDireccionPpal);
+        }
+
+        if (plantaDireccionPpal != null) {
+            sb.append(" | Planta: ").append(plantaDireccionPpal);
+        }
+
+        if (puertaDireccionPpal != null && !puertaDireccionPpal.isEmpty()) {
+            sb.append(" | Puerta: ").append(puertaDireccionPpal);
+        }
+
+        if (codigoPostalDireccionPpal != null && !codigoPostalDireccionPpal.isEmpty()) {
+            sb.append(" | ").append(codigoPostalDireccionPpal);
+        }
+
+        if (localidadDireccionPpal != null && !localidadDireccionPpal.isEmpty()) {
+            sb.append(" | ").append(localidadDireccionPpal);
+        }
+
+        if (regionDireccionPpal != null && !regionDireccionPpal.isEmpty()) {
+            sb.append(" | ").append(regionDireccionPpal);
+        }
+
+        return sb.toString();
+    }
 }

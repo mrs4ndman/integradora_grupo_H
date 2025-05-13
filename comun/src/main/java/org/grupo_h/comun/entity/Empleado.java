@@ -87,7 +87,7 @@ public class Empleado {
     )
     private TipoDocumento tipoDocumento;
 
-    @Column(name = "numero_documento")
+    @Column(name = "numero_documento", unique = true)
     private String numeroDocumento;
 
     @Column(name = "prefijo_internacional_telf")
@@ -164,10 +164,22 @@ public class Empleado {
     private Set<Empleado> subordinados = new HashSet<>();
 
 
-    @OneToMany(mappedBy = "empleado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "empleado",
+            cascade = {
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST,
+                    CascadeType.REFRESH
+            },
+            fetch = FetchType.LAZY
+    )
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Nomina> nominas = new ArrayList<>();
+
+    @Transient
+    public String getNombreCompleto() {
+        return nombre + " " + apellidos;
+    }
 
     @Version
     private Integer version;

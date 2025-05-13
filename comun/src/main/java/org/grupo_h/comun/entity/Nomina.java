@@ -21,26 +21,42 @@ public class Nomina {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "fecha_inicio_nomina")
+    @Column(name = "fecha_inicio_nomina", nullable = false)
     private LocalDate fechaInicio;
 
-    @Column(name = "fecha_fin_nomina")
+    @Column(name = "fecha_fin_nomina", nullable = false)
     private LocalDate fechaFin;
+
+    @Column(name = "numero_seguridad_social_empleado") // Opcional
+    private String numeroSeguridadSocialEmpleado;
+
+    @Column(name = "puesto_empleado_nomina", nullable = true) // Puesto del empleado para esta nómina específica
+    private String puestoEmpleadoNomina;
 
     @OneToMany(
             mappedBy = "nomina",
             cascade = CascadeType.ALL,
-            orphanRemoval = true)
+            orphanRemoval = true,
+            fetch = FetchType.EAGER)
     private List<LineaNomina> lineas;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "empleado_id", nullable = false)
     private Empleado empleado; // Relación inversa
+
+    @Transient
+    private Double cantidadBrutaAcumuladaAnual;
+
+    @Transient
+    private Double cantidadPercibidaAcumuladaAnual;
+
+    @Transient
+    private Double retencionesAcumuladasAnual;
 
     @Transient // No persistido, calculado al vuelo
     public Double getTotalDevengos() {
         return lineas.stream()
-                .filter(l -> l.getCantidad() > 0)
+                .filter(l -> l.getCantidad() != null && l.getCantidad() > 0)
                 .mapToDouble(LineaNomina::getCantidad)
                 .sum();
     }
@@ -48,7 +64,7 @@ public class Nomina {
     @Transient
     public Double getTotalDeducciones() {
         return lineas.stream()
-                .filter(l -> l.getCantidad() < 0)
+                .filter(l -> l.getCantidad() != null && l.getCantidad() < 0)
                 .mapToDouble(LineaNomina::getCantidad)
                 .sum();
     }

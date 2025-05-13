@@ -1,7 +1,3 @@
-
-
-
-
 INSERT IGNORE INTO genero (codigo_genero, genero)
 VALUES ('M', 'Masculino'),
        ('F', 'Femenino'),
@@ -50,7 +46,10 @@ VALUES (@banco_santander, 'Banco Santander'),
 INSERT IGNORE INTO parametros (id, clave, valor)
 VALUES (UUID_TO_BIN(UUID()), 'MAX_INTENTOS_FALLIDOS', '3'),
        (UUID_TO_BIN(UUID()), 'DURACION_BLOQUEO', '15'),
-       (UUID_TO_BIN(UUID()), 'DURACION_BLOQUEO_ADMIN', '1440');
+       (UUID_TO_BIN(UUID()), 'DURACION_BLOQUEO_ADMIN', '1440'),
+       (UUID_TO_BIN(UUID()), 'NOMBRE_EMPRESA', 'ICR | Programacion'),
+       (UUID_TO_BIN(UUID()), 'CIF_EMPRESA', 'C48012645'),
+       (UUID_TO_BIN(UUID()), 'DIRECCION_EMPRESA', 'C/ Padre Claret, 8 - Madrid, 28002');
 
 
 
@@ -138,7 +137,7 @@ VALUES (@uuid_cuenta_corriente1, 'ES7620770024003102576763', @sabadell);
 -- Relacionado con BBVA
 
 -- Inserción de Datos Económicos 1
-INSERT INTO datos_Economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
+INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
                               mes_caducidad, anio_caducidad)
 VALUES (@uuid_usuario_empleado1,
         2500.00, -- Salario
@@ -148,8 +147,6 @@ VALUES (@uuid_usuario_empleado1,
         '123', -- CVV
         12, -- Mes de caducidad
         2025);
-
-
 
 
 -- Usuario 2
@@ -187,7 +184,7 @@ VALUES (@uuid_cuenta_corriente2, 'ES7620770024003102576763', @sabadell);
 -- Relacionado con BBVA
 
 -- Inserción de Datos Económicos 2
-INSERT INTO datos_Economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
+INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
                               mes_caducidad, anio_caducidad)
 VALUES (@uuid_usuario_empleado2,
         2500.00, -- Salario
@@ -197,9 +194,6 @@ VALUES (@uuid_usuario_empleado2,
         '321', -- CVV
         02, -- Mes de caducidad
         2027);
-
-
-
 
 
 -- Usuario 3
@@ -237,7 +231,7 @@ VALUES (@uuid_cuenta_corriente3, 'ES7620770024003102573333', @sabadell);
 -- Relacionado con BBVA
 
 -- Inserción de Datos Económicos 3
-INSERT INTO datos_Economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
+INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
                               mes_caducidad, anio_caducidad)
 VALUES (@uuid_usuario_empleado3,
         7500.00, -- Salario
@@ -247,9 +241,6 @@ VALUES (@uuid_usuario_empleado3,
         '333', -- CVV
         03, -- Mes de caducidad
         2026);
-
-
-
 
 
 -- Inserción de Usuario 4
@@ -287,7 +278,7 @@ VALUES (@uuid_cuenta_corriente4, 'ES7620770024003102573333', @sabadell);
 -- Relacionado con BBVA
 
 -- Inserción de Datos Económicos 4
-INSERT INTO datos_Economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
+INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
                               mes_caducidad, anio_caducidad)
 VALUES (@uuid_usuario_empleado4,
         7500.00, -- Salario
@@ -297,7 +288,6 @@ VALUES (@uuid_usuario_empleado4,
         '444', -- CVV
         03, -- Mes de caducidad
         2026);
-
 
 
 

@@ -18,7 +18,7 @@ public class Parametros {
     @Column(unique = true, nullable = false)
     private String clave;
 
-    @Column(unique = true)
+    @Column
     private String valor;
 
     public Parametros(String clave, String valor) {

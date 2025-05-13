@@ -28,4 +28,8 @@ public class Departamento {
         this.codigo = codigo;
         this.nombreDept = nombreDept;
     }
+
+    public String toStringBonito() {
+        return "Nombre: " +  nombreDept +  " | Codigo: "  + codigo;
+    }
 }
