@@ -25,7 +25,7 @@ import java.util.UUID;
 public class Empleado {
 
     @Id
-//    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -138,6 +138,8 @@ public class Empleado {
             @AttributeOverride(name = "anioCaducidad", column = @Column(table = "datos_Economicos", name = "anio_caducidad"))
     })
     private TarjetaCredito tarjetas;
+
+    // Fin Tabla DAtos Económicos
 
     private Boolean aceptaInformacion;
 

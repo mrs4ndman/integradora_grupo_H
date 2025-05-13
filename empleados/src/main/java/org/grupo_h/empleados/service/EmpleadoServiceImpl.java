@@ -43,6 +43,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final EtiquetaService etiquetaService;
     private final TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository;
     private final DepartamentoRepository departamentoRepository;
+    private final CuentaCorrienteRepository cuentaCorrienteRepository;
     private final ModelMapper modelMapper;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -53,12 +54,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                                EtiquetaService etiquetaService,
                                EntidadBancariaRepository entidadBancariaRepository,
                                TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository,
-                               DepartamentoRepository departamentoRepository,
+                               DepartamentoRepository departamentoRepository, CuentaCorrienteRepository cuentaCorrienteRepository,
                                ModelMapper modelMapper) {
         this.empleadosRepository = empleadosRepository;
         this.usuarioRepository = usuarioRepository;
         this.generoRepository = generoRepository;
         this.etiquetaService = etiquetaService;
+        this.cuentaCorrienteRepository = cuentaCorrienteRepository;
         this.modelMapper = modelMapper;
         this.entidadBancariaRepository = entidadBancariaRepository;
         this.tipoTarjetaCreditoRepository = tipoTarjetaCreditoRepository;
@@ -117,6 +119,40 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new RuntimeException("No se proporcionó información del departamento, pero es requerida.");
         }
         // --- FIN: NUEVA LÓGICA PARA GESTIONAR DEPARTAMENTO ---
+
+        // Obtener el DTO de cuenta corriente
+        CuentaCorrienteDTO cuentaCorrienteDTO = empleadoDTO.getCuentaCorrienteDTO();
+
+        if (cuentaCorrienteDTO != null) {
+            CuentaCorriente cuentaCorriente = modelMapper.map(cuentaCorrienteDTO, CuentaCorriente.class);
+
+            // Manejo de la Entidad Bancaria
+            EntidadBancariaDTO entidadDTO = cuentaCorrienteDTO.getEntidadBancaria();
+            if (entidadDTO != null && entidadDTO.getNombreEntidadDTO() != null) {
+                Optional<EntidadBancaria> entidadOpt = entidadBancariaRepository.findByNombreEntidad(entidadDTO.getNombreEntidadDTO());
+
+                EntidadBancaria entidadBancaria = entidadOpt.orElseGet(() -> {
+                    EntidadBancaria nuevaEntidad = new EntidadBancaria();
+                    nuevaEntidad.setNombreEntidad(entidadDTO.getNombreEntidadDTO());
+                    return entidadBancariaRepository.save(nuevaEntidad);
+                });
+
+                cuentaCorriente.setEntidadBancaria(entidadBancaria);
+            } else {
+                throw new RuntimeException("Entidad bancaria no válida o no proporcionada.");
+            }
+
+            // Persistir cuenta corriente
+            cuentaCorrienteRepository.save(cuentaCorriente);
+
+
+            // Asignar la cuenta ya persistida al empleado
+            empleado.setCuentaCorriente(cuentaCorriente);
+        }
+
+
+
+        
         // Persistir el empleado
         return empleadosRepository.save(empleado);
     }
