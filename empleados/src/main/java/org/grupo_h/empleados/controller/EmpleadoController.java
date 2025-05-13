@@ -383,7 +383,7 @@ public class EmpleadoController {
     public String datosFinalesGet(@ModelAttribute EmpleadoRegistroDTO empleadoRegistroDTO, HttpSession session, Model model) {
         empleadoRegistroDTO = (EmpleadoRegistroDTO) session.getAttribute("empleadoRegistroDTO");
 
-
+        // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
         if (empleadoRegistroDTO == null) {
             empleadoRegistroDTO = new EmpleadoRegistroDTO();
         }
@@ -396,7 +396,7 @@ public class EmpleadoController {
             empleadoRegistroDTO.setTipoDocumentoDTO(new TipoDocumentoDTO());
         }
 
-        // Se verifica los nulls para que muestre la pantalla resumen (último Paso)
+
         if (empleadoRegistroDTO.getDireccionDTO() == null) {
             empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
         }
@@ -457,7 +457,8 @@ public class EmpleadoController {
             empleadoService.registrarEmpleado(dtoSesion, usuario.get().getId());
         } catch (RuntimeException ex) {
             model.addAttribute("error", ex.getMessage());
-            return "empleadoDatosFinales";
+            // Si el usuario vuelve a introducir los datos, se redirige al área personal
+            return "redirect:/areaPersonal";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

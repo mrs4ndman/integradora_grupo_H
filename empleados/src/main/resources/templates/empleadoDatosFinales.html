@@ -23,11 +23,11 @@
     <h2>Empleado</h2>
     <p th:text="'Nombre: ' + *{nombreDTO}"></p>
     <p th:text="'Apellidos: ' + *{apellidosDTO}"></p>
-    <p th:text="'Género: ' + *{generoSeleccionadoDTO.codigoGenero}"></p>
+    <p th:text="'Género: ' + *{generoSeleccionadoDTO.nombreGenero}"></p>
     <p th:text="'Fotografia: ' + *{fotografiaDTO}"></p>
     <p th:text="'Fecha de nacimiento: ' + *{fechaNacimientoDTO}"></p>
     <p th:text="'Edad: ' + *{edadDTO}"></p>
-    <p th:text="'Pais de Nacimiento: ' + *{paisNacimiento.codigoPaisDTO}"></p>
+    <p th:text="'Pais de Nacimiento: ' + *{paisNacimiento.nombrePaisDTO}"></p>
     <p th:text="'Comentarios: ' + *{comentarios}"></p>
 
     <h2>Documentos Personales</h2>
@@ -36,7 +36,7 @@
     <p th:text="'Teléfono Móvil: ' + *{prefijoTelefono} + ' ' + *{telefonoMovil}"></p>
 
     <h2>Dirección</h2>
-    <p th:text="'Tipo de vía: ' + *{direccionDTO.tipoViaDireccionPpalDTO.id}"></p>
+    <p th:text="'Tipo de vía: ' + *{direccionDTO.tipoViaDireccionPpalDTO.tipoVia}"></p>
     <p th:text="'Nombre de vía: ' + *{direccionDTO.nombreViaDireccionPpalDTO}"></p>
     <p th:text="'Número de vía: ' + *{direccionDTO.numeroViaDireccionPpalDTO}"></p>
     <p th:text="'Planta: ' + *{direccionDTO.plantaDireccionPpalDTO}"></p>
@@ -46,7 +46,7 @@
     <p th:text="'Región: ' + *{direccionDTO.regionDireccionPpalDTO}"></p>
 
     <h2>Departamentos Y Especialidades</h2>
-    <p th:text="'Departamento: ' + *{departamentoDTO.id}"></p>
+    <p th:text="'Departamento: ' + *{departamentoDTO.nombreDept}"></p>
     <p th:text="'Especialidades: ' + *{especialidadesSeleccionadasDTO}"></p>
 
     <h2>Datos Financieros</h2>
@@ -62,7 +62,7 @@
     + ' Año:' + *{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}"></p>
     <p th:text="'CVC: ' + *{tarjetasCreditoDTO.cvcDTO}"></p>
 
-    <label for="aceptaInformacionDTO" th:text="#{Validacion.Consentimiento.true}"></label>
+    <span style="color:red">&#8226;</span> <label for="aceptaInformacionDTO" th:text="#{Validacion.Consentimiento.true}"></label>
     <input type="checkbox"
             th:field="*{aceptaInformacionDTO}"
             id="aceptaInformacionDTO">

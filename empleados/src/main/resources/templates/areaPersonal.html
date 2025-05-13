@@ -3,36 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Área personal</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
 </head>
-<body>
-<h1>Área personal: <span th:text="${email}"></span></h1>
+<body class="area-personal">
+<div class="container">
+    <h1><span class="etiqueta">Área personal:</span> <span class="usuario" th:text="${email}"></span></h1>
 
-<div>
-    <h2>Contadores de Autenticación</h2>
-    <ul>
-        <li>
-            <strong>Total de autenticaciones válidas para este usuario:</strong>
-            <span th:text="${totalLoginsUsuario}">0</span>
-            (Independiente del navegador)
-        </li>
-        <li>
-            <strong>Autenticaciones válidas en esta sesión del navegador:</strong>
-            <span th:text="${loginsSesionActual}">0</span>
-        </li>
-    </ul>
+    <section class="bloque">
+        <h2>Contadores de Autenticación</h2>
+        <ul>
+            <li>
+                <strong>Total de autenticaciones válidas para este usuario:</strong>
+                <span th:text="${totalLoginsUsuario}">0</span>
+                <span class="detalle">(Independiente del navegador)</span>
+            </li>
+            <li>
+                <strong>Autenticaciones válidas en esta sesión del navegador:</strong>
+                <span th:text="${loginsSesionActual}">0</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="bloque">
+        <h2>Información del Cliente Actual</h2>
+        <p><strong>Navegador (User-Agent):</strong> <span th:text="${navegadorActual}"></span></p>
+    </section>
+
+    <hr>
+
+    <div class="acciones">
+        <a class="boton" th:href="@{/empleados/registro-datos}">Ir a Registro de Empleado</a>
+        <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+    </div>
 </div>
-
-<div>
-    <h2>Información del Cliente Actual</h2>
-    <p>Navegador (User-Agent): <span th:text="${navegadorActual}"></span></p>
-</div>
-
-<hr>
-<p>
-    <a th:href="@{/empleados/registro-datos}">Ir a Registro de Empleado</a> </p>
-<p>
-    <a th:href="@{/usuarios/logout}">Cerrar sesión</a>
-</p>
-
-</body>
-</html>
+</body></html>
