@@ -41,19 +41,19 @@ public class DireccionDTO {
     /**
      * Portal del edificio. No puede ser nulo.
      */
-    @NotNull(message = "{Validadcion.direccionDTO.piso}", groups = DatosRegistroDireccion.class)
+//    @NotNull(message = "{Validadcion.direccionDTO.piso}", groups = DatosRegistroDireccion.class)
     private String portalDireccionPpalDTO;
 
     /**
      * Planta del edificio. No puede ser nulo.
      */
-    @NotNull(message = "{Validadcion.direccionDTO.planta}",groups = DatosRegistroDireccion.class)
+//    @NotNull(message = "{Validadcion.direccionDTO.planta}",groups = DatosRegistroDireccion.class)
     private Integer plantaDireccionPpalDTO;
 
     /**
      * Puerta o letra del piso. No puede estar vacío.
      */
-    @NotBlank(message = "{Validadcion.direccionDTO.puerta}", groups = DatosRegistroDireccion.class)
+//    @NotBlank(message = "{Validadcion.direccionDTO.puerta}", groups = DatosRegistroDireccion.class)
     private String puertaDireccionPpalDTO;
 
     /**

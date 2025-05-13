@@ -12,6 +12,8 @@ import org.grupo_h.comun.entity.auxiliar.Direccion;
 import org.grupo_h.comun.entity.auxiliar.TarjetaCredito;
 import org.grupo_h.empleados.dto.*;
 import org.grupo_h.comun.repository.EmpleadoRepository;
+import org.grupo_h.comun.exceptions.EntidadDuplicadaEnSesionException;
+import org.hibernate.NonUniqueObjectException;
 import org.modelmapper.ModelMapper;
 import org.grupo_h.comun.repository.GeneroRepository;
 import org.grupo_h.comun.repository.UsuarioRepository;
@@ -153,9 +155,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
 
 
-        
+        try{
         // Persistir el empleado
         return empleadosRepository.save(empleado);
+        }catch (NonUniqueObjectException e) {
+            // Si el usuario intenta registrarse de nuevo como empleado
+            throw new EntidadDuplicadaEnSesionException("No puedes guardar más datos, ya existe una instancia con el mismo identificador en la sesión actual");
+        }
     }
 
     @Override

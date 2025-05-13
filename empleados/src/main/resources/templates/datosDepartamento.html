@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario Dirección</title>
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
 </head>
 <body>
-
+    <!--  Desactiva los estilos-->
+    <label>
+        <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
+    </label>
     <!--NavBar-->
     <div th:replace="~{fragments/navbar :: navbar}"></div>
 
@@ -21,7 +24,7 @@
         </div>
 
         <div>
-            <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
+            <span style="color:red">&#8226;</span> <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
             <select th:field="*{departamentoDTO.id}" id="departamento">
                 <option th:each="d : ${departamentos}"
                         th:value="${d.id}"
@@ -33,7 +36,7 @@
         <br><br>
 
         <!-- Sección de Especialidades -->
-        <label>Especialidades:</label><br>
+        <span style="color:red">&#8226;</span> <label>Especialidades:</label><br>
         <div th:each="e, iterStat : *{especialidadesSeleccionadasDTO}">
             <input type="checkbox"
                    th:field="*{especialidadesSeleccionadasDTO[__${iterStat.index}__].seleccionada}"
@@ -43,9 +46,11 @@
         </div>
         <span th:if="${#fields.hasErrors('especialidadesSeleccionadasDTO')}" th:errors="*{especialidadesSeleccionadasDTO}" style="color:red"></span>
 
-        <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()">
-        <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()">
+        <br><br>
+        <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()" class="boton">
+        <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()" class="boton">
 
+        <br><br>
         <input type="button"
                th:value="#{Boton.resetear}"
                onclick="resetFormulario()">
