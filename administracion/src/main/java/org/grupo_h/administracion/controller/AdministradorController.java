@@ -1,6 +1,5 @@
 package org.grupo_h.administracion.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.*;
 import org.grupo_h.administracion.dto.EmpleadoConsultaDTO;
@@ -10,12 +9,9 @@ import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
 import org.grupo_h.administracion.service.*;
 import org.grupo_h.administracion.dto.*;
 import org.grupo_h.administracion.auxiliar.RestPage;
-import org.grupo_h.comun.entity.Administrador;
+import org.grupo_h.comun.entity.*;
 import org.grupo_h.administracion.service.ParametrosService;
 import org.grupo_h.administracion.service.AdministradorService;
-import org.grupo_h.comun.entity.Departamento;
-import org.grupo_h.comun.entity.Empleado;
-import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.repository.AdministradorRepository;
 import org.grupo_h.comun.repository.DepartamentoRepository;
 import org.grupo_h.comun.repository.EmpleadoRepository;
@@ -29,13 +25,10 @@ import org.springframework.data.domain.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -57,6 +50,7 @@ public class AdministradorController {
     private final AdministradorRepository administradorRepository;
     private final EmpleadoService empleadoService;
     private final ParametrosService parametrosService;
+    private final ProductoService productoService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioService usuarioService;
@@ -72,7 +66,7 @@ public class AdministradorController {
     public AdministradorController(AdministradorService administradorService,
                                    AdministradorRepository administradorRepository,
                                    EmpleadoService empleadoService,
-                                   ParametrosService parametrosService,
+                                   ParametrosService parametrosService, ProductoService productoService,
                                    BCryptPasswordEncoder passwordEncoder,
                                    UsuarioRepository usuarioRepository,
                                    UsuarioService usuarioService,
@@ -84,6 +78,7 @@ public class AdministradorController {
         this.administradorRepository = administradorRepository;
         this.empleadoService = empleadoService;
         this.parametrosService = parametrosService;
+        this.productoService = productoService;
         this.passwordEncoder = passwordEncoder;
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
@@ -867,8 +862,8 @@ public class AdministradorController {
         if (criterios.getPrecioMax() != null) {
             builder.queryParam("precioMax", criterios.getPrecioMax());
         }
-        if (criterios.getProveedorId() != null) {
-            builder.queryParam("proveedorId", criterios.getProveedorId().toString());
+        if (criterios.getProveedorIds() != null && !criterios.getProveedorIds().isEmpty()) {
+            criterios.getProveedorIds().forEach(id -> builder.queryParam("proveedorIds", id.toString()));
         }
         if (criterios.getEsPerecedero() != null) {
             builder.queryParam("esPerecedero", criterios.getEsPerecedero());
@@ -936,6 +931,77 @@ public class AdministradorController {
         return "consultaProductos";
     }
 
+    /* ------------------------ DETALLE DE PRODUCTOS ----------------------------- */
+
+    /**
+     * Muestra la página de detalle de un producto.
+     * @param id El UUID del producto a mostrar.
+     * @param model Modelo para pasar datos a la vista.
+     * @param session Sesión HTTP para control de acceso.
+     * @param redirectAttributes Atributos para redirección en caso de error o no autenticación.
+     * @return Nombre de la plantilla Thymeleaf para el detalle del producto o redirección.
+     */
+    @GetMapping("/productos/detalle/{id}") // Nuevo endpoint
+    public String mostrarDetalleProducto(@PathVariable UUID id, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+
+        Optional<Producto> productoOpt = productoService.obtenerProductoPorId(id);
+
+        if (productoOpt.isPresent()) {
+            Producto producto = productoOpt.get();
+            model.addAttribute("producto", producto);
+
+            // Para facilitar el acceso en Thymeleaf al tipo específico
+            if (producto instanceof Libro) {
+                model.addAttribute("tipoProducto", "Libro");
+                model.addAttribute("libro", (Libro) producto);
+            } else if (producto instanceof Mueble) {
+                model.addAttribute("tipoProducto", "Mueble");
+                model.addAttribute("mueble", (Mueble) producto);
+            } else if (producto instanceof Ropa) {
+                model.addAttribute("tipoProducto", "Ropa");
+                model.addAttribute("ropa", (Ropa) producto);
+            } else {
+                model.addAttribute("tipoProducto", "Desconocido");
+            }
+            return "detalleProducto";
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado con ID: " + id);
+            return "redirect:/administrador/consulta-productos";
+        }
+    }
+
+    /* ------------------------ MODIFICACION DE PRODUCTOS ----------------------------- */
+
+
+    @GetMapping("/productos/modificar/{id}")
+    public String mostrarFormularioModificarProducto(@PathVariable UUID id, Model model) {
+        Optional<Producto> productoOpt = productoService.obtenerProductoPorId(id);
+        if (productoOpt.isPresent()) {
+            Producto producto = productoOpt.get();
+            // It's better to use a DTO for the form backing object
+            ProductoModificacionDTO dto = new ProductoModificacionDTO();
+            dto.setDescripcion(producto.getDescripcion());
+            dto.setPrecio(producto.getPrecio());
+            dto.setMarca(producto.getMarca());
+            dto.setUnidades(producto.getUnidades());
+            if (producto.getCategoria() != null) {
+                dto.setCategoriaId(producto.getCategoria().getId());
+            }
+            dto.setFechaFabricacion(producto.getFechaFabricacion());
+            dto.setEsPerecedero(producto.getEsPerecedero());
+
+            model.addAttribute("productoDTO", dto);
+            model.addAttribute("productoId", id);
+            model.addAttribute("categorias", productoService.listarTodasLasCategorias());
+            return "modificarProducto";
+        } else {
+            return "redirect:/administrador/productos/consulta?error=ProductoNoEncontrado";
+        }
+    }
 
     /* ------------------------ GESTION DE EMPLEADOS ----------------------------- */
     /* ------------------------ Búsqueda Parametrizada de Empleados ----------------------------- */

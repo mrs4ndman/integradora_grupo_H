@@ -6,6 +6,7 @@ import org.grupo_h.comun.entity.Categoria;
 import org.grupo_h.comun.entity.Producto;
 import org.grupo_h.comun.entity.Proveedor;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils; // Para StringUtils.hasText
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class ProductoSpecification {
             UUID categoriaId,
             Double precioMin,
             Double precioMax,
-            UUID proveedorId,
+            List<UUID> proveedorIds,
             Boolean esPerecedero
     ) {
         return (root, query, criteriaBuilder) -> {
@@ -42,9 +43,13 @@ public class ProductoSpecification {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("precio"), precioMax));
             }
 
-            if (proveedorId != null) {
+            if (!CollectionUtils.isEmpty(proveedorIds)) {
                 Join<Producto, Proveedor> proveedorJoin = root.join("proveedor");
-                predicates.add(criteriaBuilder.equal(proveedorJoin.get("id"), proveedorId));
+                if (proveedorIds.size() == 1) {
+                    predicates.add(criteriaBuilder.equal(proveedorJoin.get("id"), proveedorIds.get(0)));
+                } else {
+                    predicates.add(proveedorJoin.get("id").in(proveedorIds));
+                }
             }
 
             if (esPerecedero  != null) {

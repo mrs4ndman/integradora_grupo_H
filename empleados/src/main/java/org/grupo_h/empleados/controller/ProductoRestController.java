@@ -78,7 +78,7 @@ public class ProductoRestController {
             @RequestParam(required = false) UUID categoriaId,
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
-            @RequestParam(required = false) UUID proveedorId,
+            @RequestParam(required = false) List<UUID> proveedorIds,
             @RequestParam(required = false) Boolean esPerecedero,
             // Parámetros de paginación
             @RequestParam(defaultValue = "0") int page,
@@ -93,8 +93,14 @@ public class ProductoRestController {
         logger.info(">>>> CONTROLADOR API: ProductoRestController.buscarProductos - INICIO <<<<");
         logger.info("[API Controller] Petición entrante (sortParam): {}", sortParam);
 
+        if (proveedorIds != null && !proveedorIds.isEmpty()) {
+            logger.info("[API Controller] Proveedor IDs recibidos: {}", proveedorIds);
+        } else {
+            logger.info("[API Controller] No se recibieron IDs de proveedor para filtrar.");
+        }
+
         ProductoCriteriosBusquedaDTO criterios = new ProductoCriteriosBusquedaDTO(
-                descripcion, categoriaId, precioMin, precioMax, proveedorId, esPerecedero
+                descripcion, categoriaId, precioMin, precioMax, proveedorIds, esPerecedero
         );
 
         List<Sort.Order> orders = new ArrayList<>();

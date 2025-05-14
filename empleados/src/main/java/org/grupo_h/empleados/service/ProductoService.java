@@ -1,5 +1,6 @@
 package org.grupo_h.empleados.service;
 
+import org.grupo_h.comun.entity.Producto;
 import org.grupo_h.empleados.dto.CategoriaSimpleDTO;
 import org.grupo_h.empleados.dto.ProductoCriteriosBusquedaDTO;
 import org.grupo_h.empleados.dto.ProductoResultadoDTO;
@@ -8,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface ProductoService {
 
@@ -17,4 +20,5 @@ public interface ProductoService {
 
     List<ProveedorSimpleDTO> listarTodosLosProveedores();
 
+    Optional<Producto> obtenerProductoPorId(UUID id);
 }

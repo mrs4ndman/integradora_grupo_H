@@ -53,15 +53,15 @@
         <div class="row">
             <div class="col-md-3 mb-3">
                 <label for="precioMin" class="form-label">Precio Mín.:</label>
-                <input type="number" step="0.01" id="precioMin" name="precioMin" class="form-control">
+                <input type="text" id="precioMin" name="precioMin" class="form-control">
             </div>
             <div class="col-md-3 mb-3">
                 <label for="precioMax" class="form-label">Precio Máx.:</label>
-                <input type="number" step="0.01" id="precioMax" name="precioMax" class="form-control">
+                <input type="text" id="precioMax" name="precioMax" class="form-control">
             </div>
             <div class="col-md-6 mb-3">
                 <label for="proveedor" class="form-label">Proveedor:</label>
-                <select id="proveedor" name="proveedorId" class="form-select">
+                <select id="proveedor" name="proveedorIds" class="form-select" multiple>
                     <option value="">-- Todos --</option>
                 </select>
             </div>
@@ -127,7 +127,7 @@
 
     <hr class="my-4">
     <div class="text-center">
-        <a th:href="@{/administrador/areaPersonal}" class="btn btn-outline-secondary mt-3">Volver al Área Personal</a>
+        <a th:href="@{/administrador/info}" class="btn btn-outline-secondary mt-3">Volver al Área Personal</a>
     </div>
 </div>
 
@@ -192,37 +192,47 @@
         currentSortField = sortField;
         currentSortDirection = sortDirection;
 
+        const selectedProveedores = $('#proveedor').val(); // Puede ser null o un array
+
         const criterios = {
             descripcion: $('#descripcion').val(),
             categoriaId: $('#categoria').val() || null,
-            proveedorId: $('#proveedor').val() || null,
+            // Aseguramos que proveedorIds solo sea un array si hay selecciones válidas
+            proveedorIds: (selectedProveedores && Array.isArray(selectedProveedores) && selectedProveedores.length > 0) ? selectedProveedores : null,
             precioMin: $('#precioMin').val() ? parseFloat($('#precioMin').val()) : null,
             precioMax: $('#precioMax').val() ? parseFloat($('#precioMax').val()) : null,
             esPerecedero: $('#esPerecedero').val() === "true" ? true : ($('#esPerecedero').val() === "false" ? false : null)
         };
 
+        // Limpiar claves con valores null o vacíos del objeto criterios ANTES de construir queryParams
+        // excepto para esPerecedero que puede ser false.
         Object.keys(criterios).forEach(key => {
-            if (criterios[key] == null || criterios[key] === '') {
-                if (key === 'esPerecedero' && criterios[key] === null) {
-                    delete criterios[key];
-                } else if (criterios[key] !== null && criterios[key] !== '') {
+            if (criterios[key] === null || criterios[key] === '' || (Array.isArray(criterios[key]) && criterios[key].length === 0)) {
+                if (key === 'esPerecedero' && criterios[key] === false) { // Conservar esPerecedero: false
+                    // no hacer nada, mantener el valor
                 } else {
-                    delete criterios[key];
+                    delete criterios[key]; // Eliminar otros campos nulos o vacíos
                 }
             }
         });
 
+
         const queryParams = new URLSearchParams();
         for (const key in criterios) {
-            if (criterios[key] !== null && criterios[key] !== undefined) {
-                queryParams.append(key, criterios[key]);
+            // Solo iterar sobre las propiedades propias del objeto
+            if (Object.prototype.hasOwnProperty.call(criterios, key)) {
+                if (key === 'proveedorIds') { // Ya sabemos que es un array con elementos por la limpieza anterior
+                    criterios[key].forEach(id => queryParams.append('proveedorIds', id));
+                } else {
+                    queryParams.append(key, criterios[key]);
+                }
             }
         }
         queryParams.append('page', currentPage);
         queryParams.append('size', pageSize);
         queryParams.append('sort', `${currentSortField},${currentSortDirection}`);
 
-        updateSortHeadersUI();
+        updateSortHeadersUI(); // Asegúrate de que esta función no dependa de que todos los criterios existan.
         try {
             const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`);
             if (!response.ok) {
@@ -260,6 +270,8 @@
                 const valoracionMedia = producto.valoracionMedia !== undefined && producto.valoracionMedia !== null ? parseFloat(producto.valoracionMedia).toFixed(1) : 'N/A';
                 const unidadesDisponibles = producto.unidadesDisponibles !== undefined && producto.unidadesDisponibles !== null ? producto.unidadesDisponibles : 'N/A';
                 const esPerecederoTexto = typeof producto.esPerecedero === 'boolean' ? (producto.esPerecedero ? 'Sí' : 'No') : 'N/A';
+                const urlDetalle = `/administrador/productos/detalle/${id}`;
+
 
                 const fila = `
                         <tr>
@@ -273,11 +285,15 @@
                             <td>${unidadesDisponibles}</td>
                             <td>${esPerecederoTexto}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="confirmarEliminarProducto('${id}')">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-                                    </svg>
-                                    Eliminar
+                        <a href="${urlDetalle}" class="btn btn-info btn-sm me-1" title="Ver Detalle">
+                            <i class="fas fa-eye"></i> Detalle
+                        </a>
+                        <a href="/administrador/productos/modificar/${id}" class="btn btn-warning btn-sm me-1" title="Modificar Producto"> Modificar
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn btn-danger btn-sm" onclick="confirmarEliminarProducto('${id}')" title="Eliminar Producto">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </button>
                                 </button>
                             </td>
                         </tr>
@@ -431,7 +447,11 @@
         $('#btnLimpiar').click(() => {
             $('#searchForm')[0].reset();
             $('#categoria').val('');
-            $('#proveedor').val('');
+            // $('#proveedor').val(''); // Para un select múltiple, esto debería deseleccionar todas las opciones.
+            // Si usas una librería de select múltiple, puede tener su propio método de reseteo.
+            // Para un select múltiple nativo, puedes hacer:
+            $('#proveedor').val([]).trigger('change'); // Si usas jQuery con algún plugin que escuche 'change'
+            // o simplemente $('#proveedor').val([]);
             $('#esPerecedero').val('');
             currentSortField = 'descripcion';
             currentSortDirection = 'asc';

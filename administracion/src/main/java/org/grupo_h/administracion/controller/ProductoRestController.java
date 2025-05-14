@@ -1,11 +1,10 @@
 package org.grupo_h.administracion.controller;
 
-import org.grupo_h.administracion.dto.CategoriaSimpleDTO;
-import org.grupo_h.administracion.dto.ProductoCriteriosBusquedaDTO;
-import org.grupo_h.administracion.dto.ProductoResultadoDTO;
-import org.grupo_h.administracion.dto.ProveedorSimpleDTO;
+import jakarta.validation.Valid;
+import org.grupo_h.administracion.dto.*;
 import org.grupo_h.administracion.service.ProductoService;
 
+import org.grupo_h.comun.entity.Producto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/administrador/productos")
@@ -72,7 +75,7 @@ public class ProductoRestController {
             @RequestParam(required = false) UUID categoriaId,
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
-            @RequestParam(required = false) UUID proveedorId,
+            @RequestParam(required = false) List<UUID> proveedorIds,
             @RequestParam(required = false) Boolean esPerecedero,
             // Parámetros de paginación
             @RequestParam(defaultValue = "0") int page,
@@ -88,7 +91,7 @@ public class ProductoRestController {
         logger.info("[API Controller] Petición entrante (sortParam): {}", sortParam);
 
         ProductoCriteriosBusquedaDTO criterios = new ProductoCriteriosBusquedaDTO(
-                descripcion, categoriaId, precioMin, precioMax, proveedorId, esPerecedero
+                descripcion, categoriaId, precioMin, precioMax, proveedorIds, esPerecedero
         );
 
         List<Sort.Order> orders = new ArrayList<>();
@@ -205,5 +208,71 @@ public class ProductoRestController {
             response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+
+    @PatchMapping("/{id}") // O @PutMapping
+    public ResponseEntity<?> actualizarProducto(@PathVariable UUID id,
+                                                @Valid @RequestBody ProductoModificacionDTO productoModificacionDTO) { // AÑADIDO @Valid
+        logger.info("Solicitud PATCH para actualizar producto con ID: {}. Datos: {}", id, productoModificacionDTO);
+        Optional<ProductoResultadoDTO> productoActualizadoDTO = productoService.modificarProducto(id, productoModificacionDTO);
+
+        if (productoActualizadoDTO.isPresent()) {
+            return ResponseEntity.ok(productoActualizadoDTO.get());
+        } else {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Producto con ID " + id + " no encontrado para modificar.");
+            response.put("status", HttpStatus.NOT_FOUND.value());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        // No es necesario un try-catch aquí si los @ExceptionHandler globales o locales manejan las excepciones.
+    }
+
+    /**
+     * Manejador para errores de validación de Beans (anotaciones como @Min, @Size, @DecimalMin).
+     * Se activa cuando @Valid falla.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        logger.warn("Errores de validación de datos: {}", errors);
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    /**
+     * Manejador para errores cuando el cuerpo de la petición no puede ser leído/convertido por Jackson
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        logger.warn("Error al leer/convertir el cuerpo de la petición HTTP: {}", ex.getMessage());
+        Map<String, String> response = new HashMap<>();
+        // Intentar dar un mensaje más específico si es posible
+        Throwable cause = ex.getCause();
+        if (cause instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException) {
+            com.fasterxml.jackson.databind.exc.InvalidFormatException ife = (com.fasterxml.jackson.databind.exc.InvalidFormatException) cause;
+            // Obtener el nombre del campo que causó el error de formato
+            String fieldName = ife.getPath().stream()
+                    .map(com.fasterxml.jackson.databind.JsonMappingException.Reference::getFieldName)
+                    .filter(name -> name != null)
+                    .collect(Collectors.joining("."));
+
+            if (fieldName != null && !fieldName.isEmpty()) {
+                response.put(fieldName, "El valor proporcionado ('" + ife.getValue() + "') no tiene el formato numérico esperado para el campo '" + fieldName + "'.");
+            } else {
+                response.put("requestBody", "Hay un problema con el formato de los datos enviados. Verifique los campos numéricos.");
+            }
+        } else if (cause instanceof com.fasterxml.jackson.core.JsonParseException) {
+            response.put("requestBody", "El formato del JSON enviado es inválido.");
+        }
+        else {
+            response.put("requestBody", "No se pudo procesar la petición debido a un formato de datos incorrecto.");
+        }
+        return ResponseEntity.badRequest().body(response);
     }
 }

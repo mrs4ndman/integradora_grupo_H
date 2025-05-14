@@ -7,9 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.grupo_h.comun.auxiliar.RestPage;
-import org.grupo_h.comun.entity.Empleado;
-import org.grupo_h.comun.entity.Etiqueta;
-import org.grupo_h.comun.entity.Usuario;
+import org.grupo_h.comun.entity.*;
 import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.comun.repository.*;
 import org.grupo_h.comun.service.DepartamentoService;
@@ -90,13 +88,15 @@ public class EmpleadoController {
     @Autowired
     private final TipoViaService tipoViaService;
     @Autowired
+    private final ProductoService productoService;
+    @Autowired
     private final TipoDocumentoService tipoDocumentoService;
     @Autowired
     private final RestTemplate restTemplate;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, TipoDocumentoService tipoDocumentoService, RestTemplate restTemplate) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, ProductoService productoService, TipoDocumentoService tipoDocumentoService, RestTemplate restTemplate) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
@@ -115,6 +115,7 @@ public class EmpleadoController {
         this.etiquetaService = etiquetaService;
         this.modelMapper = modelMapper;
         this.tipoViaService = tipoViaService;
+        this.productoService = productoService;
         this.tipoDocumentoService = tipoDocumentoService;
         this.restTemplate = restTemplate;
     }
@@ -725,10 +726,9 @@ public class EmpleadoController {
 
         logger.info("[EmpleadoController] Vista consulta productos: sortField='{}', sortDir='{}', page={}, size={}", sortField, sortDir, page, size);
 
-        // Verificar si el empleado está autenticado (adapta según tu lógica de sesión de empleado)
         if (session.getAttribute("emailAutenticado") == null && session.getAttribute("emailAutenticado") == null ) { // Ajusta el nombre del atributo de sesión
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
-            return "redirect:/empleados/inicio-sesion"; // Ajusta a tu URL de login de empleado
+            return "redirect:/usuarios/inicio-sesion";
         }
 
         // Lista de campos válidos para ordenar Producto
@@ -771,8 +771,11 @@ public class EmpleadoController {
         if (criterios.getPrecioMax() != null) {
             builder.queryParam("precioMax", criterios.getPrecioMax());
         }
-        if (criterios.getProveedorId() != null) {
-            builder.queryParam("proveedorId", criterios.getProveedorId().toString());
+        if (criterios.getProveedorIds() != null && !criterios.getProveedorIds().isEmpty()) {
+            for (UUID proveedorId : criterios.getProveedorIds()) {
+                builder.queryParam("proveedorIds", proveedorId.toString());
+            }
+            logger.info("[EmpleadoController] Añadiendo proveedorIds al API call: {}", criterios.getProveedorIds());
         }
         if (criterios.getEsPerecedero() != null) {
             builder.queryParam("esPerecedero", criterios.getEsPerecedero());
@@ -832,6 +835,46 @@ public class EmpleadoController {
         model.addAttribute("estadoActualSortDir", (currentSortDirection == Sort.Direction.DESC ? "desc" : "asc"));
 
         return "consultaProductos";
+    }
+
+    /**
+     * Muestra la página de detalle de un producto para empleados.
+     * @param id El UUID del producto a mostrar.
+     * @param model Modelo para pasar datos a la vista.
+     * @param session Sesión HTTP para control de acceso.
+     * @param redirectAttributes Atributos para redirección.
+     * @return Nombre de la plantilla Thymeleaf para el detalle del producto o redirección.
+     */
+    @GetMapping("/productos/detalle/{id}")
+    public String mostrarDetalleProductoEmpleado(@PathVariable UUID id, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("emailAutenticado") == null && session.getAttribute("emailAutenticado") == null ) { // Ajusta el nombre del atributo de sesión
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            return "redirect:/usuarios/inicio-sesion";
+        }
+
+        Optional<Producto> productoOpt = productoService.obtenerProductoPorId(id);
+
+        if (productoOpt.isPresent()) {
+            Producto producto = productoOpt.get();
+            model.addAttribute("producto", producto);
+
+            if (producto instanceof Libro) {
+                model.addAttribute("tipoProducto", "Libro");
+                model.addAttribute("libro", (Libro) producto);
+            } else if (producto instanceof Mueble) {
+                model.addAttribute("tipoProducto", "Mueble");
+                model.addAttribute("mueble", (Mueble) producto);
+            } else if (producto instanceof Ropa) {
+                model.addAttribute("tipoProducto", "Ropa");
+                model.addAttribute("ropa", (Ropa) producto);
+            } else {
+                model.addAttribute("tipoProducto", "Desconocido");
+            }
+            return "detalleProducto";
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado con ID: " + id);
+            return "redirect:/empleados/consulta-productos";
+        }
     }
 }
 

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle del Producto - Empleado</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/estilos.css}">
+  <style>
+    .nav-tabs .nav-link.active {
+      background-color: #f8f9fa;
+      border-bottom-color: #f8f9fa;
+    }
+    .tab-content {
+      border: 1px solid #dee2e6;
+      border-top: 0;
+      padding: 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 0 0 .25rem .25rem;
+    }
+    .detail-label {
+      font-weight: bold;
+      color: #495057;
+    }
+    .detail-value {
+      margin-bottom: 0.5rem; /* Ajustado para consistencia */
+    }
+    body {
+      font-family: 'Inter', sans-serif; /* Usando Inter como fuente general */
+    }
+  </style>
+</head>
+<body>
+<div class="container mt-5 mb-5">
+  <div th:if="${producto}">
+    <h1 class="mb-4 text-center">Detalle del Producto</h1>
+    <h3 class="mb-4 text-center text-primary" th:text="${producto.descripcion}">Descripción del Producto</h3>
+
+    <ul class="nav nav-tabs" id="productDetailTabEmpleado" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="comunes-tab-empleado" data-bs-toggle="tab" data-bs-target="#datosComunesEmpleado" type="button" role="tab" aria-controls="datosComunesEmpleado" aria-selected="true">Datos Comunes</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="especificos-tab-empleado" data-bs-toggle="tab" data-bs-target="#datosEspecificosEmpleado" type="button" role="tab" aria-controls="datosEspecificosEmpleado" aria-selected="false">Datos Específicos</button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="productDetailTabContentEmpleado">
+      <div class="tab-pane fade show active" id="datosComunesEmpleado" role="tabpanel" aria-labelledby="comunes-tab-empleado">
+        <h4 class="mt-3 mb-3">Información General del Producto</h4>
+        <div class="row">
+          <div class="col-md-6">
+            <p><span class="detail-label">ID:</span> <span class="detail-value" th:text="${producto.id}"></span></p>
+            <p><span class="detail-label">Descripción Completa:</span> <span class="detail-value" th:text="${producto.descripcion}"></span></p>
+            <p><span class="detail-label">Precio:</span> <span class="detail-value" th:text="${#numbers.formatDecimal(producto.precio, 1, 'POINT', 2, 'COMMA')} + ' €'"></span></p>
+            <p><span class="detail-label">Marca:</span> <span class="detail-value" th:text="${producto.marca ?: 'No especificada'}"></span></p>
+          </div>
+          <div class="col-md-6">
+            <p><span class="detail-label">Categoría:</span> <span class="detail-value" th:text="${producto.categoria?.nombre ?: 'No asignada'}"></span></p>
+            <p><span class="detail-label">Proveedor:</span> <span class="detail-value" th:text="${producto.proveedor?.nombre ?: 'No asignado'}"></span></p>
+            <p><span class="detail-label">Unidades Disponibles:</span> <span class="detail-value" th:text="${producto.unidades}"></span></p>
+            <p><span class="detail-label">Valoración Media:</span> <span class="detail-value" th:text="${producto.valoracion != null ? #numbers.formatDecimal(producto.valoracion, 1, 1) : 'Sin valorar'}"></span></p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-md-6">
+            <p><span class="detail-label">Fecha de Alta en Sistema:</span> <span class="detail-value" th:text="${#temporals.format(producto.fechaAlta, 'dd/MM/yyyy HH:mm:ss')}"></span></p>
+            <p><span class="detail-label">Fecha de Fabricación:</span> <span class="detail-value" th:text="${producto.fechaFabricacion != null ? #temporals.format(producto.fechaFabricacion, 'dd/MM/yyyy') : 'No especificada'}"></span></p>
+            <p><span class="detail-label">¿Es Perecedero?:</span> <span class="detail-value" th:text="${producto.esPerecedero != null ? (producto.esPerecedero ? 'Sí' : 'No') : 'No especificado'}"></span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="datosEspecificosEmpleado" role="tabpanel" aria-labelledby="especificos-tab-empleado">
+        <h4 class="mt-3 mb-3">Detalles Específicos (<span th:text="${tipoProducto ?: 'No disponible'}">Tipo</span>)</h4>
+
+        <div th:if="${tipoProducto == 'Libro' and libro != null}" th:object="${libro}">
+          <p><span class="detail-label">Título del Libro:</span> <span class="detail-value" th:text="*{titulo}"></span></p>
+          <p><span class="detail-label">Autor/a:</span> <span class="detail-value" th:text="*{autor ?: 'No especificado'}"></span></p>
+          <p><span class="detail-label">Editorial:</span> <span class="detail-value" th:text="*{editorial ?: 'No especificada'}"></span></p>
+          <p><span class="detail-label">Tipo de Tapa:</span> <span class="detail-value" th:text="*{tapa ?: 'No especificada'}"></span></p>
+          <p><span class="detail-label">Número de Páginas:</span> <span class="detail-value" th:text="*{numeroPaginas ?: 'N/A'}"></span></p>
+          <p><span class="detail-label">¿Segunda Mano?:</span> <span class="detail-value" th:text="*{segundaMano != null ? (segundaMano ? 'Sí' : 'No') : 'No especificado'}"></span></p>
+        </div>
+
+        <div th:if="${tipoProducto == 'Mueble' and mueble != null}" th:object="${mueble}">
+          <div th:if="*{dimensiones != null}">
+            <p><span class="detail-label">Dimensiones:</span>
+              <span class="detail-value" th:text="|Ancho: *{dimensiones.ancho ?: 'N/A'} cm, Profundo: *{dimensiones.profundo ?: 'N/A'} cm, Alto: *{dimensiones.alto ?: 'N/A'} cm|"></span>
+            </p>
+          </div>
+          <div th:unless="*{dimensiones != null}">
+            <p><span class="detail-label">Dimensiones:</span> <span class="detail-value">No especificadas</span></p>
+          </div>
+          <p><span class="detail-label">Peso:</span> <span class="detail-value" th:text="*{peso != null ? #numbers.formatDecimal(peso, 1, 'POINT', 2, 'COMMA') + ' kg' : 'No especificado'}"></span></p>
+          <p><span class="detail-label">Colores:</span>
+            <span class="detail-value" th:if="*{colores != null and !colores.isEmpty()}" th:each="color, iterStat : *{colores}" th:text="${color} + (${iterStat.last} ? '' : ', ')"></span>
+            <span class="detail-value" th:if="*{colores == null or colores.isEmpty()}">No especificados</span>
+          </p>
+        </div>
+
+        <div th:if="${tipoProducto == 'Ropa' and ropa != null}" th:object="${ropa}">
+          <p><span class="detail-label">Talla:</span> <span class="detail-value" th:text="*{talla ?: 'No especificada'}"></span></p>
+          <p><span class="detail-label">Colores Disponibles:</span>
+            <span class="detail-value" th:if="*{coloresDisponibles != null and !coloresDisponibles.isEmpty()}" th:each="color, iterStat : *{coloresDisponibles}" th:text="${color} + (${iterStat.last} ? '' : ', ')"></span>
+            <span class="detail-value" th:if="*{coloresDisponibles == null or coloresDisponibles.isEmpty()}">No especificados</span>
+          </p>
+        </div>
+
+        <div th:if="${tipoProducto == 'Desconocido' or (tipoProducto != 'Libro' and tipoProducto != 'Mueble' and tipoProducto != 'Ropa') or (tipoProducto == 'Libro' and libro == null) or (tipoProducto == 'Mueble' and mueble == null) or (tipoProducto == 'Ropa' and ropa == null) }">
+          <p class="text-muted mt-3">Este producto no tiene atributos específicos detallados o es de un tipo no reconocido en esta vista.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 text-center">
+      <a th:href="@{/empleados/consulta-productos}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a la Consulta
+      </a>
+    </div>
+
+  </div>
+
+  <div th:unless="${producto}" class="alert alert-danger mt-4" role="alert">
+    El producto solicitado no fue encontrado.
+    <div class="mt-3 text-center">
+      <a th:href="@{/empleados/consulta-productos}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a la Consulta
+      </a>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

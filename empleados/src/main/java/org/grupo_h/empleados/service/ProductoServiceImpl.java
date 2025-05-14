@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 // import java.util.List;
@@ -55,7 +57,6 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductoResultadoDTO> buscarProductos(ProductoCriteriosBusquedaDTO criterios, Pageable pageable) {
-        System.out.println("Servicio usando proveedorId para spec: " + criterios.getProveedorId());
         logger.info("[ProductoService] Pageable recibido para búsqueda: {}", pageable.getSort());
 
         // Construir la especificación basada en los criterios
@@ -64,7 +65,7 @@ public class ProductoServiceImpl implements ProductoService {
                 criterios.getCategoriaId(),
                 criterios.getPrecioMin(),
                 criterios.getPrecioMax(),
-                criterios.getProveedorId(),
+                criterios.getProveedorIds(),
                 criterios.getEsPerecedero()
         );
 
@@ -75,6 +76,8 @@ public class ProductoServiceImpl implements ProductoService {
 
     private ProductoResultadoDTO convertirAProductoResultadoDTO(Producto producto) {
         ProductoResultadoDTO dto = modelMapper.map(producto, ProductoResultadoDTO.class);
+
+        dto.setUnidadesDisponibles(producto.getUnidades());
 
         if (producto.getCategoria() != null) {
             dto.setCategoriaNombre(producto.getCategoria().getNombre());
@@ -105,4 +108,11 @@ public class ProductoServiceImpl implements ProductoService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Producto> obtenerProductoPorId(UUID id) {
+        logger.debug("[EmpleadoProductoService] Solicitando producto con ID: {}", id);
+        // El ProductoRepository es común, así que esta llamada es la misma
+        return productoRepository.findById(id);
+    }
 }

@@ -1,10 +1,8 @@
 package org.grupo_h.administracion.service;
 
-import org.grupo_h.administracion.dto.CategoriaSimpleDTO;
-import org.grupo_h.administracion.dto.ProductoCriteriosBusquedaDTO;
-import org.grupo_h.administracion.dto.ProductoResultadoDTO;
-import org.grupo_h.administracion.dto.ProveedorSimpleDTO;
+import org.grupo_h.administracion.dto.*;
 import org.grupo_h.administracion.specs.ProductoSpecification;
+import org.grupo_h.comun.entity.Categoria;
 import org.grupo_h.comun.entity.Producto;
 import org.grupo_h.comun.repository.CategoriaRepository;
 import org.grupo_h.comun.repository.ProductoRepository;
@@ -26,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -62,7 +61,6 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductoResultadoDTO> buscarProductos(ProductoCriteriosBusquedaDTO criterios, Pageable pageable) {
-        System.out.println("Servicio usando proveedorId para spec: " + criterios.getProveedorId());
         logger.info("[ProductoService] Pageable recibido para búsqueda: {}", pageable.getSort());
 
         // Construir la especificación basada en los criterios
@@ -71,7 +69,7 @@ public class ProductoServiceImpl implements ProductoService {
                 criterios.getCategoriaId(),
                 criterios.getPrecioMin(),
                 criterios.getPrecioMax(),
-                criterios.getProveedorId(),
+                criterios.getProveedorIds(),
                 criterios.getEsPerecedero()
         );
 
@@ -82,6 +80,8 @@ public class ProductoServiceImpl implements ProductoService {
 
     private ProductoResultadoDTO convertirAProductoResultadoDTO(Producto producto) {
         ProductoResultadoDTO dto = modelMapper.map(producto, ProductoResultadoDTO.class);
+
+        dto.setUnidadesDisponibles(producto.getUnidades());
 
         if (producto.getCategoria() != null) {
             dto.setCategoriaNombre(producto.getCategoria().getNombre());
@@ -165,5 +165,63 @@ public class ProductoServiceImpl implements ProductoService {
         productoRepository.deleteAll(); // deleteAllInBatch() podría ser más eficiente para grandes cantidades
         long cantidadDespues = productoRepository.count();
         logger.info("Todos los productos eliminados. Antes: {}, Después: {}. Total eliminados: {}", cantidadAntes, cantidadDespues, cantidadAntes - cantidadDespues);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Producto> obtenerProductoPorId(UUID id) {
+        logger.debug("Solicitando producto con ID: {}", id);
+        return productoRepository.findById(id);
+    }
+
+    @Override
+    @Transactional
+    public Optional<ProductoResultadoDTO> modificarProducto(UUID id, ProductoModificacionDTO dto) { // MODIFICADO: Tipo de retorno
+        Optional<Producto> productoOpt = productoRepository.findById(id);
+        if (productoOpt.isPresent()) {
+            Producto producto = productoOpt.get();
+
+            if (dto.getDescripcion() != null && !dto.getDescripcion().isEmpty()) {
+                producto.setDescripcion(dto.getDescripcion());
+            }
+            if (dto.getPrecio() != null) {
+                producto.setPrecio(dto.getPrecio());
+            }
+            // Para marca, si quieres permitir limpiarla, podrías hacer:
+            if (dto.getMarca() != null) {
+                producto.setMarca(dto.getMarca().isEmpty() ? null : dto.getMarca());
+            } else {
+                // Si dto.getMarca() es null, significa que el campo no venía en el JSON o no se quiere modificar.
+                // Si quisieras poder poner marca a null explícitamente desde el formulario enviando un valor vacío:
+                // if (dto.getMarca() != null && dto.getMarca().isEmpty()) producto.setMarca(null);
+                // else if (dto.getMarca() != null) producto.setMarca(dto.getMarca());
+                // La lógica actual es: si se envía "marca": "" -> se pone a null. Si se envía "marca": "valor" -> se actualiza. Si no se envía "marca" -> no se toca.
+            }
+            if (dto.getUnidades() != null) {
+                producto.setUnidades(dto.getUnidades());
+            }
+            if (dto.getCategoriaId() != null) {
+                Optional<Categoria> categoriaOpt = categoriaRepository.findById(dto.getCategoriaId());
+                // Decide qué hacer si la categoría no se encuentra. ¿Lanzar excepción, ignorar, loggear?
+                // Por ahora, si se encuentra, se asigna.
+                categoriaOpt.ifPresent(producto::setCategoria);
+                if (categoriaOpt.isEmpty()) {
+                    logger.warn("Categoría con ID {} no encontrada al modificar producto {}", dto.getCategoriaId(), id);
+                    // Considera si esto debe ser un error que impida la modificación o solo un warning.
+                    // Dependiendo del requisito, podrías lanzar una DataIntegrityViolationException o similar.
+                }
+            }
+            if (dto.getFechaFabricacion() != null) {
+                producto.setFechaFabricacion(dto.getFechaFabricacion());
+            }
+            if (dto.getEsPerecedero() != null) {
+                producto.setEsPerecedero(dto.getEsPerecedero());
+            }
+
+            Producto productoGuardado = productoRepository.save(producto);
+            // MODIFICADO: Convertir a DTO antes de retornar
+            return Optional.of(convertirAProductoResultadoDTO(productoGuardado));
+        }
+        return Optional.empty();
     }
 }

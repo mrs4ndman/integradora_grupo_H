@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -14,6 +15,6 @@ public class ProductoCriteriosBusquedaDTO {
     private UUID categoriaId;
     private Double precioMin;
     private Double precioMax;
-    private UUID proveedorId;
+    private List<UUID> proveedorIds;
     private Boolean esPerecedero;
 }

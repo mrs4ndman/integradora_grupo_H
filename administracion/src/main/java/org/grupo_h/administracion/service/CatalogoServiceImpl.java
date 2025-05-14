@@ -97,27 +97,18 @@ public class CatalogoServiceImpl implements CatalogoService {
                     ProductoImportDTO productoDto = catalogoDto.getProductos().get(i);
                     String logPrefixProducto = logPrefixCatalogo + "Producto #" + (i + 1) + " (" + (productoDto.getDescripcion() != null ? productoDto.getDescripcion() : "N/A") + "): ";
                     try {
-                        validarProductoDto(productoDto, i + 1); // numProducto es solo para logging dentro de la validación
+                        validarProductoDto(productoDto, i + 1);
                         Producto productoEntidad = convertirDtoAEntidad(productoDto, proveedor);
                         productosAProcesarProveedor.add(productoEntidad);
                     } catch (Exception e) {
-                        // Acumular errores de este producto para este proveedor
                         erroresValidacionProductosProveedor.add(logPrefixProducto + e.getMessage());
                     }
                 }
 
-                // Si hubo errores de validación para los productos de ESTE proveedor, los añadimos a los errores globales
-                // y podríamos decidir saltar el procesamiento de este proveedor.
                 if (!erroresValidacionProductosProveedor.isEmpty()) {
                     erroresGlobalesValidacion.addAll(erroresValidacionProductosProveedor);
-                    // Opcional: si un producto de un proveedor falla, ¿debería fallar toda la importación de ese proveedor?
-                    // Por ahora, continuamos con los productos válidos de este proveedor si los hubiera,
-                    // pero los errores se reportarán. O podrías lanzar una excepción aquí para este proveedor.
-                    // Para un manejo más estricto:
-                    // throw new CatalogoImportValidationException(logPrefixCatalogo + "Errores de validación en productos.", erroresValidacionProductosProveedor);
                 }
 
-                // Procesar y guardar/actualizar productos para este proveedor
                 for (Producto entidadAGuardar : productosAProcesarProveedor) {
                     Optional<Producto> existenteOpt = productoRepository.findByDescripcionAndProveedor(entidadAGuardar.getDescripcion(), proveedor);
                     if (existenteOpt.isPresent()) {
@@ -132,7 +123,6 @@ public class CatalogoServiceImpl implements CatalogoService {
                         existente.setEsPerecedero(entidadAGuardar.getEsPerecedero());
                         if(entidadAGuardar.getCategoria() != null) existente.setCategoria(entidadAGuardar.getCategoria());
 
-                        // Actualizar campos específicos de subclases si es necesario
                         if (existente instanceof Libro && entidadAGuardar instanceof Libro) {
                             Libro libroExistente = (Libro) existente;
                             Libro libroNuevo = (Libro) entidadAGuardar;
