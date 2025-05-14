@@ -23,8 +23,8 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID>, JpaSp
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM Producto p WHERE p.categoria.id = :categoriaId")
-    int deleteByCategoriaId(@Param("categoriaId") UUID categoriaId);
+    @Query("DELETE FROM Producto p WHERE EXISTS (SELECT c FROM p.categorias c WHERE c.id = :categoriaId)")
+    int deleteProductosConCategoriaId(@Param("categoriaId") UUID categoriaId);
 
-    List<Producto> findByCategoriaId(UUID categoriaId);
+    List<Producto> findByCategoriasId(UUID categoriaId);
 }

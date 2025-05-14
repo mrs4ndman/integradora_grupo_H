@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor; // Lombok @AllArgsConstructor no es ideal para 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -36,9 +38,13 @@ public abstract class Producto { // Clase abstracta
     @Column(nullable = false)
     private Integer unidades;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categoria_id", foreignKey = @ForeignKey(name = "FK_PRODUCTO_CATEGORIA"))
-    private Categoria categoria;
+    @ManyToMany(fetch = FetchType.EAGER) // EAGER para que se carguen con el producto
+    @JoinTable(
+            name = "producto_categoria",
+            joinColumns = @JoinColumn(name = "producto_id"),
+            inverseJoinColumns = @JoinColumn(name = "categoria_id")
+    )
+    private List<Categoria> categorias = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proveedor_id", foreignKey = @ForeignKey(name = "FK_PRODUCTO_PROVEEDOR"))
@@ -52,19 +58,6 @@ public abstract class Producto { // Clase abstracta
 
     @Column
     private Boolean esPerecedero;
-
-    // Constructor para campos comunes
-    protected Producto(String descripcion, BigDecimal precio, String marca, Integer unidades,
-                       Categoria categoria, Proveedor proveedor, LocalDate fechaFabricacion, Boolean esPerecedero) {
-        this.descripcion = descripcion;
-        this.precio = precio;
-        this.marca = marca;
-        this.unidades = unidades;
-        this.categoria = categoria;
-        this.proveedor = proveedor;
-        this.fechaFabricacion = fechaFabricacion;
-        this.esPerecedero = esPerecedero;
-    }
 
 
     @PrePersist

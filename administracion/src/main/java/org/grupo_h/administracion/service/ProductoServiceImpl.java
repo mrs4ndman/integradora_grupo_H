@@ -16,17 +16,14 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 // import java.util.List;
 // import java.util.stream.Collectors;
@@ -61,9 +58,42 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductoResultadoDTO> buscarProductos(ProductoCriteriosBusquedaDTO criterios, Pageable pageable) {
-        logger.info("[ProductoService] Pageable recibido para búsqueda: {}", pageable.getSort());
+        logger.info("Buscando productos con criterios: {} y pageable: {}", criterios, pageable);
+        logger.info("Pageable original Sort: {}", pageable.getSort());
 
-        // Construir la especificación basada en los criterios
+        Sort sortForDb;
+        boolean sortByPrimeraCategoria = false;
+        Sort.Direction primeraCategoriaDirection = Sort.Direction.ASC;
+
+        if (pageable.getSort().isSorted()) {
+            Optional<Sort.Order> categoriaOrderOpt = StreamSupport.stream(pageable.getSort().spliterator(), false)
+                    .filter(order -> "nombrePrimeraCategoria".equals(order.getProperty()))
+                    .findFirst();
+
+            if (categoriaOrderOpt.isPresent()) {
+                sortByPrimeraCategoria = true;
+                primeraCategoriaDirection = categoriaOrderOpt.get().getDirection();
+                logger.info("Ordenación especial detectada para 'nombrePrimeraCategoria', dirección: {}. Se aplicará en memoria.", primeraCategoriaDirection);
+
+                List<Sort.Order> otherOrders = StreamSupport.stream(pageable.getSort().spliterator(), false)
+                        .filter(order -> !"nombrePrimeraCategoria".equals(order.getProperty()))
+                        .collect(Collectors.toList());
+                sortForDb = otherOrders.isEmpty() ? Sort.unsorted() : Sort.by(otherOrders);
+            } else {
+                // No hay orden por 'nombrePrimeraCategoria', usar el sort original para la BD
+                sortForDb = pageable.getSort();
+            }
+        } else {
+            // No hay ninguna ordenación solicitada
+            sortForDb = Sort.unsorted();
+        }
+
+        logger.info("Sort a aplicar a la BD (sortForDb): {}", sortForDb);
+        Pageable dbPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortForDb);
+        logger.debug("Pageable para la consulta a BD (dbPageable): {}", dbPageable);
+
+        // Asegúrate que los campos en ProductoCriteriosBusquedaDTO y ProductoSpecification.conCriterios coincidan
+        // Tu spec usa 'descripcion' para el filtro de texto.
         Specification<Producto> spec = ProductoSpecification.conCriterios(
                 criterios.getDescripcion(),
                 criterios.getCategoriaId(),
@@ -71,11 +101,43 @@ public class ProductoServiceImpl implements ProductoService {
                 criterios.getPrecioMax(),
                 criterios.getProveedorIds(),
                 criterios.getEsPerecedero()
+                // criterios.getActivo() // Si lo habilitas de nuevo en la spec y DTO
         );
 
-        Page<Producto> productosEncontrados = productoRepository.findAll(spec, pageable);
+        Page<Producto> productosEncontrados;
+        try {
+            productosEncontrados = productoRepository.findAll(spec, dbPageable);
+        } catch (Exception e) {
+            // Este log es crucial si la ordenación por campos estándar falla a nivel de BD
+            logger.error("Error al ejecutar findAll con la especificación y el pageable: {}. Causa: {}. Verifique las propiedades de ordenación ('{}') y los joins en la especificación.",
+                    e.getMessage(),
+                    e.getCause() != null ? e.getCause().getMessage() : "N/A",
+                    sortForDb,
+                    e);
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
 
-        return productosEncontrados.map(this::convertirAProductoResultadoDTO);
+        List<Producto> content = new ArrayList<>(productosEncontrados.getContent());
+
+        if (sortByPrimeraCategoria) {
+            logger.debug("Aplicando ordenación en memoria por 'nombrePrimeraCategoria', dirección: {}", primeraCategoriaDirection);
+            final Sort.Direction direction = primeraCategoriaDirection;
+            content.sort(Comparator.comparing(producto ->
+                            producto.getCategorias().stream()
+                                    .map(Categoria::getNombre)
+                                    .filter(nombre -> nombre != null && !nombre.isEmpty())
+                                    .min(String::compareToIgnoreCase)
+                                    .orElse("\uFFFF"), // Usar un carácter Unicode alto para que los vacíos vayan al final en ASC
+                    (s1, s2) -> direction == Sort.Direction.ASC ? s1.compareToIgnoreCase(s2) : s2.compareToIgnoreCase(s1)
+            ));
+        }
+
+        List<ProductoResultadoDTO> dtos = content.stream()
+                .map(this::convertirAProductoResultadoDTO)
+                .collect(Collectors.toList());
+
+        logger.info("Encontrados {} productos en total, devolviendo página {} de {}", productosEncontrados.getTotalElements(), pageable.getPageNumber(), productosEncontrados.getTotalPages());
+        return new PageImpl<>(dtos, pageable, productosEncontrados.getTotalElements());
     }
 
     private ProductoResultadoDTO convertirAProductoResultadoDTO(Producto producto) {
@@ -83,10 +145,18 @@ public class ProductoServiceImpl implements ProductoService {
 
         dto.setUnidadesDisponibles(producto.getUnidades());
 
-        if (producto.getCategoria() != null) {
-            dto.setCategoriaNombre(producto.getCategoria().getNombre());
+        if (producto.getCategorias() != null && !producto.getCategorias().isEmpty()) {
+            List<CategoriaSimpleDTO> categoriasDTO = producto.getCategorias().stream()
+                    .map(cat -> {
+                        CategoriaSimpleDTO catDto = new CategoriaSimpleDTO();
+                        catDto.setId(cat.getId());
+                        catDto.setNombre(cat.getNombre());
+                        return catDto;
+                    })
+                    .collect(Collectors.toList());
+            dto.setCategorias(categoriasDTO);
         } else {
-            dto.setCategoriaNombre("N/A");
+            dto.setCategorias(new ArrayList<>());
         }
         if (producto.getProveedor() != null) {
             dto.setProveedorNombre(producto.getProveedor().getNombre());
@@ -118,9 +188,7 @@ public class ProductoServiceImpl implements ProductoService {
         logger.info("Intentando eliminar producto con ID: {}", id);
         if (!productoRepository.existsById(id)) {
             logger.warn("Intento de eliminar un producto no existente con ID: {}", id);
-            // Podrías lanzar una excepción personalizada aquí si lo prefieres
-            // throw new ProductoNoEncontradoException("Producto con ID " + id + " no encontrado.");
-            return; // O simplemente no hacer nada si no existe
+            return;
         }
         productoRepository.deleteById(id);
         logger.info("Producto con ID: {} eliminado correctamente.", id);
@@ -135,7 +203,7 @@ public class ProductoServiceImpl implements ProductoService {
             return 0;
         }
 
-        List<Producto> productosEnCategoria = productoRepository.findByCategoriaId(categoriaId);
+        List<Producto> productosEnCategoria = productoRepository.findByCategoriasId(categoriaId);
         if (productosEnCategoria.isEmpty()) {
             logger.info("No se encontraron productos en la categoría ID: {}", categoriaId);
             return 0;
@@ -162,7 +230,7 @@ public class ProductoServiceImpl implements ProductoService {
     public void eliminarTodosLosProductos() {
         logger.info("Intentando eliminar TODOS los productos del catálogo.");
         long cantidadAntes = productoRepository.count();
-        productoRepository.deleteAll(); // deleteAllInBatch() podría ser más eficiente para grandes cantidades
+        productoRepository.deleteAll();
         long cantidadDespues = productoRepository.count();
         logger.info("Todos los productos eliminados. Antes: {}, Después: {}. Total eliminados: {}", cantidadAntes, cantidadDespues, cantidadAntes - cantidadDespues);
     }
@@ -176,7 +244,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional
-    public Optional<ProductoResultadoDTO> modificarProducto(UUID id, ProductoModificacionDTO dto) { // MODIFICADO: Tipo de retorno
+    public Optional<ProductoResultadoDTO> modificarProducto(UUID id, ProductoModificacionDTO dto) {
         Optional<Producto> productoOpt = productoRepository.findById(id);
         if (productoOpt.isPresent()) {
             Producto producto = productoOpt.get();
@@ -187,28 +255,22 @@ public class ProductoServiceImpl implements ProductoService {
             if (dto.getPrecio() != null) {
                 producto.setPrecio(dto.getPrecio());
             }
-            // Para marca, si quieres permitir limpiarla, podrías hacer:
             if (dto.getMarca() != null) {
                 producto.setMarca(dto.getMarca().isEmpty() ? null : dto.getMarca());
             } else {
-                // Si dto.getMarca() es null, significa que el campo no venía en el JSON o no se quiere modificar.
-                // Si quisieras poder poner marca a null explícitamente desde el formulario enviando un valor vacío:
-                // if (dto.getMarca() != null && dto.getMarca().isEmpty()) producto.setMarca(null);
-                // else if (dto.getMarca() != null) producto.setMarca(dto.getMarca());
-                // La lógica actual es: si se envía "marca": "" -> se pone a null. Si se envía "marca": "valor" -> se actualiza. Si no se envía "marca" -> no se toca.
             }
             if (dto.getUnidades() != null) {
                 producto.setUnidades(dto.getUnidades());
             }
-            if (dto.getCategoriaId() != null) {
-                Optional<Categoria> categoriaOpt = categoriaRepository.findById(dto.getCategoriaId());
-                // Decide qué hacer si la categoría no se encuentra. ¿Lanzar excepción, ignorar, loggear?
-                // Por ahora, si se encuentra, se asigna.
-                categoriaOpt.ifPresent(producto::setCategoria);
-                if (categoriaOpt.isEmpty()) {
-                    logger.warn("Categoría con ID {} no encontrada al modificar producto {}", dto.getCategoriaId(), id);
-                    // Considera si esto debe ser un error que impida la modificación o solo un warning.
-                    // Dependiendo del requisito, podrías lanzar una DataIntegrityViolationException o similar.
+            if (dto.getCategoriasIds() != null) {
+                if (dto.getCategoriasIds().isEmpty()){
+                    producto.setCategorias(new ArrayList<>());
+                } else {
+                    List<Categoria> nuevasCategorias = dto.getCategoriasIds().stream()
+                            .map(idCategoria -> categoriaRepository.findById(idCategoria)
+                                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + idCategoria + " al modificar producto " + id)))
+                            .collect(Collectors.toList());
+                    producto.setCategorias(nuevasCategorias);
                 }
             }
             if (dto.getFechaFabricacion() != null) {
@@ -219,7 +281,6 @@ public class ProductoServiceImpl implements ProductoService {
             }
 
             Producto productoGuardado = productoRepository.save(producto);
-            // MODIFICADO: Convertir a DTO antes de retornar
             return Optional.of(convertirAProductoResultadoDTO(productoGuardado));
         }
         return Optional.empty();

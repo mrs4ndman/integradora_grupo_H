@@ -18,7 +18,7 @@ public class ProductoImportDTO {
     private String descripcion;
     private BigDecimal precio;
     private String marca;
-    private List<String> categorias = new ArrayList<>(); // ej. ["Muebles", "Comedor"]
+    private List<String> categorias; //= new ArrayList<>();
 
     private Boolean esPerecedero;
 

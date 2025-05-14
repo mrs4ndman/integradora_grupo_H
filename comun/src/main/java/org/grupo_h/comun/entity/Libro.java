@@ -28,16 +28,4 @@ public class Libro extends Producto {
     private String tapa; // Blanda, Dura, etc.
     private Integer numeroPaginas;
     private Boolean segundaMano;
-
-    public Libro(String descripcion, BigDecimal precio, String marca, Integer unidades,
-                 Categoria categoria, Proveedor proveedor, LocalDate fechaFabricacion, Boolean esPerecedero,
-                 String titulo, String autor, String editorial, String tapa, Integer numeroPaginas, Boolean segundaMano) {
-        super(descripcion, precio, marca, unidades, categoria, proveedor, fechaFabricacion, esPerecedero);
-        this.titulo = titulo;
-        this.autor = autor;
-        this.editorial = editorial;
-        this.tapa = tapa;
-        this.numeroPaginas = numeroPaginas;
-        this.segundaMano = segundaMano;
-    }
 }

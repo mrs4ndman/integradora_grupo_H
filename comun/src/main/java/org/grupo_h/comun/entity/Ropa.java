@@ -26,12 +26,4 @@ public class Ropa extends Producto {
     @Column(name = "color")
     private List<String> coloresDisponibles;
 
-
-    public Ropa(String descripcion, BigDecimal precio, String marca, Integer unidades,
-                Categoria categoria, Proveedor proveedor, LocalDate fechaFabricacion, Boolean esPerecedero,
-                String talla, List<String> coloresDisponibles) {
-        super(descripcion, precio, marca, unidades, categoria, proveedor, fechaFabricacion, esPerecedero);
-        this.talla = talla;
-        this.coloresDisponibles = coloresDisponibles;
-    }
 }

@@ -5,10 +5,7 @@ import jakarta.servlet.http.HttpSession;
 import org.grupo_h.administracion.auxiliar.RestPage;
 import org.grupo_h.administracion.dto.*;
 import org.grupo_h.administracion.service.ProductoService;
-import org.grupo_h.comun.entity.Libro;
-import org.grupo_h.comun.entity.Mueble;
-import org.grupo_h.comun.entity.Producto;
-import org.grupo_h.comun.entity.Ropa;
+import org.grupo_h.comun.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controlador para la gestión de productos en el sistema.
@@ -267,24 +265,28 @@ public class GestionProductosController {
         Optional<Producto> productoOpt = productoService.obtenerProductoPorId(id);
         if (productoOpt.isPresent()) {
             Producto producto = productoOpt.get();
-            // It's better to use a DTO for the form backing object
             ProductoModificacionDTO dto = new ProductoModificacionDTO();
             dto.setDescripcion(producto.getDescripcion());
             dto.setPrecio(producto.getPrecio());
             dto.setMarca(producto.getMarca());
             dto.setUnidades(producto.getUnidades());
-            if (producto.getCategoria() != null) {
-                dto.setCategoriaId(producto.getCategoria().getId());
+            if (producto.getCategorias() != null && !producto.getCategorias().isEmpty()) {
+                List<UUID> idsCategoriasActuales = producto.getCategorias().stream()
+                        .map(Categoria::getId)
+                        .collect(Collectors.toList());
+                dto.setCategoriasIds(idsCategoriasActuales);
+            } else {
+                dto.setCategoriasIds(new ArrayList<>());
             }
             dto.setFechaFabricacion(producto.getFechaFabricacion());
             dto.setEsPerecedero(producto.getEsPerecedero());
 
             model.addAttribute("productoDTO", dto);
             model.addAttribute("productoId", id);
-            model.addAttribute("categorias", productoService.listarTodasLasCategorias());
+            model.addAttribute("todasLasCategorias", productoService.listarTodasLasCategorias());
             return "modificarProducto";
         } else {
-            return "redirect:/administrador/productos/consulta?error=ProductoNoEncontrado";
+            return "redirect:/administrador/consulta-productos?error=ProductoNoEncontrado";
         }
     }
 

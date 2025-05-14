@@ -33,13 +33,4 @@ public class Mueble extends Producto {
     private List<String> colores;
 
     private Double peso;
-
-    public Mueble(String descripcion, BigDecimal precio, String marca, Integer unidades,
-                  Categoria categoria, Proveedor proveedor, LocalDate fechaFabricacion, Boolean esPerecedero,
-                  Dimensiones dimensiones, List<String> colores, Double peso) {
-        super(descripcion, precio, marca, unidades, categoria, proveedor, fechaFabricacion, esPerecedero);
-        this.dimensiones = dimensiones;
-        this.colores = colores;
-        this.peso = peso;
-    }
 }

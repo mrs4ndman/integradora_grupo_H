@@ -121,8 +121,11 @@ public class CatalogoServiceImpl implements CatalogoService {
                         }
                         existente.setMarca(entidadAGuardar.getMarca());
                         existente.setEsPerecedero(entidadAGuardar.getEsPerecedero());
-                        if(entidadAGuardar.getCategoria() != null) existente.setCategoria(entidadAGuardar.getCategoria());
-
+                        if (entidadAGuardar.getCategorias() != null && !entidadAGuardar.getCategorias().isEmpty()) {
+                            existente.setCategorias(new ArrayList<>(entidadAGuardar.getCategorias())); // Reemplaza las categorías
+                        } else {
+                            existente.setCategorias(new ArrayList<>()); // Limpia las categorías si no hay nuevas
+                        }
                         if (existente instanceof Libro && entidadAGuardar instanceof Libro) {
                             Libro libroExistente = (Libro) existente;
                             Libro libroNuevo = (Libro) entidadAGuardar;
@@ -160,35 +163,21 @@ public class CatalogoServiceImpl implements CatalogoService {
             } catch (Exception e) { // Errores a nivel de procesamiento de un catálogo de proveedor (ej. proveedor no encontrado)
                 erroresGlobalesValidacion.add(logPrefixCatalogo + e.getMessage());
             }
-        } // Fin del bucle de catálogos
+        }
 
-        // Si hubo errores de validación acumulados de cualquier catálogo/producto
         if (!erroresGlobalesValidacion.isEmpty()) {
             String errorSummary = "Errores de validación durante la importación de uno o más catálogos.";
             logger.warn("{}\n{}", errorSummary, String.join("\n", erroresGlobalesValidacion));
-            // Lanza la excepción personalizada si la tienes, pasando todos los errores acumulados
             throw new CatalogoImportValidationException(errorSummary, erroresGlobalesValidacion);
-            // O la excepción genérica:
-            // throw new Exception(errorSummary + "\n" + String.join("\n", erroresGlobalesValidacion));
         }
 
         return String.format("Importación global completada. Total productos nuevos: %d. Total productos actualizados: %d. Detalles por proveedor:\n%s",
                 totalProductosInsertados.get(), totalProductosActualizados.get(), String.join("\n", resumenResultadosPorProveedor));
     }
-
-    // validarDatosCatalogo, validarProductoDto, convertirDtoAEntidad, parsearFecha
-    // permanecen mayormente iguales, pero se llaman dentro del bucle.
-    // Asegúrate de que no dependan de un estado global del servicio que se resetee incorrectamente.
-
     private void validarDatosCatalogo(CatalogoDTO catalogoDto) throws Exception {
         if (catalogoDto.getProveedor() == null || catalogoDto.getProveedor().trim().isEmpty()) {
             throw new Exception("El campo 'proveedor' del catálogo es obligatorio.");
         }
-        // Ya no hay fechaEnvioCatalogo a nivel de catálogo principal en este DTO
-        // if (catalogoDto.getProductos() == null || catalogoDto.getProductos().isEmpty()) {
-        //     // Esta validación se hace antes de iterar los productos del proveedor
-        //     throw new Exception("El catálogo del proveedor " + catalogoDto.getProveedor() + " debe contener al menos un producto.");
-        // }
     }
 
     private void validarProductoDto(ProductoImportDTO dto, int numProducto) throws Exception {
@@ -233,32 +222,30 @@ public class CatalogoServiceImpl implements CatalogoService {
                 throw new Exception("Dimensiones de mueble (ancho, profundo, alto) son obligatorias y deben ser mayores que 0.");
             }
         } else if (esRopa) {
-            // Validaciones para Ropa si es necesario
         } else {
-            // Si no se puede inferir el tipo y es necesario, lanzar error.
-            // O permitir productos "genéricos" si tu modelo lo soporta.
-            // Por ahora, si no es libro, mueble o ropa, y no hay un tipo explícito, podría ser un problema.
-            // Esta lógica de inferencia ya está en convertirDtoAEntidad.
         }
     }
 
     private Producto convertirDtoAEntidad(ProductoImportDTO dto, Proveedor proveedor) throws Exception {
-        Categoria categoriaPrincipal = null;
-        if (dto.getCategorias() != null && !dto.getCategorias().isEmpty()) {
-            String nombreCategoriaPrincipal = dto.getCategorias().get(0); // Tomar la primera como principal
-            Optional<Categoria> catOpt = categoriaRepository.findByNombre(nombreCategoriaPrincipal);
+        List<Categoria> listaCategoriasDelProducto = new ArrayList<>();
+        if (dto.getCategorias() == null || dto.getCategorias().isEmpty()) { // Usando nombresCategorias de ProductoImportDTO
+            throw new Exception("El producto '" + dto.getDescripcion() + "' debe tener al menos una categoría especificada en 'nombresCategorias'.");
+        }
+
+        for (String nombreCategoria : dto.getCategorias()) {
+            if (nombreCategoria == null || nombreCategoria.trim().isEmpty()) continue; // Saltar nombres vacíos si los hubiera
+
+            Optional<Categoria> catOpt = categoriaRepository.findByNombre(nombreCategoria.trim());
+            Categoria categoria;
             if (catOpt.isPresent()) {
-                categoriaPrincipal = catOpt.get();
+                categoria = catOpt.get();
             } else {
-                logger.info("Creando nueva categoría: {}", nombreCategoriaPrincipal);
+                logger.info("Creando nueva categoría: {}", nombreCategoria.trim());
                 Categoria nuevaCategoria = new Categoria();
-                nuevaCategoria.setNombre(nombreCategoriaPrincipal);
-                // Aquí podrías querer establecer una categoría padre si el DTO lo incluyera
-                // nuevaCategoria.setCategoriaPadre(null); // o buscarla
-                categoriaPrincipal = categoriaRepository.save(nuevaCategoria);
+                nuevaCategoria.setNombre(nombreCategoria.trim());
+                categoria = categoriaRepository.save(nuevaCategoria);
             }
-        } else {
-            throw new Exception("El producto '" + dto.getDescripcion() + "' debe tener al menos una categoría.");
+            listaCategoriasDelProducto.add(categoria);
         }
 
         LocalDate fechaFabricacion = (dto.getFechaFabricacion() != null && !dto.getFechaFabricacion().trim().isEmpty())
@@ -293,11 +280,8 @@ public class CatalogoServiceImpl implements CatalogoService {
             ropa.setColoresDisponibles(dto.getColoresRopa());
             producto = ropa;
         } else {
-            // Si no se puede inferir y no quieres un producto genérico, lanza error
             throw new Exception("No se pudo determinar el tipo de producto para: " + dto.getDescripcion() +
                     ". Asegúrese de que el JSON incluye campos distintivos (titulo, dimensiones, talla).");
-            // O, si tienes una clase base `Producto` que puede ser instanciada (aunque la tuya es abstracta):
-            // producto = new ProductoConcreto(); // Necesitarías una clase no abstracta
         }
 
         producto.setDescripcion(dto.getDescripcion());
@@ -307,18 +291,14 @@ public class CatalogoServiceImpl implements CatalogoService {
         producto.setEsPerecedero(dto.getEsPerecedero() != null ? dto.getEsPerecedero() : false);
         producto.setFechaFabricacion(fechaFabricacion);
         producto.setProveedor(proveedor);
-        producto.setCategoria(categoriaPrincipal);
-        // El campo 'valoracion' y 'fechaAlta' se manejan con @PrePersist en la entidad Producto
+        producto.setCategorias(listaCategoriasDelProducto);
 
         return producto;
     }
 
     private LocalDate parsearFecha(String fechaStr, String nombreCampo) throws Exception {
         if (fechaStr == null || fechaStr.trim().isEmpty()) {
-            // Considera si debe ser obligatorio o no. Si es opcional, devuelve null.
-            // Si es obligatorio, lanza una excepción aquí o en la validación.
-            // throw new Exception("El campo de fecha '" + nombreCampo + "' es obligatorio.");
-            return null; // O lanza excepción si es mandatorio
+            return null;
         }
         try {
             return LocalDate.parse(fechaStr); // Asume formato yyyy-MM-dd

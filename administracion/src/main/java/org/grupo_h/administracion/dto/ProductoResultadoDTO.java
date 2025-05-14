@@ -3,6 +3,8 @@ package org.grupo_h.administracion.dto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -12,7 +14,7 @@ public class ProductoResultadoDTO {
     private UUID id;
     private String descripcion;
     private Double precio;
-    private String categoriaNombre;
+    private List<CategoriaSimpleDTO> categorias;
     private String proveedorNombre;
     private String marca;
     private Double valoracionMedia;

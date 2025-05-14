@@ -19,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -79,10 +80,18 @@ public class ProductoServiceImpl implements ProductoService {
 
         dto.setUnidadesDisponibles(producto.getUnidades());
 
-        if (producto.getCategoria() != null) {
-            dto.setCategoriaNombre(producto.getCategoria().getNombre());
+        if (producto.getCategorias() != null && !producto.getCategorias().isEmpty()) {
+            List<CategoriaSimpleDTO> categoriasDTO = producto.getCategorias().stream()
+                    .map(cat -> {
+                        CategoriaSimpleDTO catDto = new CategoriaSimpleDTO();
+                        catDto.setId(cat.getId());
+                        catDto.setNombre(cat.getNombre());
+                        return catDto;
+                    })
+                    .collect(Collectors.toList());
+            dto.setCategorias(categoriasDTO);
         } else {
-            dto.setCategoriaNombre("N/A");
+            dto.setCategorias(new ArrayList<>());
         }
         if (producto.getProveedor() != null) {
             dto.setProveedorNombre(producto.getProveedor().getNombre());

@@ -5,15 +5,11 @@
     <title>Consulta de Productos - Administración</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
     <link rel="stylesheet" th:href="@{/css/estilos.css}">
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
-        /* Estilos en línea: Úsalos con moderación. Si algo aquí es muy general, podría interferir. */
         .action-buttons-header {
             margin-bottom: 20px;
             padding: 15px;
@@ -24,12 +20,18 @@
             cursor: pointer;
         }
         .sortable-header:hover {
-            background-color: #495057; /* Un poco más claro que el fondo oscuro de la cabecera */
+            background-color: #495057;
         }
         .sortable-header .sort-icon {
             margin-left: 7px;
             display: inline-block;
-            width: 1em; /* Espacio reservado para el icono, evita que el texto salte */
+            width: 1em;
+        }
+        .category-badge {
+            margin-right: 3px;
+            margin-bottom: 3px;
+            padding: 0.3em 0.5em;
+            font-size: 0.85em;
         }
     </style>
 </head>
@@ -62,13 +64,12 @@
             <div class="col-md-6 mb-3">
                 <label for="proveedor" class="form-label">Proveedor:</label>
                 <select id="proveedor" name="proveedorIds" class="form-select" multiple>
-                    <option value="">-- Todos --</option>
                 </select>
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="esPerecedero" class="form-label">Estado:</label>
+                <label for="esPerecedero" class="form-label">Estado (Perecedero):</label>
                 <select id="esPerecedero" name="esPerecedero" class="form-select">
                     <option value="">-- Todos --</option>
                     <option value="true">Perecedero</option>
@@ -77,8 +78,8 @@
             </div>
         </div>
         <div class="mt-3 text-center">
-            <button type="button" id="btnBuscar" class="btn btn-primary">Buscar</button>
-            <button type="button" id="btnLimpiar" class="btn btn-secondary">Limpiar Filtros</button>
+            <button type="button" id="btnBuscar" class="btn btn-primary"><i class="fas fa-search"></i> Buscar</button>
+            <button type="button" id="btnLimpiar" class="btn btn-secondary"><i class="fas fa-undo"></i> Limpiar Filtros</button>
         </div>
     </form>
 
@@ -87,14 +88,14 @@
         <div class="row justify-content-center g-2">
             <div class="col-md-auto">
                 <div class="input-group">
-                    <select id="categoriaEliminar" class="form-select">
+                    <select id="categoriaEliminar" class="form-select" aria-label="Seleccionar categoría para eliminar productos">
                         <option value="">Seleccione Categoría a Eliminar</option>
                     </select>
-                    <button type="button" class="btn btn-warning" onclick="confirmarEliminarPorCategoria()">Eliminar Productos por Categoría</button>
+                    <button type="button" class="btn btn-warning" onclick="confirmarEliminarPorCategoria()"><i class="fas fa-dumpster-fire"></i> Eliminar Productos por Categoría</button>
                 </div>
             </div>
             <div class="col-md-auto">
-                <button type="button" class="btn btn-danger" onclick="confirmarEliminarTodos()">Eliminar Todos los Productos</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarEliminarTodos()"><i class="fas fa-skull-crossbones"></i> Eliminar Todos los Productos</button>
             </div>
         </div>
     </div>
@@ -106,8 +107,7 @@
                 <th id="header-id" class="sortable-header" data-sort-field="id">ID <span class="sort-icon"></span></th>
                 <th id="header-descripcion" class="sortable-header" data-sort-field="descripcion">Descripción <span class="sort-icon"></span></th>
                 <th id="header-precio" class="sortable-header" data-sort-field="precio">Precio (€) <span class="sort-icon"></span></th>
-                <th id="header-categoria-nombre" class="sortable-header" data-sort-field="categoria.nombre">Categoría <span class="sort-icon"></span></th>
-                <th id="header-proveedor-nombre" class="sortable-header" data-sort-field="proveedor.nombre">Proveedor <span class="sort-icon"></span></th>
+                <th id="header-nombrePrimeraCategoria" class="sortable-header" data-sort-field="nombrePrimeraCategoria">Categorías <span class="sort-icon"></span></th> <th id="header-proveedor-nombre" class="sortable-header" data-sort-field="proveedor.nombre">Proveedor <span class="sort-icon"></span></th>
                 <th id="header-marca" class="sortable-header" data-sort-field="marca">Marca <span class="sort-icon"></span></th>
                 <th id="header-valoracion" class="sortable-header" data-sort-field="valoracion">Valoración <span class="sort-icon"></span></th>
                 <th id="header-unidades" class="sortable-header" data-sort-field="unidades">Unidades <span class="sort-icon"></span></th>
@@ -127,18 +127,18 @@
 
     <hr class="my-4">
     <div class="text-center">
-        <a th:href="@{/administrador/info}" class="btn btn-outline-secondary mt-3">Volver al Área Personal</a>
+        <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary mt-3"><i class="fas fa-tachometer-alt"></i> Volver al Dashboard</a>
     </div>
 </div>
 
 <script>
-    const API_BASE_URL = '/api/administrador/productos';
+    const API_BASE_URL = '/api/administrador/productos'; // Tu URL base
     const CATEGORIAS_API_URL = `${API_BASE_URL}/categorias`;
     const PROVEEDORES_API_URL = `${API_BASE_URL}/proveedores`;
 
     let currentPage = 0;
     const pageSize = 10;
-    let currentSortField = 'descripcion';
+    let currentSortField = 'descripcion'; // Campo de ordenación por defecto
     let currentSortDirection = 'asc';
 
     function getCsrfHeaders() {
@@ -177,7 +177,7 @@
             if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
             const proveedores = await response.json();
             const proveedorSelect = $('#proveedor');
-            proveedorSelect.empty().append('<option value="">-- Todos --</option>');
+            proveedorSelect.empty(); // No añadir "-- Todos --" para select múltiple
 
             proveedores.forEach(prov => {
                 proveedorSelect.append(`<option value="${prov.id}">${prov.nombre}</option>`);
@@ -192,36 +192,30 @@
         currentSortField = sortField;
         currentSortDirection = sortDirection;
 
-        const selectedProveedores = $('#proveedor').val(); // Puede ser null o un array
+        const selectedProveedores = $('#proveedor').val();
 
         const criterios = {
             descripcion: $('#descripcion').val(),
             categoriaId: $('#categoria').val() || null,
-            // Aseguramos que proveedorIds solo sea un array si hay selecciones válidas
             proveedorIds: (selectedProveedores && Array.isArray(selectedProveedores) && selectedProveedores.length > 0) ? selectedProveedores : null,
             precioMin: $('#precioMin').val() ? parseFloat($('#precioMin').val()) : null,
             precioMax: $('#precioMax').val() ? parseFloat($('#precioMax').val()) : null,
             esPerecedero: $('#esPerecedero').val() === "true" ? true : ($('#esPerecedero').val() === "false" ? false : null)
+            // activo: $('#activo').val() === "true" ? true : ($('#activo').val() === "false" ? false : null) // Si lo habilitas
         };
 
-        // Limpiar claves con valores null o vacíos del objeto criterios ANTES de construir queryParams
-        // excepto para esPerecedero que puede ser false.
         Object.keys(criterios).forEach(key => {
             if (criterios[key] === null || criterios[key] === '' || (Array.isArray(criterios[key]) && criterios[key].length === 0)) {
-                if (key === 'esPerecedero' && criterios[key] === false) { // Conservar esPerecedero: false
-                    // no hacer nada, mantener el valor
-                } else {
-                    delete criterios[key]; // Eliminar otros campos nulos o vacíos
+                if (!(key === 'esPerecedero' && criterios[key] === false) /* && !(key === 'activo' && criterios[key] === false) */ ) {
+                    delete criterios[key];
                 }
             }
         });
 
-
         const queryParams = new URLSearchParams();
         for (const key in criterios) {
-            // Solo iterar sobre las propiedades propias del objeto
             if (Object.prototype.hasOwnProperty.call(criterios, key)) {
-                if (key === 'proveedorIds') { // Ya sabemos que es un array con elementos por la limpieza anterior
+                if (key === 'proveedorIds' && Array.isArray(criterios[key])) {
                     criterios[key].forEach(id => queryParams.append('proveedorIds', id));
                 } else {
                     queryParams.append(key, criterios[key]);
@@ -230,18 +224,21 @@
         }
         queryParams.append('page', currentPage);
         queryParams.append('size', pageSize);
-        queryParams.append('sort', `${currentSortField},${currentSortDirection}`);
+        if (currentSortField) {
+            queryParams.append('sort', `${currentSortField},${currentSortDirection}`);
+        }
 
-        updateSortHeadersUI(); // Asegúrate de que esta función no dependa de que todos los criterios existan.
+        updateSortHeadersUI();
         try {
+            // El endpoint para buscar es solo API_BASE_URL, no /buscar adicionalmente si tu controller es así
             const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`);
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Error en la búsqueda (${response.status}): ${errorText}`);
             }
             const data = await response.json();
-            mostrarResultados(data.content);
-            actualizarPaginacion(data);
+            mostrarResultados(data.content); // Asumiendo que data.content es List<ProductoResultadoDTO>
+            actualizarPaginacion(data);     // data es el objeto Page completo
         } catch (error) {
             console.error('Error al buscar productos:', error);
             $('#productTableBody').html(`<tr><td colspan="10" class="text-center text-danger">Error al cargar productos: ${error.message}</td></tr>`);
@@ -250,57 +247,69 @@
 
     function updateSortHeadersUI() {
         $('.sortable-header .sort-icon').html('');
-        const headerIdSelector = `#header-${currentSortField.replace(/\./g, '-')}`;
-        const iconClass = currentSortDirection === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
-        $(headerIdSelector).find('.sort-icon').html(`<i class="${iconClass}"></i>`);
+        if (currentSortField) {
+            // Sanitizar el currentSortField para crear un selector de ID válido
+            const sanitizedSortField = currentSortField.replace(/\./g, '-'); // Reemplaza puntos por guiones
+            const headerIdSelector = `#header-${sanitizedSortField}`;
+            const iconClass = currentSortDirection === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+            $(headerIdSelector).find('.sort-icon').html(`<i class="${iconClass}"></i>`);
+        }
     }
-
 
     function mostrarResultados(productos) {
         const tbody = $('#productTableBody');
         tbody.empty();
         if (productos && productos.length > 0) {
             productos.forEach(producto => {
-                const id = producto.idProducto || producto.id;
+                // Asegúrate que estos campos existan en tu ProductoResultadoDTO
+                const id = producto.idProducto || producto.id; // Usa idProducto si existe, sino id
                 const descripcion = producto.descripcion || 'N/A';
                 const precio = producto.precio;
-                const categoriaNombre = producto.categoriaNombre || producto.categoria?.nombre || 'N/A';
-                const proveedorNombre = producto.proveedorNombre || producto.proveedor?.nombre || 'N/A';
+                let categoriasHtml = 'N/A';
+                if (producto.categorias && producto.categorias.length > 0) {
+                    categoriasHtml = producto.categorias.map(cat =>
+                        `<span class="badge bg-primary category-badge">${cat.nombre}</span>`
+                    ).join(' ');
+                }
+                const proveedorNombre = producto.proveedorNombre || 'N/A';
                 const marca = producto.marca || 'N/A';
                 const valoracionMedia = producto.valoracionMedia !== undefined && producto.valoracionMedia !== null ? parseFloat(producto.valoracionMedia).toFixed(1) : 'N/A';
                 const unidadesDisponibles = producto.unidadesDisponibles !== undefined && producto.unidadesDisponibles !== null ? producto.unidadesDisponibles : 'N/A';
                 const esPerecederoTexto = typeof producto.esPerecedero === 'boolean' ? (producto.esPerecedero ? 'Sí' : 'No') : 'N/A';
-                const urlDetalle = `/administrador/productos/detalle/${id}`;
+                // const activoTexto = typeof producto.activo === 'boolean' ? (producto.activo ? '<span class="badge bg-success">Sí</span>' : '<span class="badge bg-danger">No</span>') : 'N/A'; // Si lo añades
 
+                const urlDetalle = `/administrador/productos/detalle/${id}`; // Ajusta si es necesario
+                const urlModificar = `/administrador/productos/modificar/${id}`; // Ajusta si es necesario
+                const urlBorrarBase = API_BASE_URL; // Usar la URL base para la acción de borrar
 
                 const fila = `
-                        <tr>
-                            <td>${id}</td>
-                            <td>${descripcion}</td>
-                            <td>${precio != null ? precio.toFixed(2) : 'N/A'}</td>
-                            <td>${categoriaNombre}</td>
-                            <td>${proveedorNombre}</td>
-                            <td>${marca}</td>
-                            <td>${valoracionMedia}</td>
-                            <td>${unidadesDisponibles}</td>
-                            <td>${esPerecederoTexto}</td>
-                            <td>
-                        <a href="${urlDetalle}" class="btn btn-info btn-sm me-1" title="Ver Detalle">
-                            <i class="fas fa-eye"></i> Detalle
-                        </a>
-                        <a href="/administrador/productos/modificar/${id}" class="btn btn-warning btn-sm me-1" title="Modificar Producto"> Modificar
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <button class="btn btn-danger btn-sm" onclick="confirmarEliminarProducto('${id}')" title="Eliminar Producto">
-                            <i class="fas fa-trash-alt"></i> Eliminar
-                        </button>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                    <tr>
+                        <td>${id}</td>
+                        <td>${descripcion}</td>
+                        <td>${precio != null ? precio.toFixed(2) : 'N/A'}</td>
+                        <td>${categoriasHtml}</td>
+                        <td>${proveedorNombre}</td>
+                        <td>${marca}</td>
+                        <td>${valoracionMedia}</td>
+                        <td>${unidadesDisponibles}</td>
+                        <td>${esPerecederoTexto}</td>
+                        <td>
+                            <a href="${urlDetalle}" class="btn btn-info btn-sm me-1" title="Ver Detalle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="${urlModificar}" class="btn btn-warning btn-sm me-1" title="Modificar Producto">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-danger btn-sm" onclick="confirmarEliminarProducto('${id}', '${urlBorrarBase}')" title="Eliminar Producto">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
                 tbody.append(fila);
             });
         } else {
+            // Ajusta el colspan al número de columnas de tu tabla
             tbody.html('<tr><td colspan="10" class="text-center">No se encontraron productos.</td></tr>');
         }
     }
@@ -311,13 +320,13 @@
         if (pageData.totalPages > 1) {
             paginationControls.append(
                 `<li class="page-item ${pageData.first ? 'disabled' : ''}">
-                        <a class="page-link" href="#" onclick="buscarProductos(0)">Primero</a>
-                    </li>`
+                    <a class="page-link" href="#" onclick="event.preventDefault(); buscarProductos(0)">Primero</a>
+                </li>`
             );
             paginationControls.append(
                 `<li class="page-item ${pageData.first ? 'disabled' : ''}">
-                        <a class="page-link" href="#" aria-label="Anterior" onclick="buscarProductos(${pageData.number - 1})"><span aria-hidden="true">&laquo;</span></a>
-                    </li>`
+                    <a class="page-link" href="#" aria-label="Anterior" onclick="event.preventDefault(); buscarProductos(${pageData.number - 1})"><span aria-hidden="true">&laquo;</span></a>
+                </li>`
             );
             const RANGO_PAGINAS = 2;
             let inicio = Math.max(0, pageData.number - RANGO_PAGINAS);
@@ -331,38 +340,37 @@
             for (let i = inicio; i <= fin; i++) {
                 paginationControls.append(
                     `<li class="page-item ${i === pageData.number ? 'active' : ''}">
-                            <a class="page-link" href="#" onclick="buscarProductos(${i})">${i + 1}</a>
-                        </li>`
+                        <a class="page-link" href="#" onclick="event.preventDefault(); buscarProductos(${i})">${i + 1}</a>
+                    </li>`
                 );
             }
             paginationControls.append(
                 `<li class="page-item ${pageData.last ? 'disabled' : ''}">
-                        <a class="page-link" href="#" aria-label="Siguiente" onclick="buscarProductos(${pageData.number + 1})"><span aria-hidden="true">&raquo;</span></a>
-                    </li>`
+                    <a class="page-link" href="#" aria-label="Siguiente" onclick="event.preventDefault(); buscarProductos(${pageData.number + 1})"><span aria-hidden="true">&raquo;</span></a>
+                </li>`
             );
             paginationControls.append(
                 `<li class="page-item ${pageData.last ? 'disabled' : ''}">
-                        <a class="page-link" href="#" onclick="buscarProductos(${pageData.totalPages - 1})">Último</a>
-                    </li>`
+                    <a class="page-link" href="#" onclick="event.preventDefault(); buscarProductos(${pageData.totalPages - 1})">Último</a>
+                </li>`
             );
         }
     }
 
-    function confirmarEliminarProducto(productoId) {
+    function confirmarEliminarProducto(productoId, apiBaseUrl) {
         if (confirm(`¿Está seguro de que desea eliminar el producto con ID ${productoId}?`)) {
-            eliminarProducto(productoId);
+            eliminarProducto(productoId, apiBaseUrl);
         }
     }
 
-    async function eliminarProducto(productoId) {
+    async function eliminarProducto(productoId, apiBaseUrl) {
         try {
-            const response = await fetch(`${API_BASE_URL}/borrar/${productoId}`, {
+            const response = await fetch(`${apiBaseUrl}/borrar/${productoId}`, {
                 method: 'DELETE',
                 headers: getCsrfHeaders()
             });
             if (response.ok) {
-                const result = await response.json().catch(() => ({ message: 'Producto eliminado correctamente.' }));
-                alert(result.message || 'Producto eliminado correctamente.');
+                alert('Producto eliminado correctamente.'); // Respuesta simple
                 buscarProductos(currentPage, currentSortField, currentSortDirection);
             } else {
                 const errorData = await response.json().catch(() => ({ message: 'Error al eliminar el producto.' }));
@@ -393,8 +401,7 @@
                 headers: getCsrfHeaders()
             });
             if (response.ok) {
-                const result = await response.json().catch(() => ({ message: 'Productos de la categoría eliminados.' }));
-                alert(result.message || `Productos de la categoría eliminados.`);
+                alert(`Productos de la categoría "${$('#categoriaEliminar option:selected').text()}" eliminados.`);
                 buscarProductos(0, currentSortField, currentSortDirection);
             } else {
                 const errorData = await response.json().catch(() => ({ message: 'Error al eliminar productos por categoría.' }));
@@ -407,7 +414,7 @@
     }
 
     function confirmarEliminarTodos() {
-        if (confirm('¿Está ABSOLUTAMENTE SEGURO de eliminar TODOS los productos? Esta acción es IRREVERSIBLE.')) {
+        if (confirm('¿Está COMPLETAMENTE SEGURO de eliminar TODOS los productos? Esta acción es IRREVERSIBLE.')) {
             if (confirm('CONFIRMACIÓN FINAL: ¿Realmente desea proceder?')) {
                 eliminarTodosLosProductos();
             }
@@ -416,13 +423,13 @@
 
     async function eliminarTodosLosProductos() {
         try {
+            // Tu HTML usa /borrar/todos
             const response = await fetch(`${API_BASE_URL}/borrar/todos`, {
                 method: 'DELETE',
                 headers: getCsrfHeaders()
             });
             if (response.ok) {
-                const result = await response.json().catch(() => ({ message: 'Todos los productos eliminados.' }));
-                alert(result.message || 'Todos los productos han sido eliminados.');
+                alert('Todos los productos han sido eliminados.');
                 buscarProductos(0, currentSortField, currentSortDirection);
             } else {
                 const errorData = await response.json().catch(() => ({ message: 'Error al eliminar todos los productos.' }));
@@ -441,17 +448,14 @@
 
         cargarCategorias();
         cargarProveedores();
-        buscarProductos(0, currentSortField, currentSortDirection);
+        buscarProductos(0, currentSortField, currentSortDirection); // Carga inicial
 
         $('#btnBuscar').click(() => buscarProductos(0, currentSortField, currentSortDirection));
+
         $('#btnLimpiar').click(() => {
             $('#searchForm')[0].reset();
             $('#categoria').val('');
-            // $('#proveedor').val(''); // Para un select múltiple, esto debería deseleccionar todas las opciones.
-            // Si usas una librería de select múltiple, puede tener su propio método de reseteo.
-            // Para un select múltiple nativo, puedes hacer:
-            $('#proveedor').val([]).trigger('change'); // Si usas jQuery con algún plugin que escuche 'change'
-            // o simplemente $('#proveedor').val([]);
+            $('#proveedor').val([]);
             $('#esPerecedero').val('');
             currentSortField = 'descripcion';
             currentSortDirection = 'asc';
@@ -460,8 +464,9 @@
 
         $('.sortable-header').on('click', function() {
             const newSortField = $(this).data('sort-field');
-            let newSortDirection = 'asc';
+            if (!newSortField) return;
 
+            let newSortDirection = 'asc';
             if (currentSortField === newSortField) {
                 newSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
             } else {

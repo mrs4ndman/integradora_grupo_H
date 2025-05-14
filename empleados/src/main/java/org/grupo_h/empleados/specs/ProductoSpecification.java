@@ -31,7 +31,7 @@ public class ProductoSpecification {
             }
 
             if (categoriaId != null) {
-                Join<Producto, Categoria> categoriaJoin = root.join("categoria");
+                Join<Producto, Categoria> categoriaJoin = root.join("categorias");
                 predicates.add(criteriaBuilder.equal(categoriaJoin.get("id"), categoriaId));
             }
 
@@ -45,7 +45,7 @@ public class ProductoSpecification {
 
             if (!CollectionUtils.isEmpty(proveedorIds)) {
                 Join<Producto, Proveedor> proveedorJoin = root.join("proveedor");
-                // Usar criteriaBuilder.in para buscar en la lista de IDs
+                // criteriaBuilder.in para buscar en la lista de IDs
                 predicates.add(proveedorJoin.get("id").in(proveedorIds));
             }
 

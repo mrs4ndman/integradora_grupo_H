@@ -52,8 +52,12 @@
                         <p><span class="detail-label">Marca:</span> <span class="detail-value" th:text="${producto.marca ?: 'N/A'}"></span></p>
                     </div>
                     <div class="col-md-6">
-                        <p><span class="detail-label">Categoría:</span> <span class="detail-value" th:text="${producto.categoria?.nombre ?: 'N/A'}"></span></p>
-                        <p><span class="detail-label">Proveedor:</span> <span class="detail-value" th:text="${producto.proveedor?.nombre ?: 'N/A'}"></span></p>
+                        <div th:if="${producto.categorias != null && !producto.categorias.isEmpty()}">
+                            <span class="detail-label">Categorías:</span>
+                            <ul>
+                                <li th:each="cat : ${producto.categorias}" th:text="${cat.nombre}" class="detail-value"></li>
+                            </ul>
+                        </div>                        <p><span class="detail-label">Proveedor:</span> <span class="detail-value" th:text="${producto.proveedor?.nombre ?: 'N/A'}"></span></p>
                         <p><span class="detail-label">Unidades:</span> <span class="detail-value" th:text="${producto.unidades}"></span></p>
                         <p><span class="detail-label">Valoración:</span> <span class="detail-value" th:text="${producto.valoracion}"></span></p>
                     </div>

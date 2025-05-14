@@ -40,7 +40,7 @@ public class ProductoRestController {
             "descripcion",
             "precio",
             "marca",
-            "categoria.nombre",
+            "categorias.nombre",
             "proveedor.nombre",
             "valoracion",
             "unidades",
@@ -65,7 +65,7 @@ public class ProductoRestController {
      * @param categoriaId   ID de la categoría.
      * @param precioMin     Precio mínimo.
      * @param precioMax     Precio máximo.
-     * @param proveedorId   ID del proveedor.
+     * @param proveedorIds   ID del proveedor.
      * @param esPerecedero Estado de perecedero (true/false).
      * @param page          Número de página (por defecto 0).
      * @param size          Tamaño de la página (por defecto 10).

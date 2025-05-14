@@ -2,28 +2,41 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
     <title>Modificar Producto</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .error-message {
             color: red;
+            font-size: 0.875em;
         }
+
         .container {
             max-width: 800px;
         }
+
         .form-label {
             font-weight: bold;
         }
+
         .card-header {
             background-color: #f8f9fa;
         }
-        .btn-sm-custom {
-            padding: 0.25rem 0.5rem;
-            font-size: .875rem;
-            line-height: 1.5;
-            border-radius: 0.2rem;
+
+        .form-select[multiple] {
+            min-height: 120px; /* Para mejor visibilidad de opciones múltiples */
+        }
+
+        #alertMessages {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+            min-width: 300px;
         }
     </style>
 </head>
@@ -32,92 +45,133 @@
 <div class="container mt-5">
     <div class="card">
         <div class="card-header">
-            <h1 class="mb-0">Modificar Producto</h1>
-            <p class="text-muted">Producto ID: <span th:text="${productoId}"></span></p>
+            <h1 class="mb-0">Modificar Producto: <span
+                    th:text="${productoDTO.descripcion != null ? productoDTO.descripcion : ''}"></span>
+            </h1>
         </div>
         <div class="card-body">
-            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <span th:text="${successMessage}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <span th:text="${errorMessage}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
 
-            <form id="formModificarProducto" th:object="${productoDTO}" method="post">
-                <div class="mb-3">
-                    <label for="descripcion" class="form-label">Descripción:</label>
-                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3" th:field="*{descripcion}" placeholder="Introduce la descripción del producto"></textarea>
-                    <div id="errorDescripcion" class="error-message">
+            <div id="alertMessages"></div>
+
+            <form id="formModificarProducto"
+                  th:object="${productoDTO}"
+                  th:action="@{/api/administrador/productos/{id}(id=${productoId})}"
+                  method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="descripcion" class="form-label">Descripción:</label>
+                        <input type="text" class="form-control"
+                               id="descripcion"
+                               th:field="*{descripcion}">
+                        <div class="error-message"
+                             th:if="${#fields.hasErrors('descripcion')}"
+                             th:errors="*{descripcion}"></div>
+                        <div id="error-descripcion"
+                             class="error-message"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="precio" class="form-label">Precio
+                            (€):</label>
+                        <input type="number" step="0.01"
+                               class="form-control" id="precio"
+                               th:field="*{precio}">
+                        <div class="error-message"
+                             th:if="${#fields.hasErrors('precio')}"
+                             th:errors="*{precio}"></div>
+                        <div id="error-precio"
+                             class="error-message"></div>
+                    </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="precio" class="form-label">Precio (€):</label>
-                        <input type="text" step="0.01" class="form-control" id="precio" name="precio" th:field="*{precio}" placeholder="0.00">
-                        <div id="errorPrecio" class="error-message"></div>
+                        <label for="marca"
+                               class="form-label">Marca:</label>
+                        <input type="text" class="form-control"
+                               id="marca" th:field="*{marca}">
+                        <div class="error-message"
+                             th:if="${#fields.hasErrors('marca')}"
+                             th:errors="*{marca}"></div>
+                        <div id="error-marca"
+                             class="error-message"></div>
                     </div>
+
                     <div class="col-md-6 mb-3">
                         <label for="unidades" class="form-label">Unidades:</label>
-                        <input type="text" class="form-control" id="unidades" name="unidades" th:field="*{unidades}" placeholder="0">
-                        <div id="errorUnidades" class="error-message"></div>
+                        <input type="number" step="1"
+                               class="form-control" id="unidades"
+                               th:field="*{unidades}">
+                        <div class="error-message"
+                             th:if="${#fields.hasErrors('unidades')}"
+                             th:errors="*{unidades}"></div>
+                        <div id="error-unidades"
+                             class="error-message"></div>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="marca" class="form-label">Marca:</label>
-                    <input type="text" class="form-control" id="marca" name="marca" th:field="*{marca}" placeholder="Introduce la marca (opcional)">
-                    <div id="errorMarca" class="error-message">
+                    <label for="categoriasIds" class="form-label">Categorías:</label>
+                    <select multiple class="form-select"
+                            id="categoriasIds" name="categoriasIds"
+                            th:field="*{categoriasIds}">
+                        <option th:each="cat : ${todasLasCategorias}"
+                                th:value="${cat.id}"
+                                th:text="${cat.nombre}">
+                        </option>
+                    </select>
+                    <div class="form-text">Mantén presionada la
+                        tecla Ctrl (o Cmd en Mac) para seleccionar
+                        múltiples categorías.
+                    </div>
+                    <div class="error-message"
+                         th:if="${#fields.hasErrors('categoriasIds')}"
+                         th:errors="*{categoriasIds}"></div>
+                    <div id="error-categoriasIds"
+                         class="error-message"></div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="categoriaId" class="form-label">Categoría:</label>
-                        <select class="form-select" id="categoriaId" name="categoriaId" th:field="*{categoriaId}">
-                            <option value="">-- Selecciona una Categoría --</option>
-                            <option th:each="cat : ${categorias}"
-                                    th:value="${cat.id}"
-                                    th:text="${cat.nombre}"
-                                    th:selected="${cat.id == productoDTO.categoriaId}">
-                            </option>
-                        </select>
-                        <div id="errorCategoriaId" class="error-message"></div>
+                        <label for="fechaFabricacion"
+                               class="form-label">Fecha de
+                            Fabricación:</label>
+                        <input type="date" class="form-control"
+                               id="fechaFabricacion"
+                               th:field="*{fechaFabricacion}">
+                        <div class="error-message"
+                             th:if="${#fields.hasErrors('fechaFabricacion')}"
+                             th:errors="*{fechaFabricacion}"></div>
+                        <div id="error-fechaFabricacion"
+                             class="error-message"></div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="fechaFabricacion" class="form-label">Fecha de Fabricación:</label>
-                        <input type="date" class="form-control" id="fechaFabricacion" name="fechaFabricacion" th:field="*{fechaFabricacion}">
-                        <div id="errorFechaFabricacion" class="error-message"></div>
-                    </div>
-                </div>
 
-                <div class="mb-4">
-                    <label class="form-label">¿Es Perecedero?</label>
-                    <div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="esPerecedero" id="esPerecederoSi" th:value="true" th:field="*{esPerecedero}">
-                            <label class="form-check-label" for="esPerecederoSi">Sí</label>
+                    <div class="col-md-6 mb-3 align-self-center">
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox" id="esPerecedero"
+                                   th:field="*{esPerecedero}">
+                            <label class="form-check-label"
+                                   for="esPerecedero">
+                                ¿Es Perecedero?
+                            </label>
                         </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="esPerecedero" id="esPerecederoNo" th:value="false" th:field="*{esPerecedero}">
-                            <label class="form-check-label" for="esPerecederoNo">No</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="esPerecedero" id="esPerecederoNull" value="" th:checked="*{esPerecedero == null}">
-                            <label class="form-check-label" for="esPerecederoNull">No especificar / Mantener</label>
-                        </div>
+                        <div class="error-message"
+                             th:if="${#fields.hasErrors('esPerecedero')}"
+                             th:errors="*{esPerecedero}"></div>
+                        <div id="error-esPerecedero"
+                             class="error-message"></div>
                     </div>
                 </div>
 
-                <hr>
-
-                <div class="d-flex justify-content-between">
-                    <a th:href="@{/administrador/consulta-productos}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Volver a Consulta
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar Cambios
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-primary"><i
+                            class="fas fa-save me-2"></i>Guardar
+                        Cambios
                     </button>
+                    <a th:href="@{/administrador/consulta-productos}"
+                       class="btn btn-secondary"><i
+                            class="fas fa-times me-2"></i>Cancelar</a>
                 </div>
             </form>
         </div>
@@ -125,154 +179,121 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('formModificarProducto');
-        const errorMessageGlobalDiv = document.getElementById('errorMessageGlobal');
+        const alertMessagesDiv = document.getElementById('alertMessages');
 
-        const pathParts = window.location.pathname.split('/');
-        const productoId = pathParts[pathParts.length - 1];
-
-        if (!productoId) {
-            if (errorMessageGlobalDiv) {
-                errorMessageGlobalDiv.textContent = 'Error crítico: No se pudo identificar el producto a modificar.';
-                errorMessageGlobalDiv.classList.remove('d-none');
-            }
-            if (form) form.querySelector('button[type="submit"]').disabled = true;
-            return;
+        function showAlert(message, type = 'danger') {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = [
+                `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+                `   <div>${message}</div>`,
+                '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                '</div>'
+            ].join('');
+            alertMessagesDiv.append(wrapper);
+            setTimeout(() => {
+                const alert = bootstrap.Alert.getOrCreateInstance(wrapper.firstChild);
+                if (alert) {
+                    alert.close();
+                }
+            }, 5000);
         }
 
-        function limpiarTodosLosErrores() {
-            // Limpiar error global
-            if (errorMessageGlobalDiv) {
-                errorMessageGlobalDiv.classList.add('d-none');
-                errorMessageGlobalDiv.textContent = '';
-            }
+        if (form) {
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+                alertMessagesDiv.innerHTML = '';
 
-            const errorMessages = form.querySelectorAll('.error-message');
-            errorMessages.forEach(msg => msg.textContent = '');
+                const formData = new FormData(form);
+                const plainFormData = {};
 
-            const invalidInputs = form.querySelectorAll('.is-invalid');
-            invalidInputs.forEach(input => input.classList.remove('is-invalid'));
-        }
-
-        form.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            limpiarTodosLosErrores();
-
-            const formData = new FormData(form);
-            const data = {};
-
-            if (formData.has('descripcion')) {
-                data.descripcion = formData.get('descripcion');
-            }
-            // Precio
-            const precioForm = formData.get('precio').trim();
-            if (precioForm !== '' || formData.get('precio') !== null ) {
-                data.precio = precioForm;
-            }
-            // Unidades
-            const unidadesForm = formData.get('unidades').trim();
-            if (unidadesForm !== '' || formData.get('unidades') !== null) {
-                data.unidades = unidadesForm;
-            }
-            // Marca
-            if (formData.has('marca')) {
-                data.marca = formData.get('marca');
-            }
-            // Categoría
-            const categoriaId = formData.get('categoriaId');
-            if (categoriaId) {
-                data.categoriaId = categoriaId;
-            }
-            // Fecha Fabricación
-            const fechaFabricacion = formData.get('fechaFabricacion');
-            if (fechaFabricacion) {
-                data.fechaFabricacion = fechaFabricacion;
-            }
-            // Es Perecedero
-            const esPerecederoValue = formData.get('esPerecedero');
-            if (esPerecederoValue === "true") {
-                data.esPerecedero = true;
-            } else if (esPerecederoValue === "false") {
-                data.esPerecedero = false;
-            }
-
-            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-            const csrfHeaderName = document.querySelector('meta[name="_csrf_header"]')?.content;
-            const headers = { 'Content-Type': 'application/json' };
-            if (csrfToken && csrfHeaderName) {
-                headers[csrfHeaderName] = csrfToken;
-            }
-
-            try {
-                const response = await fetch(`/api/administrador/productos/${productoId}`, {
-                    method: 'PATCH',
-                    headers: headers,
-                    body: JSON.stringify(data)
+                formData.forEach((value, key) => {
+                    if (key === 'categoriasIds') {
+                        if (!plainFormData[key]) {
+                            plainFormData[key] = [];
+                        }
+                        plainFormData[key].push(value);
+                    } else {
+                        plainFormData[key] = value;
+                    }
                 });
 
-                if (response.ok) {
-                    window.location.href = `/administrador/consulta-productos?success=Producto con ID ${productoId} modificado con éxito.`;
-                } else if (response.status === 400) {
-                    const errors = await response.json();
-                    console.warn('Errores de validación del servidor:', errors);
-                    let firstErrorField = null;
+                if (!plainFormData.hasOwnProperty('categoriasIds')) {
+                    plainFormData.categoriasIds = [];
+                }
 
-                    Object.keys(errors).forEach(fieldKey => {
-                        const inputField = document.getElementById(fieldKey);
-                        const errorDivId = 'error' + fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1);
-                        const errorDiv = document.getElementById(errorDivId);
+                if (plainFormData.precio && plainFormData.precio !== '') {
+                    plainFormData.precio = parseFloat(plainFormData.precio);
+                } else if (plainFormData.precio === '') {
+                    delete plainFormData.precio;
+                }
 
-                        if (errorDiv) {
-                            errorDiv.textContent = errors[fieldKey];
-                            if (inputField) {
-                                inputField.classList.add('is-invalid');
-                                if (!firstErrorField) {
-                                    firstErrorField = inputField;
-                                }
-                            }
-                        } else if (fieldKey === 'requestBody' || fieldKey.toLowerCase().includes('general')) {
-                            if (errorMessageGlobalDiv) {
-                                errorMessageGlobalDiv.innerHTML += (errorMessageGlobalDiv.innerHTML ? '<br>' : '') + `${errors[fieldKey]}`;
-                                errorMessageGlobalDiv.classList.remove('d-none');
-                            }
-                        } else {
-                            if (errorMessageGlobalDiv) {
-                                errorMessageGlobalDiv.innerHTML += (errorMessageGlobalDiv.innerHTML ? '<br>' : '') + `Error en '${fieldKey}': ${errors[fieldKey]}`;
-                                errorMessageGlobalDiv.classList.remove('d-none');
-                            }
-                        }
+                if (plainFormData.unidades && plainFormData.unidades !== '') {
+                    plainFormData.unidades = parseInt(plainFormData.unidades, 10);
+                } else if (plainFormData.unidades === '') {
+                    delete plainFormData.unidades;
+                }
+
+                plainFormData.esPerecedero = formData.has('esPerecedero');
+
+                if (plainFormData.fechaFabricacion === '') {
+                    delete plainFormData.fechaFabricacion;
+                }
+
+                console.log('Enviando JSON:', JSON.stringify(plainFormData, null, 2));
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(plainFormData)
                     });
 
-                    if (firstErrorField) { // Hacer focus en el primer campo con error
-                        firstErrorField.focus();
-                    } else if (errorMessageGlobalDiv && errorMessageGlobalDiv.textContent.trim() === '' && Object.keys(errors).length > 0) {
-                        errorMessageGlobalDiv.textContent = "Se encontraron errores en los datos. Por favor, revise el formulario.";
-                        errorMessageGlobalDiv.classList.remove('d-none');
-                    }
+                    if (response.ok) {
+                        const responseData = await response.json().catch(() => ({}));
+                        showAlert(responseData.message || 'Producto modificado exitosamente.', 'success');
+                        setTimeout(() => {
+                            window.location.href = /*[[@{/administrador/consulta-productos}]]*/ '/administrador/consulta-productos';
+                        }, 2000);
 
-
-                } else { // Otros errores del servidor (500, 404, etc.)
-                    const errorText = await response.text().catch(() => `Error ${response.status}: ${response.statusText}`);
-                    console.error('Error del servidor:', errorText);
-                    if (errorMessageGlobalDiv) {
-                        errorMessageGlobalDiv.textContent = `Error del servidor (${response.status}): ${errorText}`;
-                        errorMessageGlobalDiv.classList.remove('d-none');
                     } else {
-                        alert(`Error del servidor (${response.status}): ${errorText}`);
+                        const errorData = await response.json().catch(() => ({
+                            message: `Error del servidor (${response.status}). Inténtelo de nuevo.`
+                        }));
+
+                        if (response.status === 400 && errorData.errors) {
+                            showAlert(errorData.message || 'Hay errores en el formulario. Por favor, corríjalos.', 'danger');
+                            for (const field in errorData.errors) {
+                                const errorDiv = document.getElementById(`error-${field}`);
+                                if (errorDiv) {
+                                    errorDiv.textContent = errorData.errors[field];
+                                }
+                            }
+                        } else if (response.status === 400 && errorData.fieldErrors) {
+                            let globalFormMessage = 'Por favor, corrija los errores:';
+                            showAlert(globalFormMessage, 'danger');
+                            for (const fieldError of errorData.fieldErrors) {
+                                const errorDiv = document.getElementById(`error-${fieldError.field}`);
+                                if (errorDiv) {
+                                    errorDiv.textContent = fieldError.message;
+                                }
+                            }
+                        } else {
+                            showAlert(errorData.message || `Error ${response.status}: ${response.statusText}`, 'danger');
+                        }
                     }
+                } catch (error) {
+                    console.error('Error de red o JavaScript:', error);
+                    showAlert('Error de red o al procesar la solicitud. Por favor, inténtalo de nuevo.', 'danger');
                 }
-            } catch (error) {
-                console.error('Error de red o JavaScript:', error);
-                if (errorMessageGlobalDiv) {
-                    errorMessageGlobalDiv.textContent = 'Error de red o al procesar la solicitud. Por favor, inténtalo de nuevo.';
-                    errorMessageGlobalDiv.classList.remove('d-none');
-                } else {
-                    alert('Error de red o al procesar la solicitud. Por favor, inténtalo de nuevo.');
-                }
-            }
-        });
+            });
+        }
     });
 </script>
 </body>

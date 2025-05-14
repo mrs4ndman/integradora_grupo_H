@@ -2,35 +2,45 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Consulta de Productos - Empleados</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" th:href="@{/css/estilos.css}">
 
   <style>
-    /* Estilos para los iconos de ordenación en las cabeceras de Thymeleaf */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f7f6;
+    }
+    .container {
+      max-width: 1200px;
+    }
+    .card-header-custom {
+      background-color: #343a40;
+      color: white;
+    }
     .table th.is-sortable {
       padding: 0;
     }
-    .table a.sortable-header {
-      display: block;
+    .table a.sortable-header, .table span.sortable-header-span {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 0.75rem;
       text-decoration: none;
       color: inherit;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
     }
-    .table a.sortable-header:hover {
+    .table a.sortable-header:hover, .table span.sortable-header-span:hover {
       background-color: #495057;
-    }
-    .table a.sortable-header .sort-icon {
-      margin-left: 5px;
-      display: inline-block;
-      width: 1em;
+      color: #fff;
     }
     .search-form .form-label {
       font-weight: 500;
     }
-    .text-end { text-align: right !important; }
-    .text-center { text-align: center !important; }
     .action-cell {
       white-space: nowrap;
       text-align: center;
@@ -38,219 +48,423 @@
     .btn-sm i {
       margin-right: 4px;
     }
+    .category-list span:not(:last-child):after {
+      content: ", ";
+    }
+    .table-hover tbody tr:hover {
+      background-color: #e9ecef;
+    }
+    .thead-dark th {
+      background-color: #343a40;
+      color: #fff;
+      border-color: #454d55;
+    }
+    .pagination .page-link {
+      color: #343a40;
+    }
+    .pagination .page-item.active .page-link {
+      background-color: #343a40;
+      border-color: #343a40;
+      color: white;
+    }
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .table-container {
+      position: relative;
+    }
   </style>
 </head>
 <body>
 
-<div class="container mt-4">
-  <h1 class="my-4 text-center">Consulta de Productos</h1>
+<div class="container mt-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Consulta de Productos</h1>
+    <a th:href="@{/usuarios/info}" class="btn btn-outline-secondary">
+      <i class="fas fa-user-circle me-2"></i>Volver al Área Personal
+    </a>
+  </div>
 
-  <div th:if="${errorApi}" class="alert alert-danger error-api" role="alert" th:text="${errorApi}"></div>
-  <div th:if="${errorApiFiltros}" class="alert alert-warning error-api" role="alert" th:text="${errorApiFiltros}"></div>
-  <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
-  <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+  <div id="globalAlerts"></div>
 
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header card-header-custom">
+      <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros de Búsqueda</h5>
+    </div>
+    <div class="card-body">
+      <form class="search-form" id="searchForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="descripcion" class="form-label">Descripción:</label>
+            <input type="text" id="descripcion" name="descripcion" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="categoriaId" class="form-label">Categoría:</label>
+            <select id="categoriaId" name="categoriaId" class="form-select form-select-sm">
+              <option value="">-- Todas --</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label for="precioMin" class="form-label">Precio Mín.:</label>
+            <input type="number" step="0.01" id="precioMin" name="precioMin" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="precioMax" class="form-label">Precio Máx.:</label>
+            <input type="number" step="0.01" id="precioMax" name="precioMax" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="proveedorIds" class="form-label">Proveedor(es):</label>
+            <select id="proveedorIds" name="proveedorIds" class="form-select form-select-sm" multiple>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="esPerecedero" class="form-label">Estado:</label>
+            <select id="esPerecedero" name="esPerecedero" class="form-select form-select-sm">
+              <option value="">-- Todos --</option>
+              <option value="true">Perecedero</option>
+              <option value="false">No Perecedero</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-search me-2"></i>Buscar</button>
+          <button type="button" class="btn btn-outline-secondary" id="resetFiltersButton"><i class="fas fa-eraser me-2"></i>Limpiar Filtros</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-  <form th:action="@{/empleados/consulta-productos}" method="get" class="search-form mb-4 p-3 border rounded bg-light" id="searchForm">
-    <input type="hidden" name="sortField" th:value="${estadoActualSortField}">
-    <input type="hidden" name="sortDir" th:value="${estadoActualSortDir}">
-
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label for="descripcion" class="form-label">Descripción:</label>
-        <input type="text" id="descripcion" name="descripcion" th:value="${criteriosBusquedaProductos?.descripcion}" class="form-control">
+  <div class="card shadow-sm table-container">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-list me-2"></i>Listado de Productos</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="loading-overlay d-none">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
       </div>
-      <div class="col-md-6 mb-3">
-        <label for="categoriaId" class="form-label">Categoría:</label>
-        <select id="categoriaId" name="categoriaId" class="form-select">
-          <option value="">-- Todas --</option>
-          <option th:each="cat : ${categorias}"
-                  th:value="${cat.id}"
-                  th:text="${cat.nombre}"
-                  th:selected="${criteriosBusquedaProductos?.categoriaId != null && criteriosBusquedaProductos.categoriaId.equals(cat.id)}"></option>
-        </select>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover mb-0">
+          <thead class="thead-dark">
+          <tr>
+            <th class="is-sortable"><span class="sortable-header-span" data-sortfield="id">ID<span class="sort-icon"></span></span></th>
+            <th class="is-sortable"><span class="sortable-header-span" data-sortfield="descripcion">Descripción<span class="sort-icon"></span></span></th>
+            <th class="text-end is-sortable"><span class="sortable-header-span" data-sortfield="precio">Precio<span class="sort-icon"></span></span></th>
+            <th class="is-sortable"><span class="sortable-header-span" data-sortfield="categorias.nombre">Categorías<span class="sort-icon"></span></span></th>
+            <th class="is-sortable"><span class="sortable-header-span" data-sortfield="proveedor.nombre">Proveedor<span class="sort-icon"></span></span></th>
+            <th class="is-sortable"><span class="sortable-header-span" data-sortfield="marca">Marca<span class="sort-icon"></span></span></th>
+            <th class="text-center is-sortable"><span class="sortable-header-span" data-sortfield="valoracion">Valoración<span class="sort-icon"></span></span></th>
+            <th class="text-center is-sortable"><span class="sortable-header-span" data-sortfield="unidades">Unidades<span class="sort-icon"></span></span></th>
+            <th class="text-center is-sortable"><span class="sortable-header-span" data-sortfield="esPerecedero">Perecedero<span class="sort-icon"></span></span></th>
+            <th class="text-center">Acción</th>
+          </tr>
+          </thead>
+          <tbody id="productsTableBody">
+          <tr><td colspan="10" class="text-center p-4">Aplicar filtros para buscar productos o espere la carga inicial.</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="row mt-2">
-      <div class="col-md-3 mb-3">
-        <label for="precioMin" class="form-label">Precio Mín.:</label>
-        <input type="number" step="0.01" id="precioMin" name="precioMin" th:value="${criteriosBusquedaProductos?.precioMin}" class="form-control">
-      </div>
-      <div class="col-md-3 mb-3">
-        <label for="precioMax" class="form-label">Precio Máx.:</label>
-        <input type="number" step="0.01" id="precioMax" name="precioMax" th:value="${criteriosBusquedaProductos?.precioMax}" class="form-control">
-      </div>
-      <div class="col-md-6 mb-3">
-        <label for="proveedorIds" class="form-label">Proveedor(es):</label>
-        <select id="proveedorIds" name="proveedorIds" class="form-select" multiple>
-          <option th:each="prov : ${proveedores}"
-                  th:value="${prov.id}"
-                  th:text="${prov.nombre}"
-                  th:selected="${criteriosBusquedaProductos?.proveedorIds != null && criteriosBusquedaProductos.proveedorIds.contains(prov.id)}"></option>
-        </select>
-      </div>
-    </div>
-    <div class="row mt-2">
-      <div class="col-md-6 mb-3">
-        <label for="esPerecedero" class="form-label">Estado:</label>
-        <select id="esPerecedero" name="esPerecedero" class="form-select">
-          <option value="">-- Todos --</option>
-          <option value="true" th:selected="${criteriosBusquedaProductos?.esPerecedero == true}">Perecedero</option>
-          <option value="false" th:selected="${criteriosBusquedaProductos?.esPerecedero == false}">No Perecedero</option>
-        </select>
-      </div>
-    </div>
-    <div class="mt-3 text-center">
-      <button type="submit" class="btn btn-primary">Buscar</button>
-      <a th:href="@{/empleados/consulta-productos(sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir})}" class="btn btn-secondary">Limpiar Filtros</a>
-    </div>
-  </form>
-
-  <div th:if="${paginaProductos != null && !paginaProductos.empty}">
-    <div class="table-responsive mt-4">
-      <table class="table table-striped table-bordered table-hover">
-        <thead class="table-dark">
-        <tr>
-          <th class="is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='id', sortDir=${estadoActualSortField == 'id' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">ID
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'id'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'id'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='descripcion', sortDir=${estadoActualSortField == 'descripcion' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Descripción
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'descripcion'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'descripcion'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="text-end is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='precio', sortDir=${estadoActualSortField == 'precio' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Precio
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'precio'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'precio'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='categoria.nombre', sortDir=${estadoActualSortField == 'categoria.nombre' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Categoría
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'categoria.nombre'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'categoria.nombre'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='proveedor.nombre', sortDir=${estadoActualSortField == 'proveedor.nombre' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Proveedor
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'proveedor.nombre'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'proveedor.nombre'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='marca', sortDir=${estadoActualSortField == 'marca' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Marca
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'marca'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'marca'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="text-center is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='valoracion', sortDir=${estadoActualSortField == 'valoracion' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Valoración
-              <span class="sort-icon">
-                 <i th:if="${estadoActualSortField == 'valoracion'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                 <i th:unless="${estadoActualSortField == 'valoracion'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="text-center is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='unidades', sortDir=${estadoActualSortField == 'unidades' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Unidades
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'unidades'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'unidades'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="text-center is-sortable">
-            <a th:href="@{/empleados/consulta-productos(page=${paginaProductos.number}, size=${paginaProductos.size}, sortField='esPerecedero', sortDir=${estadoActualSortField == 'esPerecedero' && estadoActualSortDir == 'asc' ? 'desc' : 'asc'}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}"
-               class="sortable-header">Perecedero
-              <span class="sort-icon">
-                <i th:if="${estadoActualSortField == 'esPerecedero'}" th:class="${estadoActualSortDir == 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'}"></i>
-                <i th:unless="${estadoActualSortField == 'esPerecedero'}" class="fa-solid fa-sort text-muted"></i>
-              </span>
-            </a>
-          </th>
-          <th class="text-center">Acción</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="producto : ${paginaProductos.content}">
-          <td class="text-center" th:text="${producto.id}"></td>
-          <td th:text="${#strings.abbreviate(producto.descripcion, 70)}"></td>
-          <td class="text-end" th:text="${#numbers.formatCurrency(producto.precio)}"></td>
-          <td th:text="${producto.categoriaNombre}"></td>
-          <td th:text="${producto.proveedorNombre}"></td>
-          <td th:text="${producto.marca}"></td>
-          <td class="text-center" th:text="${producto.valoracionMedia == null ? 'N/A' : #numbers.formatDecimal(producto.valoracionMedia, 1, 1)}"></td>
-          <td class="text-center" th:text="${producto.unidadesDisponibles}"></td>
-          <td class="text-center" th:text="${producto.esPerecedero ? 'Sí' : 'No'}"></td>
-          <td class="action-cell">
-            <a th:href="@{/empleados/productos/detalle/{id}(id=${producto.id})}" class="btn btn-info btn-sm" title="Ver Detalle">
-              <i class="fas fa-eye"></i> Detalle
-            </a>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="pagination-controls mt-3" th:if="${paginaProductos.totalPages > 0}">
+    <div class="card-footer bg-light border-top-0">
       <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
-          <li class="page-item" th:classappend="${paginaProductos.first ? 'disabled' : ''}">
-            <a class="page-link" th:href="@{/empleados/consulta-productos(page=0, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">Primero</a>
-          </li>
-          <li class="page-item" th:classappend="${paginaProductos.first ? 'disabled' : ''}">
-            <a class="page-link" th:href="@{/empleados/consulta-productos(page=${paginaProductos.number-1}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">&laquo;</a>
-          </li>
-
-          <th:block th:each="i : ${#numbers.sequence( T(java.lang.Math).max(0, paginaProductos.number - 2), T(java.lang.Math).min(paginaProductos.totalPages - 1, paginaProductos.number + 2) )}">
-            <li class="page-item" th:classappend="${i == paginaProductos.number ? 'active' : ''}">
-              <a class="page-link" th:href="@{/empleados/consulta-productos(page=${i}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}" th:text="${i+1}"></a>
-            </li>
-          </th:block>
-
-          <li class="page-item" th:classappend="${paginaProductos.last ? 'disabled' : ''}">
-            <a class="page-link" th:href="@{/empleados/consulta-productos(page=${paginaProductos.number+1}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">&raquo;</a>
-          </li>
-          <li class="page-item" th:classappend="${paginaProductos.last ? 'disabled' : ''}">
-            <a class="page-link" th:href="@{/empleados/consulta-productos(page=${paginaProductos.totalPages-1}, size=${paginaProductos.size}, sortField=${estadoActualSortField}, sortDir=${estadoActualSortDir}, descripcion=${criteriosBusquedaProductos?.descripcion}, categoriaId=${criteriosBusquedaProductos?.categoriaId}, precioMin=${criteriosBusquedaProductos?.precioMin}, precioMax=${criteriosBusquedaProductos?.precioMax}, proveedorIds=${criteriosBusquedaProductos?.proveedorIds}, esPerecedero=${criteriosBusquedaProductos?.esPerecedero})}">Último</a>
-          </li>
+        <ul class="pagination justify-content-center mb-0" id="paginationControls">
         </ul>
       </nav>
     </div>
-
   </div>
-  <div th:if="${paginaProductos == null || paginaProductos.empty}" class="alert alert-info mt-3">
+  <div id="noProductsMessage" class="alert alert-info mt-3 d-none">
     No se encontraron productos con los criterios seleccionados.
   </div>
 
-  <hr class="my-4">
-  <a th:href="@{/usuarios/info}" class="btn btn-outline-secondary mt-3">Volver al Área Personal</a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  let currentState = {
+    descripcion: '', categoriaId: '', precioMin: '', precioMax: '',
+    proveedorIds: [], esPerecedero: '',
+    page: 0, size: 10, sortField: 'descripcion', sortDir: 'asc'
+  };
+
+  const API_BASE_URL_EMPLEADOS ='/api/empleado';
+  const API_PRODUCTS_URL = `${API_BASE_URL_EMPLEADOS}/productos`;
+  const API_CATEGORIES_URL = `${API_BASE_URL_EMPLEADOS}/productos/categorias`;
+  const API_PROVEEDORES_URL = `${API_BASE_URL_EMPLEADOS}/productos/proveedores`;
+
+  const productsTableBody = document.getElementById('productsTableBody');
+  const paginationControls = document.getElementById('paginationControls');
+  const searchForm = document.getElementById('searchForm');
+  const resetFiltersButton = document.getElementById('resetFiltersButton');
+  const loadingOverlay = document.querySelector('.loading-overlay');
+  const noProductsMessage = document.getElementById('noProductsMessage');
+  const globalAlerts = document.getElementById('globalAlerts');
+
+  function showAlert(message, type = 'danger', duration = 7000) {
+    console.log(`Showing alert (${type}): ${message}`);
+    const alertId = `alert-${Date.now()}`;
+    const alertHtml = `
+            <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+    globalAlerts.insertAdjacentHTML('beforeend', alertHtml);
+    setTimeout(() => {
+      const alertElement = document.getElementById(alertId);
+      if (alertElement) {
+        const bsAlert = bootstrap.Alert.getOrCreateInstance(alertElement);
+        if (bsAlert) bsAlert.close();
+      }
+    }, duration);
+  }
+
+  async function fetchFiltersData() {
+    console.log('Fetching filter data...');
+    try {
+      const [catResponse, provResponse] = await Promise.all([
+        fetch(API_CATEGORIES_URL),
+        fetch(API_PROVEEDORES_URL)
+      ]);
+
+      if (!catResponse.ok) throw new Error(`Error al cargar categorías: ${catResponse.status} ${catResponse.statusText}`);
+      const categorias = await catResponse.json();
+      console.log('Categorías recibidas:', categorias);
+      const categoriaSelect = document.getElementById('categoriaId');
+      categoriaSelect.innerHTML = '<option value="">-- Todas --</option>';
+      categorias.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.nombre;
+        categoriaSelect.appendChild(option);
+      });
+
+      if (!provResponse.ok) throw new Error(`Error al cargar proveedores: ${provResponse.status} ${provResponse.statusText}`);
+      const proveedores = await provResponse.json();
+      console.log('Proveedores recibidos:', proveedores);
+      const proveedorSelect = document.getElementById('proveedorIds');
+      proveedorSelect.innerHTML = '';
+      proveedores.forEach(prov => {
+        const option = document.createElement('option');
+        option.value = prov.id;
+        option.textContent = prov.nombre;
+        proveedorSelect.appendChild(option);
+      });
+      console.log('Filter data fetched successfully.');
+    } catch (error) {
+      console.error("Error cargando datos para filtros:", error);
+      showAlert(`No se pudieron cargar los datos para los filtros: ${error.message}`);
+    }
+  }
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
+  }
+
+  function renderTable(products) {
+    console.log('Rendering table with products:', products);
+    productsTableBody.innerHTML = '';
+    if (!products || products.length === 0) {
+      console.log('No products to render.');
+      productsTableBody.innerHTML = '<tr><td colspan="10" class="text-center p-4">No se encontraron productos con los criterios actuales.</td></tr>';
+      return;
+    }
+
+    products.forEach(producto => {
+      let categoriasHtml = 'N/A';
+      if (producto.categorias && Array.isArray(producto.categorias) && producto.categorias.length > 0) {
+        categoriasHtml = producto.categorias.map(cat => `<span>${cat.nombre || 'Sin nombre'}</span>`).join(', ');
+      } else if (producto.categoriaNombre) {
+        categoriasHtml = `<span>${producto.categoriaNombre}</span>`;
+      }
+
+      const row = `
+                <tr>
+                    <td class="text-center">${producto.id || 'N/A'}</td>
+                    <td>${(producto.descripcion || '').substring(0,70)}${(producto.descripcion || '').length > 70 ? '...' : ''}</td>
+                    <td class="text-end">${producto.precio != null ? formatCurrency(producto.precio) : 'N/A'}</td>
+                    <td class="category-list">${categoriasHtml}</td>
+                    <td>${producto.proveedorNombre || 'N/A'}</td>
+                    <td>${producto.marca || 'N/A'}</td>
+                    <td class="text-center">${producto.valoracionMedia != null ? producto.valoracionMedia.toFixed(1) : 'N/A'}</td>
+                    <td class="text-center">${producto.unidadesDisponibles != null ? producto.unidadesDisponibles : 'N/A'}</td>
+                    <td class="text-center">${producto.esPerecedero != null ? (producto.esPerecedero ? 'Sí' : 'No') : 'N/A'}</td>
+                    <td class="action-cell">
+                        <a href="/empleados/productos/detalle/${producto.id}" class="btn btn-info btn-sm" title="Ver Detalle">
+                            <i class="fas fa-eye"></i> Detalle
+                        </a>
+                    </td>
+                </tr>
+            `;
+      productsTableBody.insertAdjacentHTML('beforeend', row);
+    });
+  }
+
+  function renderPagination(pageData) {
+    paginationControls.innerHTML = '';
+    if (!pageData || pageData.totalPages <= 0) {
+      return;
+    }
+
+    const { number, totalPages, first, last } = pageData;
+
+    paginationControls.insertAdjacentHTML('beforeend', `<li class="page-item ${first ? 'disabled' : ''}"><a class="page-link" href="#" data-page="0">Primero</a></li>`);
+    paginationControls.insertAdjacentHTML('beforeend', `<li class="page-item ${first ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${number - 1}">&laquo;</a></li>`);
+
+    let startPage = Math.max(0, number - 2);
+    let endPage = Math.min(totalPages - 1, number + 2);
+
+    for (let i = startPage; i <= endPage; i++) {
+      paginationControls.insertAdjacentHTML('beforeend', `<li class="page-item ${i === number ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i + 1}</a></li>`);
+    }
+
+    paginationControls.insertAdjacentHTML('beforeend', `<li class="page-item ${last ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${number + 1}">&raquo;</a></li>`);
+    paginationControls.insertAdjacentHTML('beforeend', `<li class="page-item ${last ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${totalPages - 1}">Último</a></li>`);
+
+    paginationControls.querySelectorAll('.page-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!link.parentElement.classList.contains('disabled')) {
+          currentState.page = parseInt(link.dataset.page);
+          fetchProducts();
+        }
+      });
+    });
+  }
+
+  function updateSortIcons() {
+    document.querySelectorAll('.sortable-header-span').forEach(header => {
+      const field = header.dataset.sortfield;
+      const iconSpan = header.querySelector('.sort-icon');
+      iconSpan.innerHTML = '';
+      if (field === currentState.sortField) {
+        iconSpan.innerHTML = `<i class="fas ${currentState.sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down'}"></i>`;
+      } else {
+        iconSpan.innerHTML = `<i class="fas fa-sort text-muted"></i>`;
+      }
+    });
+  }
+
+  async function fetchProducts() {
+    console.log('Fetching products with state:', JSON.stringify(currentState));
+    loadingOverlay.classList.remove('d-none');
+    noProductsMessage.classList.add('d-none');
+    productsTableBody.innerHTML = '<tr><td colspan="10" class="text-center p-4"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Cargando...</span></div> Cargando productos...</td></tr>';
+
+    const params = new URLSearchParams({
+      page: currentState.page,
+      size: currentState.size,
+      sort: `${currentState.sortField},${currentState.sortDir}`
+    });
+
+    if (currentState.descripcion) params.append('descripcion', currentState.descripcion);
+    if (currentState.categoriaId) params.append('categoriaId', currentState.categoriaId);
+    if (currentState.precioMin) params.append('precioMin', currentState.precioMin);
+    if (currentState.precioMax) params.append('precioMax', currentState.precioMax);
+    if (currentState.proveedorIds && currentState.proveedorIds.length > 0) {
+      currentState.proveedorIds.forEach(id => params.append('proveedorIds', id));
+    }
+    if (currentState.esPerecedero) params.append('esPerecedero', currentState.esPerecedero);
+
+    const apiUrlWithParams = `${API_PRODUCTS_URL}?${params.toString()}`;
+    console.log('API URL for products:', apiUrlWithParams);
+
+    try {
+      const response = await fetch(apiUrlWithParams);
+      console.log('Fetch response status:', response.status, response.statusText);
+      if (!response.ok) {
+        const errorText = await response.text(); // Obtener texto para más detalles
+        console.error('API Error Text:', errorText);
+        let errorDetail = `Error ${response.status}: ${response.statusText}`;
+        try { // Intentar parsear como JSON si es posible
+          const errorJson = JSON.parse(errorText);
+          errorDetail = errorJson.message || errorDetail;
+        } catch(e) {}
+
+        throw new Error(errorDetail);
+      }
+      const pageData = await response.json();
+      console.log('Page Data from API:', pageData);
+
+      renderTable(pageData.content);
+      renderPagination(pageData);
+      updateSortIcons();
+
+      if (!pageData.content || pageData.content.length === 0) {
+        noProductsMessage.classList.remove('d-none');
+        productsTableBody.innerHTML = '<tr><td colspan="10" class="text-center p-4">No se encontraron productos con los criterios seleccionados.</td></tr>';
+      }
+
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      showAlert(`Error al cargar productos: ${error.message}`);
+      productsTableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-danger">Error al cargar productos. ${error.message}</td></tr>`;
+    } finally {
+      loadingOverlay.classList.add('d-none');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded and parsed.');
+    fetchFiltersData();
+    fetchProducts();
+
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      console.log('Search form submitted.');
+      currentState.descripcion = document.getElementById('descripcion').value;
+      currentState.categoriaId = document.getElementById('categoriaId').value;
+      currentState.precioMin = document.getElementById('precioMin').value;
+      currentState.precioMax = document.getElementById('precioMax').value;
+      currentState.proveedorIds = Array.from(document.getElementById('proveedorIds').selectedOptions).map(opt => opt.value);
+      currentState.esPerecedero = document.getElementById('esPerecedero').value;
+      currentState.page = 0;
+      fetchProducts();
+    });
+
+    resetFiltersButton.addEventListener('click', () => {
+      console.log('Reset filters button clicked.');
+      searchForm.reset();
+      document.getElementById('proveedorIds').querySelectorAll('option').forEach(o => o.selected = false);
+
+      currentState.descripcion = '';
+      currentState.categoriaId = '';
+      currentState.precioMin = '';
+      currentState.precioMax = '';
+      currentState.proveedorIds = [];
+      currentState.esPerecedero = '';
+      currentState.page = 0;
+      fetchProducts();
+    });
+
+    document.querySelectorAll('.sortable-header-span').forEach(header => {
+      header.addEventListener('click', () => {
+        const field = header.dataset.sortfield;
+        console.log('Sort header clicked:', field);
+        if (currentState.sortField === field) {
+          currentState.sortDir = currentState.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentState.sortField = field;
+          currentState.sortDir = 'asc';
+        }
+        currentState.page = 0;
+        fetchProducts();
+      });
+    });
+  });
+</script>
 </body>
 </html>

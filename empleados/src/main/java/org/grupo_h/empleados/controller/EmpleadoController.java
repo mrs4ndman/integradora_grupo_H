@@ -734,7 +734,7 @@ public class EmpleadoController {
         // Lista de campos válidos para ordenar Producto
         List<String> camposDeProductoValidos = Arrays.asList(
                 "id", "descripcion", "precio", "marca",
-                "categoria.nombre", "proveedor.nombre",
+                "categorias.nombre", "proveedor.nombre",
                 "unidades", "valoracion", "fechaAlta", "esPerecedero"
         );
 
