@@ -151,24 +151,23 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         Sort sort = Sort.by("nombre").ascending();
         empleados = empleadosRepository.findAll(spec, sort);
-            // Convertimos a DTO
-            return empleados.stream()
-                    .map(e -> new EmpleadoDTO(
-                            e.getId(),
-                            e.getNombre(),
-                            e.getApellidos(),
-                            e.getEdad(),
-                            e.getDepartamento().getNombreDept(),
-                            e.getNumeroDocumento()
-                    ))
-                    .collect(Collectors.toList());
+        // Convertimos a DTO
+        return empleados.stream()
+                .map(e -> new EmpleadoDTO(
+                        e.getId(),
+                        e.getNombre(),
+                        e.getApellidos(),
+                        e.getEdad(),
+                        e.getDepartamento().getNombreDept(),
+                        e.getNumeroDocumento()
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<Empleado> buscarPorDni(String dni) {
         System.err.println("Estoy en el Servicio");
+        System.out.println("Hola");
         return empleadosRepository.findByNumeroDocumento(dni);
     }
-
-
 }

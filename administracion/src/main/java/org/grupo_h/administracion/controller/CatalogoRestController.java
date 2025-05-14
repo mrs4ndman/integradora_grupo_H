@@ -36,6 +36,20 @@ public class CatalogoRestController {
         this.catalogoService = catalogoService;
     }
 
+    /**
+     * Importa un catálogo de productos desde un archivo JSON.
+     * <p>
+     * Este endpoint recibe un archivo JSON que contiene la información del catálogo de productos
+     * a importar. El proceso valida el formato del archivo, procesa su contenido y actualiza
+     * la base de datos con los productos nuevos o actualizados.
+     *
+     * @param archivo El archivo JSON que contiene el catálogo de productos a importar
+     * @param request La solicitud HTTP para obtener detalles como la URI en caso de error
+     * @return ResponseEntity con la respuesta de la importación, que puede ser:
+     * - 200 OK con un objeto ImportacionResponseDTO si la importación fue exitosa
+     * - 400 BAD REQUEST con un objeto ErrorResponseDTO si ocurrieron errores de validación
+     * - 500 INTERNAL SERVER ERROR con un objeto ErrorResponseDTO en caso de errores inesperados
+     */
     @PostMapping(value = "/importar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> importarCatalogo(@RequestParam("archivo") MultipartFile archivo, HttpServletRequest request) {
 

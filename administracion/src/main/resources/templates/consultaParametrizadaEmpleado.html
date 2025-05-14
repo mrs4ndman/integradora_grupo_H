@@ -141,9 +141,12 @@
 <!--                        <button type="submit">Editar</button>-->
 <!--                    </form>-->
 
-                    <a th:href="@{'/administrador/editar-empleado/' + ${emp.id}}">
-                        editar
-                    </a>
+                    <button>
+                        <a th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
+                            Editar
+                        </a>
+
+                    </button>
                 </td>
             </tr>
 

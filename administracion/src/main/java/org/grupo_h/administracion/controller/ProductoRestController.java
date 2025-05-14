@@ -58,14 +58,14 @@ public class ProductoRestController {
      * Endpoint REST para buscar productos de forma paginada y filtrada.
      * Parámetros de búsqueda se pasan como query params.
      *
-     * @param descripcion        Descripcion del producto (búsqueda parcial).
-     * @param categoriaId   ID de la categoría.
-     * @param precioMin     Precio mínimo.
-     * @param precioMax     Precio máximo.
-     * @param proveedorId   ID del proveedor.
+     * @param descripcion  Descripcion del producto (búsqueda parcial).
+     * @param categoriaId  ID de la categoría.
+     * @param precioMin    Precio mínimo.
+     * @param precioMax    Precio máximo.
+     * @param proveedorId  ID del proveedor.
      * @param esPerecedero Estado de perecedero (true/false).
-     * @param page          Número de página (por defecto 0).
-     * @param size          Tamaño de la página (por defecto 10).
+     * @param page         Número de página (por defecto 0).
+     * @param size         Tamaño de la página (por defecto 10).
      * @return ResponseEntity
      */
     @GetMapping
@@ -137,17 +137,34 @@ public class ProductoRestController {
         }
     }
 
+    /**
+     * Obtiene todas las categorías disponibles para usar en filtros de búsqueda.
+     *
+     * @return ResponseEntity con la lista de categorías simplificadas.
+     */
     @GetMapping("/categorias")
     public ResponseEntity<List<CategoriaSimpleDTO>> obtenerCategoriasParaFiltro() {
         List<CategoriaSimpleDTO> categorias = productoService.listarTodasLasCategorias();
         return ResponseEntity.ok(categorias);
     }
+
+    /**
+     * Obtiene todos los proveedores disponibles para usar en filtros de búsqueda.
+     *
+     * @return ResponseEntity con la lista de proveedores simplificados.
+     */
     @GetMapping("/proveedores")
     public ResponseEntity<List<ProveedorSimpleDTO>> obtenerProveedoresParaFiltro() {
         List<ProveedorSimpleDTO> proveedores = productoService.listarTodosLosProveedores();
         return ResponseEntity.ok(proveedores);
     }
 
+    /**
+     * Elimina un producto específico por su ID.
+     *
+     * @param id ID único del producto a eliminar.
+     * @return ResponseEntity con un mensaje de éxito o error.
+     */
     @DeleteMapping("/borrar/{id}")
     public ResponseEntity<Map<String, Object>> eliminarProducto(@PathVariable UUID id) {
         logger.info("Recibida solicitud DELETE /api/productos/{}", id);
@@ -168,6 +185,7 @@ public class ProductoRestController {
 
     /**
      * Endpoint para eliminar todos los productos de una categoría específica.
+     *
      * @param categoriaId El ID de la categoría.
      * @return ResponseEntity con el resultado de la operación.
      */
@@ -191,6 +209,7 @@ public class ProductoRestController {
 
     /**
      * Endpoint para eliminar TODOS los productos.
+     *
      * @return ResponseEntity con el resultado de la operación.
      */
     @DeleteMapping("/borrar/todos")

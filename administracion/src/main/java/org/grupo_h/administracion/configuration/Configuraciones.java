@@ -18,11 +18,23 @@ import java.util.Properties;
 @Configuration
 public class Configuraciones {
 
+    /**
+     * Configura un RestTemplate para realizar llamadas HTTP a APIs externas.
+     *
+     * @param builder El RestTemplateBuilder que se utilizará para construir el RestTemplate
+     * @return Una instancia de RestTemplate configurada
+     */
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
 
+    /**
+     * Proporciona un codificador de contraseñas BCrypt para la aplicación.
+     * BCrypt implementa un algoritmo de hash seguro para contraseñas con salt incorporado.
+     *
+     * @return Una instancia de BCryptPasswordEncoder para el cifrado de contraseñas
+     */
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

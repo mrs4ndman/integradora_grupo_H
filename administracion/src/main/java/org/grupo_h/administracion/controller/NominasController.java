@@ -15,7 +15,6 @@ import org.grupo_h.comun.repository.LineaNominaRepository;
 import org.grupo_h.comun.repository.NominaRepository;
 import org.grupo_h.comun.repository.ParametrosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -58,7 +57,11 @@ public class NominasController {
     @Autowired
     private ParametrosRepository parametrosRepository;
 
-    // Metodo auxiliar para obtener parametros de la empresa
+    /**
+     * Método auxiliar para obtener los parámetros de la empresa desde la base de datos
+     *
+     * @return Mapa con los parámetros de la empresa (nombre, CIF, dirección)
+     */
     private Map<String, String> getEmpresaParametrosMap() {
         Map<String, String> params = new HashMap<>();
         parametrosRepository.findByClave(PARAM_NOMBRE_EMPRESA).ifPresent(p -> params.put(PARAM_NOMBRE_EMPRESA, p.getValor()));
@@ -67,13 +70,26 @@ public class NominasController {
         return params;
     }
 
-    // Comprobador de modificacion en la nómina
+    /**
+     * Verifica si una nómina puede ser modificada según la fecha de fin
+     * Una nómina puede modificarse si su fecha de fin es posterior al final del mes anterior
+     *
+     * @param nomina La nómina a verificar
+     * @return true si la nómina es modificable, false si no lo es
+     */
     private boolean esNominaModificable(Nomina nomina) {
         // LocalDate hoy = LocalDate.now();
         LocalDate fechaLimite = YearMonth.now().minusMonths(1).atEndOfMonth();
         return nomina.getFechaFin().isAfter(fechaLimite);
     }
 
+    /**
+     * Calcula los acumulados anuales para una nómina (bruto, retenciones y percibido)
+     * Si la nómina no tiene empleado o fecha inicio, usa solo los valores actuales
+     * Si tiene empleado y fecha, suma los acumulados de las nóminas anteriores del mismo año
+     *
+     * @param nomina La nómina para la que calcular los acumulados
+     */
     private void calcularAcumuladosAnuales(Nomina nomina) {
         if (nomina.getEmpleado() == null || nomina.getFechaInicio() == null) {
             nomina.setCantidadBrutaAcumuladaAnual(nomina.getTotalDevengos());
@@ -99,11 +115,27 @@ public class NominasController {
 
     }
 
+    /**
+     * Redirige el acceso a la raíz del controlador hacia la consulta de nóminas
+     *
+     * @return Redirección a la página de consulta de nóminas
+     */
     @GetMapping("")
     public String redirigirAlDashboard() {
         return "redirect:/administrador/nominas/consultar";
     }
 
+    /**
+     * Muestra la página de consulta de nóminas con filtros y paginación
+     *
+     * @param empleadoId     ID del empleado a filtrar
+     * @param nombreEmpleado Nombre del empleado a filtrar
+     * @param fechaDesde     Fecha inicial para filtrar nóminas
+     * @param fechaHasta     Fecha final para filtrar nóminas
+     * @param pageable       Información de paginación y ordenación
+     * @param model          Modelo para pasar datos a la vista
+     * @return Vista de consulta de nóminas
+     */
     @GetMapping("/consultar")
     public String consultarNominas(
             @RequestParam(value = "empleadoId", required = false) UUID empleadoId,
@@ -129,6 +161,14 @@ public class NominasController {
         return "nomina/consulta-nominas";
     }
 
+    /**
+     * Muestra la lista de nóminas asociadas a un empleado específico
+     *
+     * @param empleadoId ID del empleado cuyas nóminas se quieren consultar
+     * @param model      Modelo para pasar datos a la vista
+     * @return Vista con la lista de nóminas del empleado
+     * @throws IllegalArgumentException si no se encuentra el empleado
+     */
     @GetMapping("/empleado/{empleadoId}/nominas")
     public String buscarEmpleados(@PathVariable UUID empleadoId, Model model) {
         Empleado empleado = empleadoRepository.findById(empleadoId)
@@ -140,6 +180,14 @@ public class NominasController {
         return "nomina/empleado-nominas-lista";
     }
 
+    /**
+     * Muestra los detalles de una nómina específica
+     *
+     * @param id    ID de la nómina a mostrar
+     * @param model Modelo para pasar datos a la vista
+     * @return Vista con los detalles de la nómina
+     * @throws IllegalArgumentException si no se encuentra la nómina
+     */
     @GetMapping("/detalle/{id}")
     public String mostrarDetalleNomina(@PathVariable UUID id, Model model) {
         Nomina nomina = nominaRepository.findById(id)
@@ -150,6 +198,14 @@ public class NominasController {
         return "nomina/detalle-nomina";
     }
 
+    /**
+     * Muestra el formulario para crear una nueva nómina para un empleado
+     *
+     * @param id    ID del empleado para el que se creará la nómina
+     * @param model Modelo para pasar datos a la vista
+     * @return Vista con el formulario de creación de nómina
+     * @throws IllegalArgumentException si no se encuentra el empleado
+     */
     @GetMapping("/empleado/{id}/crear-nomina")
     public String mostrarFormularioCrearNomina(@PathVariable UUID id, Model model) {
         Empleado empleado = empleadoRepository.findById(id)
@@ -164,6 +220,16 @@ public class NominasController {
         return "nomina/formulario-crear-nomina";
     }
 
+    /**
+     * Procesa la creación de una nueva nómina para un empleado
+     *
+     * @param id                            ID del empleado para el que se crea la nómina
+     * @param fechaInicio                   Fecha de inicio del período de la nómina
+     * @param fechaFin                      Fecha de fin del período de la nómina
+     * @param numeroSeguridadSocialEmpleado Número de la Seguridad Social del empleado
+     * @param redirectAttributes            Atributos para enviar mensajes en la redirección
+     * @return Redirección a la vista de detalle de la nómina creada o al formulario en caso de error
+     */
     @PostMapping("/empleado/{id}/crear-nomina")
     @Transactional
     public String crearNomina(@PathVariable UUID id,
@@ -200,6 +266,13 @@ public class NominasController {
     }
 
 
+    /**
+     * Elimina una nómina existente si es modificable
+     *
+     * @param id                 ID de la nómina a borrar
+     * @param redirectAttributes Atributos para enviar mensajes en la redirección
+     * @return Redirección a la lista de nóminas del empleado o a la consulta general
+     */
     @PostMapping("/nomina/{id}/borrar")
     @Transactional
     public String borrarNomina(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
@@ -215,6 +288,13 @@ public class NominasController {
         return "redirect:/administrador/nominas/empleado/" + empleadoId + "/nominas";
     }
 
+    /**
+     * Muestra el formulario para añadir una línea a una nómina existente
+     *
+     * @param id    ID de la nómina a la que se añadirá la línea
+     * @param model Modelo para pasar datos a la vista
+     * @return Vista con el formulario para añadir línea de nómina
+     */
     @GetMapping("/nomina/{id}/aniadir-linea")
     public String mostrarFormularioAniadirLinea(@PathVariable UUID id, Model model) {
         Nomina nomina = nominaRepository.findById(id)
@@ -228,6 +308,14 @@ public class NominasController {
     }
 
 
+    /**
+     * Procesa la adición de una nueva línea a una nómina existente
+     *
+     * @param id                 ID de la nómina a la que se añadirá la línea
+     * @param lineaNomina        Objeto con los datos de la línea de nómina a añadir
+     * @param redirectAttributes Atributos para enviar mensajes en la redirección
+     * @return Redirección a la vista de detalle de la nómina actualizada
+     */
     @PostMapping("/nomina/{id}/aniadir-linea")
     @Transactional
     public String aniadirLineaNomina(@PathVariable UUID id,
@@ -241,7 +329,7 @@ public class NominasController {
             return "redirect:/administrador/nominas/detalle/" + id;
         }
         try {
-            if (lineaNomina.getConcepto() == null || lineaNomina.getConcepto().trim().isEmpty()){
+            if (lineaNomina.getConcepto() == null || lineaNomina.getConcepto().trim().isEmpty()) {
                 throw new IllegalArgumentException("El concepto de la línea no puede estar vacío.");
             }
             // Validar porcentaje y cantidad
@@ -284,7 +372,7 @@ public class NominasController {
             boolean tieneSalarioBaseConImporte = nomina.getLineas().stream()
                     .anyMatch(l -> "Salario base".equalsIgnoreCase(l.getConcepto()) && l.getCantidad() != null && l.getCantidad() > 0);
             if (!tieneSalarioBaseConImporte) {
-                if (!("Salario base".equalsIgnoreCase(lineaNomina.getConcepto()) && lineaNomina.getCantidad() != null && lineaNomina.getCantidad() > 0) ){
+                if (!("Salario base".equalsIgnoreCase(lineaNomina.getConcepto()) && lineaNomina.getCantidad() != null && lineaNomina.getCantidad() > 0)) {
                     // throw new IllegalArgumentException("Toda nómina debe tener una línea de 'Salario base' con importe positivo.");
                 }
             }
@@ -297,6 +385,13 @@ public class NominasController {
     }
 
 
+    /**
+     * Elimina una línea de una nómina existente si es modificable
+     *
+     * @param lineaId            ID de la línea de nómina a borrar
+     * @param redirectAttributes Atributos para enviar mensajes en la redirección
+     * @return Redirección a la vista de detalle de la nómina actualizada
+     */
     @PostMapping("/linea/{lineaId}/borrar")
     @Transactional
     public String borrarLineaNomina(@PathVariable UUID lineaId, RedirectAttributes redirectAttributes) {
@@ -312,7 +407,7 @@ public class NominasController {
         if ("Salario base".equalsIgnoreCase(lineaNomina.getConcepto())) {
             // Verificar si hay otras líneas de salario base (poco probable pero posible)
             long countSalarioBase = nomina.getLineas().stream().filter(l -> "Salario base".equalsIgnoreCase(l.getConcepto())).count();
-            if(countSalarioBase <= 1) { // Si es la única o la última línea de salario base
+            if (countSalarioBase <= 1) { // Si es la única o la última línea de salario base
                 redirectAttributes.addFlashAttribute("error", "La línea de 'Salario base' es obligatoria y no puede ser eliminada si es la única con ese concepto.");
                 return "redirect:/administrador/nominas/detalle/" + nomina.getId();
             }
@@ -326,10 +421,16 @@ public class NominasController {
         return "redirect:/administrador/nominas/detalle/" + nomina.getId();
     }
 
+    /**
+     * Genera un PDF con los detalles de una nómina específica
+     *
+     * @param id ID de la nómina para la que se generará el PDF
+     * @return ResponseEntity con el archivo PDF generado o error si falla la generación
+     */
     @GetMapping("/detalle/{id}/pdf")
     public ResponseEntity<byte[]> generarPDFNomina(@PathVariable UUID id) {
         Nomina nomina = nominaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nómina no encontrada ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Nómina no encontrada - ID: " + id));
         calcularAcumuladosAnuales(nomina);
         Map<String, String> empresaParams = getEmpresaParametrosMap();
 
@@ -346,6 +447,14 @@ public class NominasController {
         }
     }
 
+    /**
+     * Método privado que genera el documento PDF de una nómina
+     *
+     * @param nomina        La nómina para la que se generará el PDF
+     * @param empresaParams Mapa con los parámetros de la empresa (nombre, CIF, dirección)
+     * @return Array de bytes con el contenido del PDF generado
+     * @throws IOException Si ocurre un error en la generación del PDF
+     */
     private byte[] generarPDF(Nomina nomina, Map<String, String> empresaParams) throws IOException {
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
@@ -376,27 +485,67 @@ public class NominasController {
 
                 // Empresa
                 contentStream.setFont(fontBold, 9);
-                contentStream.beginText(); contentStream.newLineAtOffset(margin, yEmpresa); contentStream.showText("EMPRESA"); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yEmpresa);
+                contentStream.showText("EMPRESA");
+                contentStream.endText();
                 yEmpresa -= leadingNormal;
                 contentStream.setFont(fontRegular, 8);
-                contentStream.beginText();contentStream.newLineAtOffset(margin, yEmpresa);contentStream.showText("Denominación: " + empresaParams.getOrDefault(PARAM_NOMBRE_EMPRESA, "N/D"));contentStream.endText();yEmpresa -= leadingSmall;
-                contentStream.beginText();contentStream.newLineAtOffset(margin, yEmpresa);contentStream.showText("CIF: " + empresaParams.getOrDefault(PARAM_CIF_EMPRESA, "N/D"));contentStream.endText();yEmpresa -= leadingSmall;
-                contentStream.beginText();contentStream.newLineAtOffset(margin, yEmpresa);contentStream.showText("Dirección: " + empresaParams.getOrDefault(PARAM_DIRECCION_EMPRESA, "N/D"));contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yEmpresa);
+                contentStream.showText("Denominación: " + empresaParams.getOrDefault(PARAM_NOMBRE_EMPRESA, "N/D"));
+                contentStream.endText();
+                yEmpresa -= leadingSmall;
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yEmpresa);
+                contentStream.showText("CIF: " + empresaParams.getOrDefault(PARAM_CIF_EMPRESA, "N/D"));
+                contentStream.endText();
+                yEmpresa -= leadingSmall;
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yEmpresa);
+                contentStream.showText("Dirección: " + empresaParams.getOrDefault(PARAM_DIRECCION_EMPRESA, "N/D"));
+                contentStream.endText();
 
                 // Empleado
                 float xEmpleado = margin + columnWidth + 20;
                 float yEmpleado = yPosition;
                 Empleado emp = nomina.getEmpleado();
                 contentStream.setFont(fontBold, 9);
-                contentStream.beginText(); contentStream.newLineAtOffset(xEmpleado, yEmpleado); contentStream.showText("TRABAJADOR"); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xEmpleado, yEmpleado);
+                contentStream.showText("TRABAJADOR");
+                contentStream.endText();
                 yEmpleado -= leadingNormal;
                 contentStream.setFont(fontRegular, 8);
-                contentStream.beginText();contentStream.newLineAtOffset(xEmpleado, yEmpleado);contentStream.showText("Nombre: " + emp.getNombreCompleto());contentStream.endText();yEmpleado -= leadingSmall;
-                contentStream.beginText();contentStream.newLineAtOffset(xEmpleado, yEmpleado);contentStream.showText(emp.getTipoDocumento().getTipoDocumento() + ": " + emp.getNumeroDocumento());contentStream.endText();yEmpleado -= leadingSmall;
-                contentStream.beginText();contentStream.newLineAtOffset(xEmpleado, yEmpleado);contentStream.showText("Nº S.S.: " + (nomina.getNumeroSeguridadSocialEmpleado() != null ? nomina.getNumeroSeguridadSocialEmpleado() : "N/D"));contentStream.endText();yEmpleado -= leadingSmall;
-                contentStream.beginText();contentStream.newLineAtOffset(xEmpleado, yEmpleado);contentStream.showText("Fecha Alta: " + (emp.getFechaAltaEnBaseDeDatos() != null ? emp.getFechaAltaEnBaseDeDatos().toString() : "N/D"));contentStream.endText();yEmpleado -= leadingSmall;
-                contentStream.beginText();contentStream.newLineAtOffset(xEmpleado, yEmpleado);contentStream.showText("Puesto: " + (nomina.getPuestoEmpleadoNomina() != null ? nomina.getPuestoEmpleadoNomina() : "N/D"));contentStream.endText();yEmpleado -= leadingSmall;
-                contentStream.beginText();contentStream.newLineAtOffset(xEmpleado, yEmpleado);contentStream.showText("Departamento: " + (emp.getDepartamento() != null ? emp.getDepartamento().toStringBonito() : "N/D"));contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xEmpleado, yEmpleado);
+                contentStream.showText("Nombre: " + emp.getNombreCompleto());
+                contentStream.endText();
+                yEmpleado -= leadingSmall;
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xEmpleado, yEmpleado);
+                contentStream.showText(emp.getTipoDocumento().getTipoDocumento() + ": " + emp.getNumeroDocumento());
+                contentStream.endText();
+                yEmpleado -= leadingSmall;
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xEmpleado, yEmpleado);
+                contentStream.showText("Nº S.S.: " + (nomina.getNumeroSeguridadSocialEmpleado() != null ? nomina.getNumeroSeguridadSocialEmpleado() : "N/D"));
+                contentStream.endText();
+                yEmpleado -= leadingSmall;
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xEmpleado, yEmpleado);
+                contentStream.showText("Fecha Alta: " + (emp.getFechaAltaEnBaseDeDatos() != null ? emp.getFechaAltaEnBaseDeDatos().toString() : "N/D"));
+                contentStream.endText();
+                yEmpleado -= leadingSmall;
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xEmpleado, yEmpleado);
+                contentStream.showText("Puesto: " + (nomina.getPuestoEmpleadoNomina() != null ? nomina.getPuestoEmpleadoNomina() : "N/D"));
+                contentStream.endText();
+                yEmpleado -= leadingSmall;
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xEmpleado, yEmpleado);
+                contentStream.showText("Departamento: " + (emp.getDepartamento() != null ? emp.getDepartamento().toStringBonito() : "N/D"));
+                contentStream.endText();
 
                 yPosition = Math.min(yEmpresa, yEmpleado) - leadingNormal * 1.5f;
 
@@ -417,76 +566,145 @@ public class NominasController {
 
                 yPosition -= 5; // Espacio
                 // Línea horizontal
-                contentStream.moveTo(margin, yPosition); contentStream.lineTo(page.getMediaBox().getWidth() - margin, yPosition); contentStream.stroke();
+                contentStream.moveTo(margin, yPosition);
+                contentStream.lineTo(page.getMediaBox().getWidth() - margin, yPosition);
+                contentStream.stroke();
                 yPosition -= leadingSmall;
-                contentStream.beginText(); contentStream.newLineAtOffset(conceptoX, yPosition); contentStream.showText("CONCEPTO SALARIAL"); contentStream.endText();
-                contentStream.beginText(); contentStream.newLineAtOffset(importeX, yPosition); contentStream.showText("IMPORTE"); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(conceptoX, yPosition);
+                contentStream.showText("CONCEPTO SALARIAL");
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(importeX, yPosition);
+                contentStream.showText("IMPORTE");
+                contentStream.endText();
                 yPosition -= 5; // Espacio
-                contentStream.moveTo(margin, yPosition); contentStream.lineTo(page.getMediaBox().getWidth() - margin, yPosition); contentStream.stroke();
+                contentStream.moveTo(margin, yPosition);
+                contentStream.lineTo(page.getMediaBox().getWidth() - margin, yPosition);
+                contentStream.stroke();
                 yPosition -= leadingNormal;
 
 
                 // I. DEVENGOS
                 contentStream.setFont(fontBold, 8);
-                contentStream.beginText(); contentStream.newLineAtOffset(margin, yPosition); contentStream.showText("I. DEVENGOS"); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("I. DEVENGOS");
+                contentStream.endText();
                 yPosition -= leadingNormal;
                 contentStream.setFont(fontRegular, 8);
                 for (LineaNomina linea : nomina.getLineas()) {
                     if (linea.getCantidad() > 0) {
-                        contentStream.beginText(); contentStream.newLineAtOffset(conceptoX, yPosition); contentStream.showText(linea.getConcepto()); contentStream.endText();
-                        contentStream.beginText(); contentStream.newLineAtOffset(importeX, yPosition); contentStream.showText(String.format("%,.2f", linea.getCantidad())); contentStream.endText();
+                        contentStream.beginText();
+                        contentStream.newLineAtOffset(conceptoX, yPosition);
+                        contentStream.showText(linea.getConcepto());
+                        contentStream.endText();
+                        contentStream.beginText();
+                        contentStream.newLineAtOffset(importeX, yPosition);
+                        contentStream.showText(String.format("%,.2f", linea.getCantidad()));
+                        contentStream.endText();
                         yPosition -= leadingSmall;
                     }
                 }
                 yPosition -= 5; // Espacio
                 contentStream.setFont(fontBold, 8);
-                contentStream.beginText(); contentStream.newLineAtOffset(margin + 200, yPosition); contentStream.showText("A. TOTAL DEVENGOS"); contentStream.endText();
-                contentStream.beginText(); contentStream.newLineAtOffset(importeX, yPosition); contentStream.showText(String.format("%,.2f", nomina.getTotalDevengos())); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin + 200, yPosition);
+                contentStream.showText("A. TOTAL DEVENGOS");
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(importeX, yPosition);
+                contentStream.showText(String.format("%,.2f", nomina.getTotalDevengos()));
+                contentStream.endText();
                 yPosition -= leadingNormal * 1.5f;
 
                 // II. DEDUCCIONES
                 contentStream.setFont(fontBold, 8);
-                contentStream.beginText(); contentStream.newLineAtOffset(margin, yPosition); contentStream.showText("II. DEDUCCIONES"); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("II. DEDUCCIONES");
+                contentStream.endText();
                 yPosition -= leadingNormal;
                 contentStream.setFont(fontRegular, 8);
                 for (LineaNomina linea : nomina.getLineas()) {
                     if (linea.getCantidad() < 0) {
-                        contentStream.beginText(); contentStream.newLineAtOffset(conceptoX, yPosition); contentStream.showText(linea.getConcepto()); contentStream.endText();
-                        contentStream.beginText(); contentStream.newLineAtOffset(importeX, yPosition); contentStream.showText(String.format("%,.2f", Math.abs(linea.getCantidad()))); contentStream.endText();
+                        contentStream.beginText();
+                        contentStream.newLineAtOffset(conceptoX, yPosition);
+                        contentStream.showText(linea.getConcepto());
+                        contentStream.endText();
+                        contentStream.beginText();
+                        contentStream.newLineAtOffset(importeX, yPosition);
+                        contentStream.showText(String.format("%,.2f", Math.abs(linea.getCantidad())));
+                        contentStream.endText();
                         yPosition -= leadingSmall;
                     }
                 }
                 yPosition -= 5; // Espacio
                 contentStream.setFont(fontBold, 8);
-                contentStream.beginText(); contentStream.newLineAtOffset(margin + 200, yPosition); contentStream.showText("B. TOTAL A DEDUCIR"); contentStream.endText();
-                contentStream.beginText(); contentStream.newLineAtOffset(importeX, yPosition); contentStream.showText(String.format("%,.2f", Math.abs(nomina.getTotalDeducciones()))); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin + 200, yPosition);
+                contentStream.showText("B. TOTAL A DEDUCIR");
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(importeX, yPosition);
+                contentStream.showText(String.format("%,.2f", Math.abs(nomina.getTotalDeducciones())));
+                contentStream.endText();
                 yPosition -= leadingNormal * 2f;
 
                 // LÍQUIDO TOTAL A PERCIBIR
                 contentStream.setFont(fontBold, 10);
-                contentStream.beginText(); contentStream.newLineAtOffset(margin + 125, yPosition); contentStream.showText("LÍQUIDO TOTAL A PERCIBIR (A-B)"); contentStream.endText();
-                contentStream.beginText(); contentStream.newLineAtOffset(importeX, yPosition); contentStream.showText(String.format("%,.2f €", nomina.getSalarioNeto())); contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin + 125, yPosition);
+                contentStream.showText("LÍQUIDO TOTAL A PERCIBIR (A-B)");
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(importeX, yPosition);
+                contentStream.showText(String.format("%,.2f €", nomina.getSalarioNeto()));
+                contentStream.endText();
                 yPosition -= leadingHeader * 1.5f;
 
 
                 // Datos Acumulados Anuales
                 if (nomina.getCantidadBrutaAcumuladaAnual() != null) {
                     contentStream.setFont(fontBold, 9);
-                    contentStream.beginText();contentStream.newLineAtOffset(margin, yPosition);contentStream.showText("RESUMEN ACUMULADO ANUAL (Ejercicio " + nomina.getFechaInicio().getYear() + ")");contentStream.endText();
+                    contentStream.beginText();
+                    contentStream.newLineAtOffset(margin, yPosition);
+                    contentStream.showText("RESUMEN ACUMULADO ANUAL (Ejercicio " + nomina.getFechaInicio().getYear() + ")");
+                    contentStream.endText();
                     yPosition -= leadingNormal;
                     contentStream.setFont(fontRegular, 8);
-                    contentStream.beginText();contentStream.newLineAtOffset(margin, yPosition);contentStream.showText("Total Devengado: " + String.format("%,.2f €", nomina.getCantidadBrutaAcumuladaAnual()));contentStream.endText();yPosition -= leadingSmall;
-                    contentStream.beginText();contentStream.newLineAtOffset(margin, yPosition);contentStream.showText("Total Deducciones: " + String.format("%,.2f €", nomina.getRetencionesAcumuladasAnual()));contentStream.endText();yPosition -= leadingSmall;
-                    contentStream.beginText();contentStream.newLineAtOffset(margin, yPosition);contentStream.showText("Total Líquido Percibido: " + String.format("%,.2f €", nomina.getCantidadPercibidaAcumuladaAnual()));contentStream.endText();yPosition -= leadingSmall;
+                    contentStream.beginText();
+                    contentStream.newLineAtOffset(margin, yPosition);
+                    contentStream.showText("Total Devengado: " + String.format("%,.2f €", nomina.getCantidadBrutaAcumuladaAnual()));
+                    contentStream.endText();
+                    yPosition -= leadingSmall;
+                    contentStream.beginText();
+                    contentStream.newLineAtOffset(margin, yPosition);
+                    contentStream.showText("Total Deducciones: " + String.format("%,.2f €", nomina.getRetencionesAcumuladasAnual()));
+                    contentStream.endText();
+                    yPosition -= leadingSmall;
+                    contentStream.beginText();
+                    contentStream.newLineAtOffset(margin, yPosition);
+                    contentStream.showText("Total Líquido Percibido: " + String.format("%,.2f €", nomina.getCantidadPercibidaAcumuladaAnual()));
+                    contentStream.endText();
+                    yPosition -= leadingSmall;
                 }
 
                 // Pie (Fecha y Firma)
                 yPosition = margin + 30; // Más abajo para la firma
                 contentStream.setFont(fontRegular, 9);
-                contentStream.beginText();contentStream.newLineAtOffset(margin, yPosition);contentStream.showText("Fecha de emisión: " + LocalDate.now().toString());contentStream.endText();
-                contentStream.beginText();contentStream.newLineAtOffset(page.getMediaBox().getWidth() - margin - 120, yPosition);contentStream.showText("Recibí (Firma del trabajador)");contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("Fecha de emisión: " + LocalDate.now().toString());
+                contentStream.endText();
+                contentStream.beginText();
+                contentStream.newLineAtOffset(page.getMediaBox().getWidth() - margin - 120, yPosition);
+                contentStream.showText("Recibí (Firma del trabajador)");
+                contentStream.endText();
                 yPosition -= leadingSmall;
-                contentStream.moveTo(page.getMediaBox().getWidth() - margin - 150, yPosition); contentStream.lineTo(page.getMediaBox().getWidth() - margin - 20 , yPosition); contentStream.stroke();
+                contentStream.moveTo(page.getMediaBox().getWidth() - margin - 150, yPosition);
+                contentStream.lineTo(page.getMediaBox().getWidth() - margin - 20, yPosition);
+                contentStream.stroke();
 
             } // Cierra contentStream
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
