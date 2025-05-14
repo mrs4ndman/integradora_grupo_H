@@ -8,8 +8,6 @@ import org.grupo_h.comun.repository.*;
 import org.grupo_h.comun.entity.Etiqueta;
 import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.entity.auxiliar.CuentaCorriente;
-import org.grupo_h.comun.entity.auxiliar.Direccion;
-import org.grupo_h.comun.entity.auxiliar.TarjetaCredito;
 import org.grupo_h.empleados.dto.*;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.grupo_h.comun.exceptions.EntidadDuplicadaEnSesionException;
@@ -163,6 +161,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new EntidadDuplicadaEnSesionException("No puedes guardar más datos, ya existe una instancia con el mismo identificador en la sesión actual");
         }
     }
+
 
     @Override
     public Optional<Empleado> obtenerEmpleadoPorId(UUID id) {
