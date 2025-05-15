@@ -1,5 +1,6 @@
 package org.grupo_h.empleados.service;
 
+import jakarta.mail.Multipart;
 import jakarta.persistence.EntityNotFoundException;
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.Departamento;
@@ -23,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 import org.yaml.snakeyaml.events.Event;
 
@@ -70,7 +72,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
     @Override
     @Transactional
-    public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario) {
+    public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario, byte[] foto) {
         Empleado empleado = modelMapper.map(empleadoDTO, Empleado.class);
         Optional<Usuario> usuario = usuarioRepository.findById(IdUsuario);
 
@@ -78,17 +80,12 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             empleado.setUsuario(usuario.get());
         }
 
-        System.out.println("imagen="+empleadoDTO.getFotografiaDTO());
+        System.out.println("imagen=" + empleadoDTO.getFotografiaDTO());
 
         // Convertir MultipartFile a byte[] y asignar
-        try {
-            System.out.println("size="+empleadoDTO.getFotografiaDTO().getSize());
-            empleado.setFotografia(empleadoDTO.getFotografiaDTO().getBytes());
-            log.info("La fotografia del empleado se procesó correctamente");
-        } catch (IOException e) {
-            log.warn("Error al procesar la fotografia del empleado");
-            System.out.println("Error al procesar la imagen"+ e.toString());
-        }
+        System.out.println("size="+empleadoDTO.getFotografiaDTO().getSize());
+        empleado.setFotografia(foto);
+        log.info("La fotografia del empleado se procesó correctamente");
 
         if (empleado.getTarjetas() != null && empleado.getTarjetas().getTipoTarjetaCredito() != null) {
             String nombreTipoTarjeta = empleado.getTarjetas().getTipoTarjetaCredito().getNombreTipoTarjeta();

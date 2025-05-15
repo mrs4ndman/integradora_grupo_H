@@ -6,17 +6,8 @@
  * @param mensaje - El mensaje de confirmación.
  * @returns boolean - true si el usuario confirma, false si cancela.
  */
-function confirmarAccionFormulario(elemento, mensaje) {
-    if (confirm(mensaje)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 function confirmarAccionFormularioRegistroEmpleado(elemento, mensaje) {
     if (confirm(mensaje)) {
-        alert("Datos guardados correctamente")
         return true;
     } else {
         return false;

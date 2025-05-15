@@ -212,8 +212,15 @@ hr {
     gap: 1rem;
 }
 
+.acceso_fucionalidades{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .boton {
     display: inline-block;
+    width: 50%;
     padding: 0.6rem 1.2rem;
     border: 1px solid #111;
     background-color: #fff;
@@ -257,4 +264,12 @@ input.boton{
 input.boton:hover{
     border-color: #777;
     color: #777;
+}
+
+.btn-form{
+    display: flex;
+}
+
+.btn-seleccionar{
+    margin: 20px 0;
 }

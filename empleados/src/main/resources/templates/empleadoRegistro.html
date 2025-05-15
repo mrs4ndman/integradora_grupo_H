@@ -28,8 +28,9 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<form th:action="@{/empleados/registro-datos}" th:object="${empleadoRegistroDTO}" method="post" id="formulario"
-      enctype="multipart/form-data">
+<form th:action="@{/empleados/registro-datos}" enctype="multipart/form-data" th:object="${empleadoRegistroDTO}"
+      method="post" id="formulario"
+>
 
     <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
     <div th:if="${#fields.hasGlobalErrors()}">
@@ -65,13 +66,15 @@
                th:text="${g.nombreGenero}"></label><br>
     </div>
 
-    <input type="button" th:value="#{Boton.selecciona.genero}" onclick="seleccionarGeneroF()" class="boton">
-    <input type="button" th:value="#{Boton.deselecciona.genero}" onclick="deseleccionaTodosGeneros()" class="boton">
+    <div class="btn-seleccionar">
+        <input type="button" th:value="#{Boton.selecciona.genero}" onclick="seleccionarGeneroF()" class="boton">
+        <input type="button" th:value="#{Boton.deselecciona.genero}" onclick="deseleccionaTodosGeneros()" class="boton">
+    </div>
 
 
     <div>
         <span style="color:red">&#8226;</span> <label for="fechaNacimiento"
-                                                      th:text="#{Datos-personales.fechaNacimiento}"/>
+         th:text="#{Datos-personales.fechaNacimiento}"/>
         <input type="text" id="fechaNacimiento" th:field="*{fechaNacimientoDTO}"/>
         <div th:if="${#fields.hasErrors('fechaNacimientoDTO')}" th:errors="*{fechaNacimientoDTO}" class="error"></div>
     </div>
@@ -106,18 +109,20 @@
     </div>
     <div th:if="${#fields.hasErrors('comentarios')}" th:errors="*{comentarios}" class="error"></div>
 
-    <input type="button"
-           th:value="#{Boton.resetear}"
-           onclick="resetFormulario()">
-    <br><br>
+    <div class="btn-form">
+        <input type="button"
+               th:value="#{Boton.resetear}"
+               onclick="resetFormulario()">
+        <br><br>
 
-    <input type="button"
-           th:value="#{Boton.vaciar}"
-           onclick="vaciarFormulario()">
-    <br><br>
+        <input type="button"
+               th:value="#{Boton.vaciar}"
+               onclick="vaciarFormulario()">
+        <br><br>
 
-    <input type="submit"
-           th:value="#{Boton.siguiente}">
+        <input type="submit"
+               th:value="#{Boton.siguiente}">
+    </div>
 
 </form>
 

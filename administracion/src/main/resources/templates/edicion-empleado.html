@@ -56,10 +56,10 @@
     <input type="text" th:field="*{apellido}" id="apellidos" required/>
 
     <label for="edad">Edad</label>
-    <input type="number" th:field="*{edad}" id="edad" min="18" required/>
+    <input type="text" th:field="*{edad}" id="edad" min="18" required/>
 
     <label for="numeroDocumento">DNI</label>
-    <input type="text" th:field="*{numeroDni}" id="numeroDocumento" disabled/>
+    <input type="text" th:field="*{numeroDni}" id="numeroDocumento" required/>
 
     <label for="departamentoId">Departamento</label>
     <select th:field="*{nombreDepartamento}" id="departamentoId" required>

@@ -1,5 +1,6 @@
 package org.grupo_h.administracion.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import org.grupo_h.administracion.dto.EmpleadoConsultaDTO;
 import org.grupo_h.administracion.dto.EmpleadoDTO;
@@ -47,6 +48,7 @@ public class GestionEmpleadosController {
      * @param model              Modelo para pasar datos a la vista
      * @return La vista de consulta parametrizada o redirección al login si no hay sesión
      */
+
     @GetMapping("/consulta-empleado")
     public String consultaEmpleado(@ModelAttribute("filtro") EmpleadoConsultaDTO filtro,
                                    HttpSession session,
@@ -66,9 +68,7 @@ public class GestionEmpleadosController {
         List<Departamento> departamentos = departamentoService.obtenerTodosDepartamentos();
         model.addAttribute("departamentos", departamentos);
 
-        List<EmpleadoDTO> resultados = empleadoService.buscarEmpleados(filtro);
 
-        model.addAttribute("resultados", resultados);
         return "consultaParametrizadaEmpleado";
     }
 
@@ -133,7 +133,7 @@ public class GestionEmpleadosController {
         Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dni);
 
         if (empleadoOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado.");
+            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado en el get.");
             return "redirect:/administrador/consulta-empleado";
         }
 
@@ -165,15 +165,21 @@ public class GestionEmpleadosController {
                                           RedirectAttributes redirectAttributes) {
 
         Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dto.getNumeroDni());
+        System.err.println(empleadoOpt);
         if (empleadoOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado.");
+            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado en el post.");
             return "redirect:/administrador/consulta-empleado";
         }
 
         Empleado empleado = empleadoOpt.get();
         empleado.setNombre(dto.getNombre());
         empleado.setApellidos(dto.getApellido());
-        empleado.setEdad(dto.getEdad());
+
+        if (dto.getEdad() != null) {
+            empleado.setEdad(dto.getEdad());
+        } else {
+            System.out.println("Edad es null. Se omite.");
+        }
         try {
             Departamento departamento = (Departamento) departamentoRepository.findByNombreDept(dto.getNombreDepartamento()).orElse(null);
             empleado.setDepartamento(departamento);
@@ -182,12 +188,34 @@ public class GestionEmpleadosController {
         }
 
         System.out.println("AQUI → " + empleado);
+
+        try{
         empleadoRepository.save(empleado);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
 
-
-        // Guarda los cambios
 
         redirectAttributes.addFlashAttribute("exito", "Empleado actualizado correctamente.");
         return "redirect:/administrador/consulta-empleado";
     }
+
+    @DeleteMapping("/borrar-empleado/{dni}")
+    public String borrarEmpleadoPorDni(@PathVariable String dni,
+                                       RedirectAttributes attrs,
+                                       HttpSession session) {
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            attrs.addFlashAttribute("error", "Debes iniciar sesión.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+        try {
+            empleadoService.eliminarPorDni(dni);
+            attrs.addFlashAttribute("exito", "Empleado borrado correctamente.");
+        } catch (EntityNotFoundException e) {
+            attrs.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/administrador/consulta-empleado";
+    }
+
+
 }

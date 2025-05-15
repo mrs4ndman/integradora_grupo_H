@@ -33,6 +33,11 @@ public interface EmpleadoService {
 
     List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro);
 
-
     Optional<Empleado> buscarPorDni(String dni);
+
+    Optional<Empleado> buscarEmpleado(UUID empleadoID);
+
+    void eliminarPorId(UUID id);
+
+    void eliminarPorDni(String dni);
 }

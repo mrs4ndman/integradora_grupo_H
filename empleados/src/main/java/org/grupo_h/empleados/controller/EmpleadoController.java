@@ -34,9 +34,11 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.ui.Model;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -174,8 +176,7 @@ public class EmpleadoController {
 //            dtoSesion.setArchivoNombreOriginal(null);
 //        }
 
-//        // Obtener la lista de géneros usando el servicio
-//        List<Genero> gen = generoService.obtenerGeneros();
+
 
         List<Genero> generos = generoService.obtenerGeneros();
         if (empleadoRegistroDTO.getGeneroSeleccionadoDTO() == null && !generos.isEmpty()) {
@@ -205,6 +206,8 @@ public class EmpleadoController {
             HttpSession session,
             Model model) {
 
+
+
         if (result.hasErrors()) {
             model.addAttribute("generos", generoService.obtenerGeneros());
             model.addAttribute("paises", paisRepository.findAll());
@@ -212,7 +215,23 @@ public class EmpleadoController {
             result.getAllErrors().forEach(error -> System.out.println(error.toString()));
             return "empleadoRegistro";
         }
-        System.out.println("Yendo al redirect");
+
+        MultipartFile foto = empleadoRegistroDTO.getFotografiaDTO();
+
+
+//        // Verifica si el archivo es nulo o vacío
+//        if (foto == null || foto.isEmpty()) {
+//            System.out.println("¡El archivo está vacío o no se recibió!");
+//        } else {
+//            System.out.println(
+//                    "Archivo recibido: " + foto.getOriginalFilename() +
+//                            " | Tamaño: " + foto.getSize() + " bytes" +
+//                            " | Tipo: " + foto.getContentType()
+//            );
+//        }
+
+        System.err.println(empleadoRegistroDTO.getFotografiaDTO());
+        System.out.println("Estoy en el Post de registro de Datos del Empleado");
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
         System.out.println(empleadoRegistroDTO);
         return "redirect:/empleados/registro-direccion";
@@ -456,6 +475,7 @@ public class EmpleadoController {
             return "empleadoDatosFinales";
         }
 
+
         // Mensaje que aparece en la ventana de alerta tras guardar datos
         redirectAttrs.addFlashAttribute("mensaje", "Datos guardados en Base de Datos");
 
@@ -469,13 +489,23 @@ public class EmpleadoController {
         }
 
         try {
-            empleadoService.registrarEmpleado(dtoSesion, usuario.get().getId());
+            byte[] fotoBytes = null;
+            if (!empleadoRegistroDTO.getFotografiaDTO().isEmpty()) {
+                fotoBytes = empleadoRegistroDTO.getFotografiaDTO().getBytes();
+            }
+
+            empleadoService.registrarEmpleado(dtoSesion, usuario.get().getId(), fotoBytes);
+
+            model.addAttribute("mostrarAlerta", true);
+            model.addAttribute("mensaje", "¡Sus datos se guardaron correctamente!");
         } catch (RuntimeException ex) {
             model.addAttribute("error", ex.getMessage());
+            System.err.println("Error RunTime" + ex.getMessage());
             // Si el usuario vuelve a introducir los datos, se redirige al área personal
-            return "redirect:/areaPersonal";
+//            return "redirect:/empleados/registro-finales";
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            model.addAttribute("error", e.getMessage());
+            System.err.println("Error Exception" + e.getMessage());
         }
         return "redirect:/empleados/registro-finales";
     }
@@ -509,19 +539,39 @@ public class EmpleadoController {
         return "redirect:/usuarios/inicio-sesion";
     }
 
-    private void cargarEspecialidades(@ModelAttribute("empleadoRegistroDTO") @Validated(DatosDepartamento.class) EmpleadoRegistroDTO empleadoRegistroDTO, Model model) {
-        if (empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO() == null || empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO().isEmpty()) {
-            List<EspecialidadesEmpleadoDTO> especialidades = especialidadesEmpleadoService.obtenerTodasEspecialidadesEmpleadoDTO();
-//            especialidades.forEach(e -> {
-//                if (e.getNombreEspecialidad() == null) {
-//                }
-//            });
+    private void cargarEspecialidades(
+            @ModelAttribute("empleadoRegistroDTO") @Validated(DatosDepartamento.class)
+            EmpleadoRegistroDTO empleadoRegistroDTO,
+            Model model) {
 
-            empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(especialidades);
-        }
-        List<DepartamentoDTO> departamentosDTO = departamentoService.obtenerTodosDepartamentos().stream()
+        // 1. Obtén siempre todas las especialidades disponibles
+        List<EspecialidadesEmpleadoDTO> todas =
+                especialidadesEmpleadoService.obtenerTodasEspecialidadesEmpleadoDTO();
+
+        // 2. Construye un mapa { id -> estabaSeleccionada } a partir de lo que viene del POST
+        Map<UUID, Boolean> seleccionadasMap = Optional.ofNullable(empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO())
+                .orElse(Collections.emptyList())
+                .stream()
+                .collect(Collectors.toMap(
+                        EspecialidadesEmpleadoDTO::getId,
+                        EspecialidadesEmpleadoDTO::isSeleccionada
+                ));
+
+        // 3. Recorre la lista completa y ajusta el flag 'seleccionada' según tu mapa
+        todas.forEach(e -> e.setSeleccionada(seleccionadasMap.getOrDefault(e.getId(), false)));
+
+        // 4. Sustituye la lista del DTO por ésta, ya con los flags restaurados
+        empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(todas);
+
+        // 5. Igual que antes, carga los departamentos
+        List<DepartamentoDTO> departamentosDTO = departamentoService
+                .obtenerTodosDepartamentos().stream()
                 .map(e -> modelMapper.map(e, DepartamentoDTO.class))
                 .collect(Collectors.toList());
+
+        Map<UUID, String> nombresDept = departamentosDTO.stream()
+                .collect(Collectors.toMap(DepartamentoDTO::getId, DepartamentoDTO::getNombreDept));
+
         model.addAttribute("departamentos", departamentosDTO);
     }
 //        model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
@@ -878,10 +928,3 @@ public class EmpleadoController {
         }
     }
 }
-
-
-
-
-
-
-

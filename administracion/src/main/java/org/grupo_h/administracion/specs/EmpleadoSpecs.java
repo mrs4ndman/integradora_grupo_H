@@ -4,6 +4,7 @@ import org.grupo_h.comun.entity.Empleado;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public class EmpleadoSpecs {
@@ -27,6 +28,11 @@ public class EmpleadoSpecs {
 
     public static Specification<Empleado> departamentoContiene(UUID departamentoId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("departamento").get("id"), departamentoId);
+    }
+
+    public static Specification<Empleado> departamentosEnLista(List<UUID> idsDepartamento) {
+        return (root, query, criteriaBuilder) ->
+                root.get("departamento").get("id").in(idsDepartamento);
     }
 
     public static Specification<Empleado> numeroDocumentoContiene(String numeroDni) {

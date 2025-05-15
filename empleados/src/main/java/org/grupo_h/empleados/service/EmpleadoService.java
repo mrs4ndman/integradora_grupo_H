@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Service
 public interface EmpleadoService {
-    Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario) throws Exception;
+    Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario, byte[] foto) throws Exception;
 
     Optional<Empleado> obtenerEmpleadoPorId(UUID id);
 

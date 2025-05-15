@@ -51,18 +51,20 @@
         <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()" class="boton">
 
         <br><br>
-        <input type="button"
-               th:value="#{Boton.resetear}"
-               onclick="resetFormulario()">
-        <br><br>
+        <div class="btn-form">
+            <input type="button"
+                   th:value="#{Boton.resetear}"
+                   onclick="resetFormulario()">
+            <br><br>
 
-        <input type="button"
-               th:value="#{Boton.vaciar}"
-               onclick="vaciarFormulario()">
-        <br><br>
+            <input type="button"
+                   th:value="#{Boton.vaciar}"
+                   onclick="vaciarFormulario()">
+            <br><br>
 
-        <input type="submit"
-               th:value="#{Boton.siguiente}">
+            <input type="submit"
+                   th:value="#{Boton.siguiente}">
+        </div>
     </form>
     <script th:src="@{/js/script.js}"></script>
 </body>

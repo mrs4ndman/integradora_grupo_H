@@ -13,7 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DepartamentoDTO {
 
-
     private UUID id;
 
     @NotBlank
@@ -21,4 +20,14 @@ public class DepartamentoDTO {
 
     @NotBlank
     private String nombreDept;
+
+    // Constructor para crear departamentos
+    public DepartamentoDTO(String codigo, String nombreDept) {
+        this.codigo = codigo;
+        this.nombreDept = nombreDept;
+    }
+
+    public String toStringBonito() {
+        return "Nombre: " +  nombreDept +  " | Codigo: "  + codigo;
+    }
 }

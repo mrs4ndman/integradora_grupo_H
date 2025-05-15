@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -28,4 +29,6 @@ public class EmpleadoConsultaDTO {
 
     private Integer edadMin;
     private Integer edadMax;
+
+    private List<UUID> departamentosDTO;
 }

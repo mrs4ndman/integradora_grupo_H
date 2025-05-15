@@ -133,20 +133,20 @@
          th:errors="*{tarjetasCreditoDTO.cvcDTO}" class="error"></div>
     <br><br>
 
+    <div class="btn-form">
+        <input type="button"
+               th:value="#{Boton.resetear}"
+               onclick="resetFormulario()">
+        <br><br>
 
-    <input type="button"
-           th:value="#{Boton.resetear}"
-           onclick="resetFormulario()">
-    <br><br>
+        <input type="button"
+               th:value="#{Boton.vaciar}"
+               onclick="vaciarFormulario()">
+        <br><br>
 
-    <input type="button"
-           th:value="#{Boton.vaciar}"
-           onclick="vaciarFormulario()">
-    <br><br>
-
-    <input type="submit"
-           th:value="#{Boton.siguiente}">
-</form>
+        <input type="submit"
+               th:value="#{Boton.siguiente}">
+    </div>
 
 
 <script th:src="@{/js/script.js}"></script>
