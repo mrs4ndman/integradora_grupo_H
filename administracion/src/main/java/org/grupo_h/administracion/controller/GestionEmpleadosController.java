@@ -145,7 +145,6 @@ public class GestionEmpleadosController {
         dto.setEdad(empleado.getEdad());
         dto.setNumeroDni(empleado.getNumeroDocumento());
         dto.setNombreDepartamento(empleado.getDepartamento().getNombreDept());
-        // Agrega los campos que quieras editar
 
         model.addAttribute("empleado", dto);
         model.addAttribute("departamentos", departamentoService.obtenerTodosDepartamentos());
@@ -200,7 +199,7 @@ public class GestionEmpleadosController {
         return "redirect:/administrador/consulta-empleado";
     }
 
-    @DeleteMapping("/borrar-empleado/{dni}")
+    @PostMapping("/borrar-empleado/{dni}")
     public String borrarEmpleadoPorDni(@PathVariable String dni,
                                        RedirectAttributes attrs,
                                        HttpSession session) {
