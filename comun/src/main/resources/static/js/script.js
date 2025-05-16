@@ -6,17 +6,8 @@
  * @param mensaje - El mensaje de confirmación.
  * @returns boolean - true si el usuario confirma, false si cancela.
  */
-function confirmarAccionFormulario(elemento, mensaje) {
-    if (confirm(mensaje)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 function confirmarAccionFormularioRegistroEmpleado(elemento, mensaje) {
     if (confirm(mensaje)) {
-        alert("Datos guardados correctamente")
         return true;
     } else {
         return false;
@@ -62,11 +53,34 @@ function seleccionarGeneroF() {
         radio.checked = true;
     }
 }
-
-
+// Selecciona todos los radios del Género
 function deseleccionaTodosGeneros() {
     const radios = document.querySelectorAll('input[type="radio"][name="generoSeleccionadoDTO.codigoGenero"]');
     radios.forEach(r => r.checked = false);
+}
+
+
+// Selecciona Todas las especialidades
+function seleccionaTodosCheckboxes() {
+    const radios = document.querySelectorAll('input[type="checkbox"]');
+    radios.forEach(r => r.checked = true);
+}
+
+// Deselecciona Todas las especialidades
+function deseleccionaTodosCheckboxes() {
+    const radios = document.querySelectorAll('input[type="checkbox"]');
+    radios.forEach(r => r.checked = false);
+}
+
+function alternarEstilos() {
+    const checkbox = document.getElementById('quitaEstilos');
+    const estilo = document.getElementById('estilosCss');
+
+    if (checkbox.checked) {
+        estilo.disabled = true; // Quita estilos
+    } else {
+        estilo.disabled = false; // Vuelve a aplicar los estilos
+    }
 }
 
 

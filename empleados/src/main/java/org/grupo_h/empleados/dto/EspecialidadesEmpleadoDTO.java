@@ -20,9 +20,9 @@ public class EspecialidadesEmpleadoDTO {
     @NotNull(groups = DatosDepartamento.class)
     private UUID id;
 
-
     private String nombreEspecialidad;
 
-    private Boolean seleccionada = false;
+    private boolean seleccionada = false;
+
 
 }

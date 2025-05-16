@@ -1,88 +1,100 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Datos Empleado</title>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" th:href="@{/css/estilos.css}">
-  <script th:src="@{/js/script.js}"></script>
+    <title>Datos Empleado</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
+    <script th:src="@{/js/script.js}"></script>
 
 </head>
 <body>
 
-  <!--NavBar-->
-  <div th:replace="~{fragments/navbar :: navbar}"></div>
+<!--  Desactiva los estilos-->
+<label>
+    <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
+</label>
 
-  <h2>Formulario de Registro de Empleado</h2>
-  <!-- Se muestra un mensaje de éxito si lo hay -->
-  <div th:if="${param.success}">
+<!--NavBar-->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<h2>Formulario de Registro de Empleado</h2>
+<!-- Se muestra un mensaje de éxito si lo hay -->
+<div th:if="${param.success}">
     <p style="color: green;">¡Registro exitoso!</p>
-  </div>
+</div>
 
-  <!-- Se muestra un mensaje de error si lo hay -->
-  <div th:if="${error != null}">
+<!-- Se muestra un mensaje de error si lo hay -->
+<div th:if="${error != null}">
     <p style="color: red;" th:text="${error}"></p>
-  </div>
+</div>
 
-  <form th:action="@{/empleados/registro-datos}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" enctype="multipart/form-data">
+<form th:action="@{/empleados/registro-datos}" enctype="multipart/form-data" th:object="${empleadoRegistroDTO}"
+      method="post" id="formulario"
+>
 
     <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
     <div th:if="${#fields.hasGlobalErrors()}">
-      <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+        <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
     </div>
 
-  <!--  Aquí empiezan los campos del Formulario-->
+    <!--  Aquí empiezan los campos del Formulario-->
     <div>
-      <label for="nombre" th:text="#{Datos-personales.nombre}"/>
-      <input type="text" id="nombre" th:field="*{nombreDTO}"  />
-      <div th:if="${#fields.hasErrors('nombreDTO')}" th:errors="*{nombreDTO}" class="error"></div>
-    </div>
-
-    <div>
-      <label for="apellidos" th:text="#{Datos-personales.apellido}"/>
-      <input type="text" id="apellidos" th:field="*{apellidosDTO}"  />
-      <div th:if="${#fields.hasErrors('apellidosDTO')}" th:errors="*{apellidosDTO}" class="error"></div>
+        <span style="color:red">&#8226;</span> <label for="nombre" th:text="#{Datos-personales.nombre}"/>
+        <input type="text" id="nombre" th:field="*{nombreDTO}"/>
+        <div th:if="${#fields.hasErrors('nombreDTO')}" th:errors="*{nombreDTO}" class="error"></div>
     </div>
 
     <div>
-      <label for="fotografia" th:text="#{Datos-personales.fotografia}"/>
-      <input type="file" id="fotografia" th:field="*{fotografiaDTO}">
-      <div th:if="${#fields.hasErrors('fotografiaDTO')}" th:errors="*{fotografiaDTO}" class="error"></div>
+        <span style="color:red">&#8226;</span> <label for="apellidos" th:text="#{Datos-personales.apellido}"/>
+        <input type="text" id="apellidos" th:field="*{apellidosDTO}"/>
+        <div th:if="${#fields.hasErrors('apellidosDTO')}" th:errors="*{apellidosDTO}" class="error"></div>
     </div>
 
+    <div>
+        <span style="color:red">&#8226;</span> <label for="fotografia" th:text="#{Datos-personales.fotografia}"/>
+        <input type="file" id="fotografia" th:field="*{fotografiaDTO}">
+        <div th:if="${#fields.hasErrors('fotografiaDTO')}" th:errors="*{fotografiaDTO}" class="error"></div>
+    </div>
+
+    <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-personales.genero}"></span></p>
     <div th:each="g : ${generos}">
         <input type="radio"
                th:field="*{generoSeleccionadoDTO.codigoGenero}"
                th:value="${g.codigoGenero}"
                th:id="${'genero'}"/>
-      <label th:for="${'genero'}"
-             th:text="${g.nombreGenero}"></label><br>
+        <label th:for="${'genero'}"
+               th:text="${g.nombreGenero}"></label><br>
     </div>
 
-    <input type="button" th:value="#{Boton.selecciona.genero}" onclick="seleccionarGeneroF()">
-    <input type="button" th:value="#{Boton.deselecciona.genero}" onclick="deseleccionaTodosGeneros()">
+    <div class="btn-seleccionar">
+        <input type="button" th:value="#{Boton.selecciona.genero}" onclick="seleccionarGeneroF()" class="boton">
+        <input type="button" th:value="#{Boton.deselecciona.genero}" onclick="deseleccionaTodosGeneros()" class="boton">
+    </div>
 
 
     <div>
-      <label for="fechaNacimiento" th:text="#{Datos-personales.fechaNacimiento}"/>
-      <input type="text" id="fechaNacimiento" th:field="*{fechaNacimientoDTO}"  />
-      <div th:if="${#fields.hasErrors('fechaNacimientoDTO')}" th:errors="*{fechaNacimientoDTO}" class="error"></div>
+        <span style="color:red">&#8226;</span> <label for="fechaNacimiento"
+         th:text="#{Datos-personales.fechaNacimiento}"/>
+        <input type="text" id="fechaNacimiento" th:field="*{fechaNacimientoDTO}"/>
+        <div th:if="${#fields.hasErrors('fechaNacimientoDTO')}" th:errors="*{fechaNacimientoDTO}" class="error"></div>
     </div>
 
     <div>
-      <label for="edad" th:text="#{Datos-personales.edad}"/>
-      <input type="text" id="edad" th:field="*{edadDTO}"  />
-      <div th:if="${#fields.hasErrors('edadDTO')}" th:errors="*{edadDTO}" class="error"></div>
+        <span style="color:red">&#8226;</span> <label for="edad" th:text="#{Datos-personales.edad}"/>
+        <input type="text" id="edad" th:field="*{edadDTO}"/>
+        <div th:if="${#fields.hasErrors('edadDTO')}" th:errors="*{edadDTO}" class="error"></div>
     </div>
 
     <div>
-      <label for="paisNacimiento" th:text="#{Datos-Personales.pais}"></label>
-      <select th:field="*{paisNacimiento.codigoPaisDTO}" id="paisNacimiento">
-        <option th:each="p : ${paises}"
-                th:value="${p.codigoPais}"
-                th:text="${p.nombrePais}">
-        </option>
-      </select>
-      <div th:if="${#fields.hasErrors('paisNacimiento.codigoPaisDTO')}" th:errors="*{paisNacimiento.codigoPaisDTO}" class="error"></div>
+        <span style="color:red">&#8226;</span> <label for="paisNacimiento" th:text="#{Datos-Personales.pais}"></label>
+        <select th:field="*{paisNacimiento.codigoPaisDTO}" id="paisNacimiento">
+            <option th:each="p : ${paises}"
+                    th:value="${p.codigoPais}"
+                    th:text="${p.nombrePais}">
+            </option>
+        </select>
+        <div th:if="${#fields.hasErrors('paisNacimiento.codigoPaisDTO')}" th:errors="*{paisNacimiento.codigoPaisDTO}"
+             class="error"></div>
     </div>
 
     <label for="comentario" th:text="#{Datos-Personales.comentario}"></label>
@@ -97,23 +109,22 @@
     </div>
     <div th:if="${#fields.hasErrors('comentarios')}" th:errors="*{comentarios}" class="error"></div>
 
-    <input type="button"
-           th:value="#{Boton.resetear}"
-           onclick="resetFormulario()">
-    <br><br>
+    <div class="btn-form">
+        <input type="button"
+               th:value="#{Boton.resetear}"
+               onclick="resetFormulario()">
+        <br><br>
 
-    <input type="button"
-           th:value="#{Boton.vaciar}"
-           onclick="vaciarFormulario()">
-    <br><br>
+        <input type="button"
+               th:value="#{Boton.vaciar}"
+               onclick="vaciarFormulario()">
+        <br><br>
 
-    <input type="submit"
-           th:value="#{Boton.siguiente}">
+        <input type="submit"
+               th:value="#{Boton.siguiente}">
+    </div>
 
-  <!--  <button type="submit"-->
-  <!--          th:value="#{Boton.siguiente}"-->
-  <!--  >Siguiente</button>-->
-  </form>
+</form>
 
 </body>
 </html>

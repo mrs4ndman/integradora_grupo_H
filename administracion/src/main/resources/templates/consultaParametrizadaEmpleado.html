@@ -36,7 +36,8 @@
             border-radius: 4px;
         }
 
-        button[type="submit"] {
+        button[type="submit"],
+        button[type="reset"]{
             margin-top: 20px;
             background-color: #007bff;
             color: white;
@@ -46,7 +47,8 @@
             cursor: pointer;
         }
 
-        button[type="submit"]:hover {
+        button[type="submit"]:hover,
+        button[type="reset"]:hover{
             background-color: #0056b3;
         }
 
@@ -89,7 +91,12 @@
 </head>
 <body>
 
+<div th:if="${error}" class="messages error" th:text="${error}"></div>
+<div th:if="${exito}" class="messages success" th:text="${exito}"></div>
+
 <form th:action="@{/administrador/consulta-empleado}" th:object="${filtro}" method="post">
+
+
     <label>Nombre:</label>
     <input type="text" th:field="*{nombreDTO}" />
 
@@ -97,7 +104,7 @@
     <input type="text" th:field="*{numeroDni}" />
 
     <label for="departamentoDTO">Departamento</label>
-    <select th:field="*{departamentoDTO}" id="departamentoDTO">
+    <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple>
         <option value="">Selecciona un departamento</option>
         <option th:each="departamento : ${departamentos}"
                 th:value="${departamento.id}"
@@ -105,12 +112,13 @@
     </select>
 
     <label>Edad mínima:</label>
-    <input type="number" th:field="*{edadMin}" />
+    <input type="text" th:field="*{edadMin}" />
 
     <label>Edad máxima:</label>
-    <input type="number" th:field="*{edadMax}" />
+    <input type="text" th:field="*{edadMax}" />
 
     <button type="submit">Buscar</button>
+    <button type="reset">Borrar Campos</button>
 </form>
 
 <h3>Resultados:</h3>
@@ -144,6 +152,13 @@
                     <button>
                         <a th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
                             Editar
+                        </a>
+
+                    </button>
+
+                    <button>
+                        <a th:href="@{'/administrador/borrar-empleado/' + ${emp.numeroDni}}">
+                            Borrar
                         </a>
 
                     </button>

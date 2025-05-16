@@ -3,42 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>Área personal</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
 </head>
-<body>
-<h1>Área personal: <span th:text="${email}"></span></h1>
+<body class="area-personal">
+<div class="container">
+    <h1><span class="etiqueta">Área personal de:</span> <span class="usuario" th:text="${email}"></span></h1>
 
-<div>
-    <h2>Contadores de Autenticación</h2>
-    <ul>
-        <li>
-            <strong>Total de autenticaciones válidas para este usuario:</strong>
-            <span th:text="${totalLoginsUsuario}">0</span>
-            (Independiente del navegador)
-        </li>
-        <li>
-            <strong>Autenticaciones válidas en esta sesión del navegador:</strong>
-            <span th:text="${loginsSesionActual}">0</span>
-        </li>
-    </ul>
+    <section class="bloque">
+        <h2>Contadores de Autenticación</h2>
+        <ul>
+            <li>
+                <strong>Total de autenticaciones válidas para este usuario:</strong>
+                <span th:text="${totalLoginsUsuario}">0</span>
+                <span class="detalle">(Independiente del navegador)</span>
+            </li>
+            <li>
+                <strong>Autenticaciones válidas en esta sesión del navegador:</strong>
+                <span th:text="${loginsSesionActual}">0</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="bloque">
+        <h2>Información del Cliente Actual</h2>
+        <p><strong>Navegador (User-Agent):</strong> <span th:text="${navegadorActual}"></span></p>
+    </section>
+
+    <hr>
+
+    <div class="card-body text-center">
+        <h5 class="card-title">Consultar Productos</h5>
+    <!--    <p >Busca y filtra productos en el catálogo.</p>-->
+        <a class="boton" th:href="@{/empleados/consulta-productos}" >Ir a Consulta de Productos</a>
+    </div>
+
+    <hr>
+
+    <div class="acciones">
+        <a class="boton" th:href="@{/empleados/registro-datos}">Ir a Registro de Empleado</a>
+    </div>
+
+    <hr>
+
+        <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
 </div>
-
-<div class="card-body text-center">
-    <h5 class="card-title">Consultar Productos</h5>
-    <p class="card-text">Busca y filtra productos en el catálogo.</p>
-    <a th:href="@{/empleados/consulta-productos}" class="btn btn-info">Ir a Consulta de Productos</a>
-</div>
-
-<div>
-    <h2>Información del Cliente Actual</h2>
-    <p>Navegador (User-Agent): <span th:text="${navegadorActual}"></span></p>
-</div>
-
-<hr>
-<p>
-    <a th:href="@{/empleados/registro-datos}">Ir a Registro de Empleado</a></p>
-<p>
-    <a th:href="@{/usuarios/logout}">Cerrar sesión</a>
-</p>
-
-</body>
-</html>
+</body></html>

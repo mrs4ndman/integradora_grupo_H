@@ -3,57 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <title>Área personal</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
 </head>
 <body>
-<h1>Área personal del admin: <span th:text="${email}"></span></h1>
+<div class="container">
+    <h1><span class="etiqueta">Área personal del admin:</span> <span th:text="${email}"></span></h1>
 
-<div>
-    <h2>Contadores de Autenticación</h2>
-    <ul>
-        <li>
-            <strong>Total de autenticaciones válidas para este administrador:</strong>
-            <span th:text="${totalLoginsAdministrador}">0</span>
-            (Independiente del navegador)
-        </li>
-        <li>
-            <strong>Autenticaciones válidas en esta sesión del navegador:</strong>
-            <span th:text="${loginsSesionActualAdmin}">0</span>
-        </li>
-    </ul>
-</div>
-
-<div>
+    <section class="bloque">
+        <h2>Contadores de Autenticación</h2>
+        <ul>
+            <li>
+                <strong>Total de autenticaciones válidas para este administrador:</strong>
+                <span th:text="${totalLoginsAdministrador}">0</span>
+                (Independiente del navegador)
+            </li>
+            <li>
+                <strong>Autenticaciones válidas en esta sesión del navegador:</strong>
+                <span th:text="${loginsSesionActualAdmin}">0</span>
+            </li>
+        </ul>
+    </section>
     <h2>Accesos a funcionalidades</h2>
-    <button>
-        <a th:href="@{/administrador/dashboardGestionUsuarios}">Desbloqueo / bloqueo de usuarios</a>
-    </button>
-    <button>
-        <a th:href="@{/administrador/consulta-empleado}">Consulta de Empleados</a>
-    </button>
-    <button>
-        <a th:href="@{/administrador/nominas/consultar}">Gestion de nominas</a>
-    </button>
-    <br>
-    <h3>Productos</h3>
-    <button>
-        <a th:href="@{/administrador/consulta-productos}">Consulta de productos</a>
-    </button>
-    <button>
-        <a th:href="@{/administrador/importar-catalogo}">Importar catalogo</a>
-    </button>
+    <div class="acceso_fucionalidades">
+
+        <a class="boton" th:href="@{/administrador/dashboardGestionUsuarios}">Desbloqueo / bloqueo de usuarios</a>
+
+        <a class="boton" th:href="@{/administrador/consulta-empleado}">Consulta de Empleados</a>
+
+        <a class="boton" th:href="@{/administrador/nominas/consultar}">Gestion de nominas</a>
+
+    </div>
+    <hr>
+
+    <h2>Productos</h2>
+    <div class="acceso_fucionalidades">
+
+        <a class="boton" th:href="@{/administrador/consulta-productos}">Consulta de productos</a>
+
+        <a class="boton" th:href="@{/administrador/importar-catalogo}">Importar catalogo</a>
+
+    </div>
+
+    <div>
+        <h2>Información del Cliente Actual</h2>
+        <p>Navegador (User-Agent): <span th:text="${navegadorActualAdmin}"></span></p>
+    </div>
+
+    <hr>
+    <p>
+
+        <a class="boton secundario" th:href="@{/administrador/logout}">Cerrar sesión</a>
+    </p>
 </div>
-
-<div>
-    <h2>Información del Cliente Actual</h2>
-    <p>Navegador (User-Agent): <span th:text="${navegadorActualAdmin}"></span></p>
-</div>
-
-<hr>
-<p>
-    <button>
-        <a th:href="@{/administrador/logout}">Cerrar sesión</a>
-    </button>
-</p>
-
 </body>
 </html>

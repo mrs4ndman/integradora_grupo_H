@@ -17,7 +17,7 @@ public class MinimoDosCheckboxesValidator
             return false;
         }
         long count = especialidadesSeleccionadas.stream()
-                .filter(e -> e.getSeleccionada() != null && e.getSeleccionada())
+                .filter(EspecialidadesEmpleadoDTO::isSeleccionada)
                 .count();
         return count >= 2;
     }

@@ -122,7 +122,7 @@ public class NominasController {
      */
     @GetMapping("")
     public String redirigirAlDashboard() {
-        return "redirect:/administrador/nominas/consultar";
+            return "redirect:/administrador/nominas/consultar";
     }
 
     /**

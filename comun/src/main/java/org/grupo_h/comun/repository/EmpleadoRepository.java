@@ -34,4 +34,6 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, UUID> {
     Optional<Empleado> findByNumeroDocumento(String numeroDni);
 
     List<Empleado> findAll(Specification<Empleado> spec, Sort sort);
+
+    void deleteByNumeroDocumento(String numeroDocumento);
 }

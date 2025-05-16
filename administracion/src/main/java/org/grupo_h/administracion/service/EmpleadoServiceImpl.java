@@ -141,8 +141,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             spec = spec.and(EmpleadoSpecs.edadEntre(filtro.getEdadMin(), filtro.getEdadMax()));
         }
 
-        if (filtro.getDepartamentoDTO() != null) {
-            spec = spec.and(EmpleadoSpecs.departamentoContiene(filtro.getDepartamentoDTO()));
+        if (filtro.getDepartamentosDTO() != null && !filtro.getDepartamentosDTO().isEmpty()) {
+            spec = spec.and(EmpleadoSpecs.departamentosEnLista(filtro.getDepartamentosDTO()));
         }
 
         if (filtro.getNumeroDni() != null && !filtro.getNumeroDni().isBlank()) {
@@ -170,4 +170,29 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         System.out.println("Hola");
         return empleadosRepository.findByNumeroDocumento(dni);
     }
+
+    @Override
+    public Optional<Empleado> buscarEmpleado(UUID empleadoID) {
+        return empleadosRepository.findById(empleadoID);
+    }
+
+    @Transactional
+    @Override
+    public void eliminarPorId(UUID id) {
+        if (!empleadosRepository.existsById(id)) {
+            throw new EntityNotFoundException("Empleado no existe con id " + id);
+        }
+        empleadosRepository.deleteById(id);
+    }
+
+    @Transactional
+    @Override
+    public void eliminarPorDni(String dni) {
+        Optional<Empleado> opt = empleadosRepository.findByNumeroDocumento(dni);
+        if (opt.isEmpty()) {
+            throw new EntityNotFoundException("Empleado no existe con DNI " + dni);
+        }
+        empleadosRepository.delete(opt.get());
+    }
+
 }

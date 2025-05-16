@@ -4,9 +4,13 @@
     box-sizing: border-box;
 }
 
-body{
-    font-family: Arial, sans-serif;
-    background-color: #ffffff;
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #000;
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
 }
 
 .navbar{
@@ -44,4 +48,228 @@ nav ul li a.active img {
 .error{
     color: red;
     font-weight: bold;
+}
+
+/* Encabezados */
+h2 {
+    font-size: 2rem;
+    font-weight: 400;
+    text-align: center;
+    margin: 2rem 0;
+}
+
+/* Contenedor del formulario */
+form {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem;
+    border: 1px solid #eaeaea;
+    background-color: #fff;
+}
+
+/* Etiquetas y campos de entrada */
+label {
+    /*display: block;*/
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="file"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #a6a6a6;
+    background-color: #fff;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+/* Botones */
+input[type="button"],
+input[type="submit"] {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+input[type="button"]:hover,
+input[type="submit"]:hover {
+    background-color: #333;
+}
+
+/* Mensajes de error y éxito */
+.error {
+    color: #d9534f;
+    font-size: 0.9rem;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+}
+
+.success {
+    color: #5cb85c;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Estilo para los radios de género */
+input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+label[for^="genero"] {
+    display: inline-block;
+    margin-right: 1rem;
+    font-weight: normal;
+}
+
+/* Área de comentarios */
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    form {
+        padding: 1rem;
+    }
+}
+
+body.area-personal {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #111;
+    background-color: #fff;
+    margin: 0;
+    padding: 2rem;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 2rem;
+    border: 1px solid #eee;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin-top: 2rem;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.3rem;
+    font-weight: 400;
+}
+
+.etiqueta {
+    color: #888;
+}
+
+.usuario {
+    font-weight: bold;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+ul li {
+    margin-bottom: 1rem;
+}
+
+.detalle {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.bloque {
+    margin-bottom: 2rem;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 2rem 0;
+}
+
+.acciones {
+    display: flex;
+    gap: 1rem;
+}
+
+.acceso_fucionalidades{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.boton {
+    display: inline-block;
+    width: 50%;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #111;
+    background-color: #fff;
+    color: #111;
+    text-decoration: none;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+}
+
+.boton:hover {
+    background-color: #111;
+    color: #fff;
+}
+
+.boton.secundario {
+    border-color: #777;
+    color: #777;
+}
+
+.boton.secundario:hover {
+    background-color: #777;
+    color: #fff;
+}
+
+
+input.boton{
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #111;
+    background-color: #fff;
+    color: #111;
+    text-decoration: none;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+}
+
+input.boton:hover{
+    border-color: #777;
+    color: #777;
+}
+
+.btn-form{
+    display: flex;
+}
+
+.btn-seleccionar{
+    margin: 20px 0;
 }

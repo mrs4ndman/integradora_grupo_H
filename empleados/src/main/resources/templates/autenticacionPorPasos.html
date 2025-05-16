@@ -32,6 +32,10 @@
             margin-bottom: 20px;
             font-weight: bold;
         }
+        a{
+            text-decoration: none;
+            color: #000;
+        }
 
         input[type="text"], input[type="password"] {
             width: 100%;
@@ -52,6 +56,18 @@
             border-radius: 3px;
             cursor: pointer;
             width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background-color: #f8f9fa;
+            color: #000000;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 94%;
             margin-top: 10px;
         }
 
@@ -108,10 +124,10 @@
         </div>
 
         <button type="submit">Siguiente</button>
-
-        <div>
-            <a th:href="@{/usuarios/registro}">Registrar Usuario</a>
+        <div class="btn">
+            <a th:href="@{/usuarios/registro}" >Registrar Usuario</a>
         </div>
+
     </form>
 
     <form th:if="${pedirPassword}"
