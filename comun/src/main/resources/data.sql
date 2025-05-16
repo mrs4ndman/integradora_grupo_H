@@ -103,7 +103,36 @@ SET @uuid_usuario_empleado3 = UUID_TO_BIN(@uuid_usuario_empleado3_str);
 SET @uuid_usuario_empleado4 = UUID_TO_BIN(@uuid_usuario_empleado4_str);
 -- SET @uuid_usuario_empleado5 = UUID_TO_BIN(@uuid_usuario_empleado5_str);
 
--- Usuario 1
+
+-- Id Cuentas Corrientes
+SET @uuid_cuenta_corriente1 = UUID_TO_BIN(UUID());
+SET @uuid_cuenta_corriente2 = UUID_TO_BIN(UUID());
+SET @uuid_cuenta_corriente3 = UUID_TO_BIN(UUID());
+SET @uuid_cuenta_corriente4 = UUID_TO_BIN(UUID());
+
+-- Generación de cuenta corriente
+
+-- Inserción de Cuenta Corriente 1
+INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
+VALUES (@uuid_cuenta_corriente1, 'ES7620770024003102571111', @sabadell);
+-- Relacionado con BBVA
+
+-- Inserción de Cuenta Corriente 2
+INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
+VALUES (@uuid_cuenta_corriente2, 'ES7620770024003102572222', @sabadell);
+-- Relacionado con BBVA
+
+-- Inserción de Cuenta Corriente 3
+INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
+VALUES (@uuid_cuenta_corriente3, 'ES7620770024003102573333', @sabadell);
+-- Relacionado con BBVA
+
+-- Inserción de Cuenta Corriente 4
+INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
+VALUES (@uuid_cuenta_corriente4, 'ES7620770024003102573333', @sabadell);
+-- Relacionado con BBVA
+
+-- Insercción Datos Empleados
 INSERT INTO usuario (id, email, contrasena, cuenta_bloqueada, habilitado,
                      intentos_fallidos, sesiones_totales, motivo_bloqueo, tiempo_hasta_desbloqueo)
 VALUES (@uuid_usuario_empleado1,
@@ -118,23 +147,19 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_documento_cod_tipo_doc, numero_documento, prefijo_internacional_telf, telf_movil,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
-                      departamento_id, fecha_alta_en_BD, jefe_id)
+                      departamento_id, fecha_alta_en_BD, jefe_id,
+                      acepta_informacion, cuenta_corriente_id)
 VALUES (@uuid_usuario_empleado1,
         'Juan', 'Pérez García', NULL, 'M',
         '1980-07-22', 44, 'ES', 'Empleado experimentado en desarrollo de software.',
         @tipo_doc_dni, '12345678A', '+34', '600112233',
         @tipo_via_calle, 'Calle Mayor', 5, 'B', 1, 'Derecha',
         'Madrid', 'Comunidad de Madrid', '28001', 'cv_juan_perez.pdf',
-        @departamento_admin, CURRENT_DATE, NULL);
+        @departamento_admin, CURRENT_DATE, NULL, true,@uuid_cuenta_corriente1 );
 
 -- Datos Económicos para Empleado 1
-SET @uuid_cuenta_corriente1 = UUID_TO_BIN(UUID());
--- Generación de cuenta corriente
 
--- Inserción de Cuenta Corriente 1
-INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
-VALUES (@uuid_cuenta_corriente1, 'ES7620770024003102576763', @sabadell);
--- Relacionado con BBVA
+
 
 -- Inserción de Datos Económicos 1
 INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
@@ -164,24 +189,18 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_documento_cod_tipo_doc, numero_documento, prefijo_internacional_telf, telf_movil,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
-                      departamento_id, fecha_alta_en_BD, jefe_id)
+                      departamento_id, fecha_alta_en_BD, jefe_id,
+                      acepta_informacion, cuenta_corriente_id)
 VALUES (@uuid_usuario_empleado2,
         'María', 'López Fernández', NULL, 'F',
         '1990-10-15', 34, 'ES', 'Especialista en marketing digital.',
         @tipo_doc_dni, '17654321B', '+34', '600112234',
         @tipo_via_avenida, 'Avenida de la Paz', 18, 'C', 2, 'Derecha',
         'Madrid', 'Comunidad de Madrid', '28002', 'cv_maria_lopez.pdf',
-        @departamento_admin, CURRENT_DATE, NULL);
+        @departamento_admin, CURRENT_DATE, NULL, true, @uuid_cuenta_corriente2);
 
 
 -- Datos Económicos para Empleado 2
-SET @uuid_cuenta_corriente2 = UUID_TO_BIN(UUID());
--- Generación de cuenta corriente
-
--- Inserción de Cuenta Corriente 2
-INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
-VALUES (@uuid_cuenta_corriente2, 'ES7620770024003102576763', @sabadell);
--- Relacionado con BBVA
 
 -- Inserción de Datos Económicos 2
 INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
@@ -212,23 +231,18 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_documento_cod_tipo_doc, numero_documento, prefijo_internacional_telf, telf_movil,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
-                      departamento_id, fecha_alta_en_BD, jefe_id)
+                      departamento_id, fecha_alta_en_BD, jefe_id,
+                      acepta_informacion, cuenta_corriente_id)
 VALUES (@uuid_usuario_empleado3,
         'Pedro', 'Sánchez Jiménez', NULL, 'M',
         '1985-03-25', 39, 'ES', 'Gerente de recursos humanos.',
         @tipo_doc_dni, '11223344C', '+34', '600112235',
         @tipo_via_paseo, 'Paseo de la Castellana', 23, 'D', 3, 'Izquierda',
         'Madrid', 'Comunidad de Madrid', '28003', 'cv_pedro_sanchez.pdf',
-        @departamento_venta, CURRENT_DATE, NULL);
+        @departamento_venta, CURRENT_DATE, NULL, true, @uuid_cuenta_corriente3);
 
 -- Datos Económicos para Empleado 3
-SET @uuid_cuenta_corriente3 = UUID_TO_BIN(UUID());
--- Generación de cuenta corriente
 
--- Inserción de Cuenta Corriente 3
-INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
-VALUES (@uuid_cuenta_corriente3, 'ES7620770024003102573333', @sabadell);
--- Relacionado con BBVA
 
 -- Inserción de Datos Económicos 3
 INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,
@@ -259,23 +273,19 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_documento_cod_tipo_doc, numero_documento, prefijo_internacional_telf, telf_movil,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
-                      departamento_id, fecha_alta_en_BD, jefe_id)
+                      departamento_id, fecha_alta_en_BD, jefe_id,
+                      acepta_informacion, cuenta_corriente_id)
 VALUES (@uuid_usuario_empleado4,
         'Luisa', 'Martinez Sánchez', NULL, 'F',
         '1990-05-14', 34, 'ES', 'Especialista en desarrollo front-end.',
         @tipo_doc_dni, '87684321B', '+34', '612345678',
         @tipo_via_avenida, 'Avenida de la Constitución', 10, 'A', 2, 'Izquierda',
         'Sevilla', 'Andalucía', '41001', 'cv_maria_lopez.pdf',
-        @departamento_prep, CURRENT_DATE, @uuid_usuario_empleado1);
+        @departamento_prep, CURRENT_DATE, @uuid_usuario_empleado1, true, @uuid_cuenta_corriente4);
 
 -- Datos Económicos para Empleado 4
-SET @uuid_cuenta_corriente4 = UUID_TO_BIN(UUID());
--- Generación de cuenta corriente
 
--- Inserción de Cuenta Corriente 4
-INSERT INTO cuenta_corriente (id, numero_cuenta, entidad_bancaria_id)
-VALUES (@uuid_cuenta_corriente4, 'ES7620770024003102573333', @sabadell);
--- Relacionado con BBVA
+
 
 -- Inserción de Datos Económicos 4
 INSERT INTO datos_economicos (empleados_id, salario, comision, tipo_tarjeta_id, numero_tarjeta_credito, cvc,

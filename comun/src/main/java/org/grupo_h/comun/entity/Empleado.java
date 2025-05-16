@@ -183,8 +183,8 @@ public class Empleado {
         return nombre + " " + apellidos;
     }
 
-    @Version
-    private Integer version;
+//    @Version
+//    private Integer version;
 
     public void addEtiqueta(Etiqueta etiqueta) {
         this.etiquetas.add(etiqueta);
