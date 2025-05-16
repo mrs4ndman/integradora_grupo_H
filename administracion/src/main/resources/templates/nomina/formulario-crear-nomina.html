@@ -74,6 +74,24 @@
         }
     </style>
 </head>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const fechaInicioInput = document.getElementById('fechaInicio');
+        const fechaFinInput = document.getElementById('fechaFin');
+
+        form.addEventListener('submit', function (event) {
+            const hoy = new Date().toISOString().split('T')[0];
+            const fechaInicio = fechaInicioInput.value;
+            const fechaFin = fechaFinInput.value;
+
+            if (fechaInicio < hoy && fechaFin < hoy) {
+                alert('No se pueden crear nóminas con ambas fechas (inicio y fin) en el pasado.');
+                event.preventDefault();
+            }
+        });
+    });
+</script>
 <body>
 <div class="container">
     <h1>Crear Nueva Nómina para <span th:text="${empleado.getNombreCompleto()}"></span></h1>

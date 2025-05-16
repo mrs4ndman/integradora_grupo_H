@@ -73,4 +73,12 @@ public class Nomina {
     public Double getSalarioNeto() {
         return getTotalDevengos() + getTotalDeducciones();
     }
+
+    @Transient
+    public boolean tieneSalarioBaseValido() {
+        return lineas.stream()
+                .anyMatch(l -> "Salario base".equalsIgnoreCase(l.getConcepto()) &&
+                        l.getCantidad() != null &&
+                        l.getCantidad() > 0);
+    }
 }

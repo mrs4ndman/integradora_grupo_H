@@ -142,6 +142,14 @@
         <a th:if="${#strings.isEmpty(errorSoloLectura)}"
            th:href="@{/administrador/nominas/nomina/{id}/aniadir-linea(id=${nomina.id})}" class="btn-addline">Añadir
             Línea a Nómina</a>
+        <!-- En la sección de acciones -->
+        <a th:if="${#strings.isEmpty(errorSoloLectura)}"
+           th:href="@{/administrador/nominas/nomina/{id}/editar(id=${nomina.id})}"
+           class="btn-edit"
+           style="background-color: #ffc107; color: black; border: none; padding: 10px 15px; border-radius: 4px; margin-top: 10px;">
+            Editar Nómina
+        </a>
+
 
         <form th:if="${#strings.isEmpty(errorSoloLectura)}"
               th:action="@{/administrador/nominas/nomina/{id}/borrar(id=${nomina.id})}" method="post"

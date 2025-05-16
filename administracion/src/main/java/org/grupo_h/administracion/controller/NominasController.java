@@ -122,7 +122,7 @@ public class NominasController {
      */
     @GetMapping("")
     public String redirigirAlDashboard() {
-            return "redirect:/administrador/nominas/consultar";
+        return "redirect:/administrador/nominas/consultar";
     }
 
     /**
@@ -246,6 +246,13 @@ public class NominasController {
             if (fechaFin.isBefore(fechaInicio)) {
                 throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
             }
+
+            // Validar que no se cree una nómina con ambas fechas en el pasado
+            LocalDate hoy = LocalDate.now();
+            if (fechaInicio.isBefore(hoy) && fechaFin.isBefore(hoy)) {
+                throw new IllegalArgumentException("No se pueden crear nóminas con ambas fechas (inicio y fin) en el pasado.");
+            }
+
             List<Nomina> nominasSolapadas = nominaRepository.findByEmpleadoAndPeriodoSolapado(empleado, fechaInicio, fechaFin);
             if (!nominasSolapadas.isEmpty()) {
                 throw new IllegalArgumentException("El período de la nómina se solapa con una nómina existente para este empleado.");
@@ -265,27 +272,63 @@ public class NominasController {
         }
     }
 
-
-    /**
-     * Elimina una nómina existente si es modificable
-     *
-     * @param id                 ID de la nómina a borrar
-     * @param redirectAttributes Atributos para enviar mensajes en la redirección
-     * @return Redirección a la lista de nóminas del empleado o a la consulta general
-     */
-    @PostMapping("/nomina/{id}/borrar")
-    @Transactional
-    public String borrarNomina(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+    // Método para mostrar formulario de edición de nómina
+    @GetMapping("/nomina/{id}/editar")
+    public String mostrarFormularioEditarNomina(@PathVariable UUID id, Model model) {
         Nomina nomina = nominaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nómina no encontrada ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Nómina no encontrada - ID: " + id));
+
         if (!esNominaModificable(nomina)) {
-            redirectAttributes.addFlashAttribute("error", "No se puede borrar una nómina ya procesada/cobrada.");
-            return "redirect:/administrador/nominas/consultar";
+            model.addAttribute("error", "No se puede modificar una nómina ya procesada/cobrada.");
+            return "redirect:/administrador/nominas/detalle/" + id;
         }
-        UUID empleadoId = nomina.getEmpleado().getId();
-        nominaRepository.delete(nomina);
-        redirectAttributes.addFlashAttribute("success", "Nómina borrada correctamente.");
-        return "redirect:/administrador/nominas/empleado/" + empleadoId + "/nominas";
+
+        model.addAttribute("nomina", nomina);
+        model.addAttribute("empresaParametros", getEmpresaParametrosMap());
+        return "nomina/formulario-editar-nomina";
+    }
+
+    // Método para procesar la edición de nómina
+    @PostMapping("/nomina/{id}/editar")
+    @Transactional
+    public String editarNomina(@PathVariable UUID id,
+                               @RequestParam("fechaInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+                               @RequestParam("fechaFin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+                               RedirectAttributes redirectAttributes) {
+        Nomina nomina = nominaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Nómina no encontrada - ID: " + id));
+
+        if (!esNominaModificable(nomina)) {
+            redirectAttributes.addFlashAttribute("error", "No se puede modificar una nómina ya procesada/cobrada.");
+            return "redirect:/administrador/nominas/detalle/" + id;
+        }
+
+        try {
+            if (fechaInicio == null || fechaFin == null) {
+                throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias.");
+            }
+            if (fechaFin.isBefore(fechaInicio)) {
+                throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
+            }
+
+            List<Nomina> nominasSolapadas = nominaRepository.findByEmpleadoAndPeriodoSolapado(
+                    nomina.getEmpleado(), fechaInicio, fechaFin);
+            nominasSolapadas.removeIf(n -> n.getId().equals(id)); // Excluir la nómina actual
+
+            if (!nominasSolapadas.isEmpty()) {
+                throw new IllegalArgumentException("El nuevo período se solapa con otra nómina existente.");
+            }
+
+            nomina.setFechaInicio(fechaInicio);
+            nomina.setFechaFin(fechaFin);
+            nominaRepository.save(nomina);
+
+            redirectAttributes.addFlashAttribute("success", "Nómina modificada correctamente.");
+            return "redirect:/administrador/nominas/detalle/" + id;
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", "Error al modificar la nómina: " + e.getMessage());
+            return "redirect:/administrador/nominas/nomina/" + id + "/editar";
+        }
     }
 
     /**
@@ -308,19 +351,15 @@ public class NominasController {
     }
 
 
-    /**
-     * Procesa la adición de una nueva línea a una nómina existente
-     *
-     * @param id                 ID de la nómina a la que se añadirá la línea
-     * @param lineaNomina        Objeto con los datos de la línea de nómina a añadir
-     * @param redirectAttributes Atributos para enviar mensajes en la redirección
-     * @return Redirección a la vista de detalle de la nómina actualizada
-     */
     @PostMapping("/nomina/{id}/aniadir-linea")
     @Transactional
-    public String aniadirLineaNomina(@PathVariable UUID id,
-                                     @ModelAttribute LineaNomina lineaNomina,
-                                     RedirectAttributes redirectAttributes) {
+    public String aniadirLineaNomina(
+            @PathVariable UUID id,
+            @RequestParam("concepto") String concepto,
+            @RequestParam(value = "porcentaje", required = false) Double porcentaje,
+            @RequestParam(value = "cantidad", required = false) Double cantidad,
+            RedirectAttributes redirectAttributes) {
+
         Nomina nomina = nominaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Nómina no encontrada ID: " + id));
 
@@ -328,20 +367,28 @@ public class NominasController {
             redirectAttributes.addFlashAttribute("error", "No se pueden añadir líneas a una nómina ya procesada/cobrada.");
             return "redirect:/administrador/nominas/detalle/" + id;
         }
+
         try {
-            if (lineaNomina.getConcepto() == null || lineaNomina.getConcepto().trim().isEmpty()) {
+            // Validaciones
+            if (concepto == null || concepto.trim().isEmpty()) {
                 throw new IllegalArgumentException("El concepto de la línea no puede estar vacío.");
             }
-            // Validar porcentaje y cantidad
-            boolean porcentajePresente = lineaNomina.getPorcentaje() != null;
-            boolean cantidadPresente = lineaNomina.getCantidad() != null;
 
-            if (porcentajePresente && cantidadPresente && lineaNomina.getCantidad() != 0.0) {
+            boolean porcentajePresente = porcentaje != null;
+            boolean cantidadPresente = cantidad != null;
+
+            if (porcentajePresente && cantidadPresente && cantidad != 0.0) {
                 throw new IllegalArgumentException("No puede especificar porcentaje y cantidad (distinta de cero) simultáneamente. La cantidad se calculará si se indica porcentaje.");
             }
             if (!porcentajePresente && !cantidadPresente) {
                 throw new IllegalArgumentException("Debe especificar un porcentaje o una cantidad.");
             }
+
+            // Crear la entidad LineaNomina
+            LineaNomina lineaNomina = new LineaNomina();
+            lineaNomina.setConcepto(concepto);
+            lineaNomina.setPorcentaje(porcentaje);
+            lineaNomina.setCantidad(cantidad);
 
             if (porcentajePresente) {
                 double salarioBase = nomina.getLineas().stream()
@@ -349,38 +396,32 @@ public class NominasController {
                         .mapToDouble(LineaNomina::getCantidad)
                         .findFirst()
                         .orElse(0.0);
-                if (salarioBase == 0.0 && !"Salario base".equalsIgnoreCase(lineaNomina.getConcepto())) {
+                if (salarioBase == 0.0 && !"Salario base".equalsIgnoreCase(concepto)) {
                     throw new IllegalArgumentException("Debe existir una línea de 'Salario base' con cantidad positiva para calcular porcentajes.");
                 }
-                // Permitir cantidad 0 si es calculado y el porcentaje es 0.
-                lineaNomina.setCantidad(salarioBase * (lineaNomina.getPorcentaje() / 100.0));
+                lineaNomina.setCantidad(salarioBase * (porcentaje / 100.0));
             }
 
+            // Asignar la nómina a la línea
             lineaNomina.setNomina(nomina);
-            nomina.getLineas().add(lineaNomina);
+            // Buscar si ya existe una nomina con el nombre "Salario base"
+            // if (nomina.getLineas().stream().findFirst())
+            // nomina.getLineas().add(lineaNomina);
 
-            // Validaciones del PDF (sección 3. Lógica de negocio)
-            // 1. Salario neto positivo
-            if (nomina.getSalarioNeto() <= 0 && !nomina.getLineas().isEmpty()) {
-                boolean esSalarioBasePositivo = "Salario base".equalsIgnoreCase(lineaNomina.getConcepto()) && lineaNomina.getCantidad() > 0;
-                if (!esSalarioBasePositivo && !nomina.getLineas().isEmpty()) { // Si no es el salario base el que lo hace 0 o negativo
-                    // No revertir aquí, solo advertir o validar al final antes de guardar.
-                    // Esta validación es compleja si se hace línea a línea.
-                }
+            // Validar que la nómina tenga un salario base válido
+            if (!nomina.tieneSalarioBaseValido()) {
+                throw new IllegalArgumentException("Toda nómina debe tener una línea de 'Salario base' con importe positivo.");
             }
-            // 2. Mínimo una línea de salario base
-            boolean tieneSalarioBaseConImporte = nomina.getLineas().stream()
-                    .anyMatch(l -> "Salario base".equalsIgnoreCase(l.getConcepto()) && l.getCantidad() != null && l.getCantidad() > 0);
-            if (!tieneSalarioBaseConImporte) {
-                if (!("Salario base".equalsIgnoreCase(lineaNomina.getConcepto()) && lineaNomina.getCantidad() != null && lineaNomina.getCantidad() > 0)) {
-                    // throw new IllegalArgumentException("Toda nómina debe tener una línea de 'Salario base' con importe positivo.");
-                }
-            }
+
+            // Guardar la nómina y la línea de nómina
             nominaRepository.save(nomina);
+            lineaNominaRepository.save(lineaNomina);
+
             redirectAttributes.addFlashAttribute("success", "Línea de nómina añadida correctamente.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", "Error al añadir línea: " + e.getMessage());
         }
+
         return "redirect:/administrador/nominas/detalle/" + id;
     }
 
