@@ -5,6 +5,7 @@ import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
@@ -25,13 +26,17 @@ public interface EmpleadoService {
 
     List<Empleado> getSubordinadosByJefeId(UUID jefeId);
 
-    void asignarEtiquetaASubordinado(UUID subordinadoId, UUID etiquetaId) throws AccessDeniedException;
+    void asignarEtiquetaASubordinado(UUID jefeId, UUID subordinadoId, UUID etiquetaId) throws AccessDeniedException;
+    void asignarEtiquetaAUltiplesSubordinados(UUID jefeId, List<UUID> subordinadoIds, UUID etiquetaId) throws AccessDeniedException;
+    void actualizarEtiquetasSubordinado(UUID jefeId, UUID subordinadoId, List<UUID> etiquetaIdsAMantener) throws AccessDeniedException;
 
     void eliminarEtiquetaDeSubordinado(UUID subordinadoId, UUID etiquetaId) throws AccessDeniedException;
 
-    void asignarEtiquetasMasivo(List<UUID> subordinadoIds, List<UUID> etiquetaIds) throws AccessDeniedException;
+    void asignarEtiquetasMasivo(UUID jefeId, List<UUID> empleadoIds, List<UUID> etiquetaIds) throws AccessDeniedException; // Modificado para incluir jefeId
 
     boolean esJefeDirecto(UUID subordinadoId) throws AccessDeniedException;
 
     Optional<EmpleadoDetalleDTO> findEmpleadoDetalleById(UUID subordinadoId);
+
+    boolean esJefeDirecto(UUID jefeId, UUID subordinadoId);
 }

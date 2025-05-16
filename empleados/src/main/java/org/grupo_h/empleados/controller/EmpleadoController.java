@@ -66,6 +66,8 @@ public class EmpleadoController {
     private final EntidadBancariaRepository entidadBancariaRepository;
     @Autowired
     private final UsuarioRepository usuarioRepository;
+    @Autowired
+    private final EtiquetaRepository etiquetaRepository;
     //Servicios
     @Autowired
     private final EmpleadoService empleadoService;
@@ -96,7 +98,7 @@ public class EmpleadoController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, ProductoService productoService, TipoDocumentoService tipoDocumentoService, RestTemplate restTemplate) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, EtiquetaRepository etiquetaRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, ProductoService productoService, TipoDocumentoService tipoDocumentoService, RestTemplate restTemplate) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
@@ -106,6 +108,7 @@ public class EmpleadoController {
         this.tipoTarjetaCreditoRepository = tipoTarjetaCreditoRepository1;
         this.entidadBancariaRepository = entidadBancariaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.etiquetaRepository = etiquetaRepository;
         this.generoService = generoService;
         this.departamentoService = departamentoService;
         this.especialidadesEmpleadoService = especialidadesEmpleadoService;
@@ -523,193 +526,159 @@ public class EmpleadoController {
                 .collect(Collectors.toList());
         model.addAttribute("departamentos", departamentosDTO);
     }
-//        model.addAttribute("departamentos",departamentoService.obtenerTodosDepartamentos());
-
     // --- ENDPOINTS PARA ETIQUETADO ---
 
-    /**
-     * NUEVO: Muestra la página dedicada para gestionar etiquetas de un subordinado específico.
-     * Requiere que el usuario autenticado sea el jefe directo.
-     */
-    @GetMapping("/{subordinadoId}/gestionar-etiquetas")
-    @PreAuthorize("@empleadoServiceImpl.esJefeDirecto(#subordinadoId)")
-    public String mostrarGestionarEtiquetas(@PathVariable UUID subordinadoId, Model model) {
+    @GetMapping("/gestion-etiquetas")
+    public String mostrarGestionEtiquetas(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         try {
-            Optional<EmpleadoDetalleDTO> empleadoOpt = empleadoService.findEmpleadoDetalleById(subordinadoId);
-            if (empleadoOpt.isEmpty()) {
-                throw new EntityNotFoundException("Empleado no encontrado con ID: " + subordinadoId);
-            }
-            EmpleadoDetalleDTO empleado = empleadoOpt.get();
-            model.addAttribute("empleado", empleado);
-
-            List<EtiquetaDTO> todasLasEtiquetas = etiquetaService.findAll()
-                    .stream()
-                    .map(et -> modelMapper.map(et, EtiquetaDTO.class))
-                    .collect(Collectors.toList());
-            model.addAttribute("todasLasEtiquetas", todasLasEtiquetas);
-
-            return "gestionarEtiquetasEmpleado"; // Nombre de la nueva vista Thymeleaf
-
-        } catch (EntityNotFoundException e) {
-            return "redirect:/areaPersonal"; // O una página de error
-        } catch (Exception e) {
-            return "redirect:/areaPersonal";
-        }
-    }
-
-
-    /**
-     * Endpoint para ASIGNAR una etiqueta existente a un subordinado.
-     * Redirige de vuelta a la página de gestión de etiquetas.
-     */
-    @PostMapping("/{subordinadoId}/etiquetas")
-    @PreAuthorize("@empleadoServiceImpl.esJefeDirecto(#subordinadoId)")
-    public String asignarEtiqueta(@PathVariable UUID subordinadoId,
-                                  @RequestParam UUID etiquetaId,
-                                  RedirectAttributes redirectAttributes) {
-        String redirectTo = "redirect:/empleados/" + subordinadoId + "/gestionar-etiquetas"; // Nueva redirección
-        try {
-            empleadoService.asignarEtiquetaASubordinado(subordinadoId, etiquetaId);
-            redirectAttributes.addFlashAttribute("successMessage", "Etiqueta asignada correctamente.");
-        } catch (EntityNotFoundException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: No se encontró el empleado o la etiqueta.");
+            Empleado jefe = obtenerJefeAutenticado(session);
+            popularModeloParaGestionEtiquetas(model, jefe);
+            return "gestionEtiquetas";
         } catch (AccessDeniedException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: No tienes permiso para realizar esta acción.");
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/usuarios/inicio-sesion";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al asignar la etiqueta.");
+            logger.error("Error al cargar la página de gestión de etiquetas", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al cargar la página.");
+            return "redirect:/usuarios/info";
         }
-        return redirectTo; // Vuelve a la página de gestión
     }
 
-    /**
-     * Endpoint para CREAR y ASIGNAR una NUEVA etiqueta a un subordinado.
-     * Redirige de vuelta a la página de gestión de etiquetas.
-     */
-    @PostMapping("/{subordinadoId}/etiquetas/nueva")
-    @PreAuthorize("@empleadoServiceImpl.esJefeDirecto(#subordinadoId)")
-    public String asignarNuevaEtiqueta(@PathVariable UUID subordinadoId,
-                                       @RequestParam String nombreNuevaEtiqueta,
-                                       RedirectAttributes redirectAttributes) {
-        String redirectTo = "redirect:/empleados/" + subordinadoId + "/gestionar-etiquetas"; // Nueva redirección
-        if (nombreNuevaEtiqueta == null || nombreNuevaEtiqueta.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "El nombre de la nueva etiqueta no puede estar vacío.");
-            return redirectTo;
-        }
+    @PostMapping("/etiquetado/nuevo")
+    public String procesarNuevoEtiquetado(@Valid @ModelAttribute("asignarEtiquetaRequestDTO") AsignarEtiquetaRequestDTO requestDTO,
+                                          BindingResult bindingResult,
+                                          HttpSession session, RedirectAttributes redirectAttributes, Model model) {
+        Empleado jefe;
         try {
-            Etiqueta etiqueta = etiquetaService.findOrCreateEtiqueta(nombreNuevaEtiqueta.trim());
-            empleadoService.asignarEtiquetaASubordinado(subordinadoId, etiqueta.getId());
-            redirectAttributes.addFlashAttribute("successMessage", "Nueva etiqueta '" + etiqueta.getNombre() + "' creada y asignada.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
-        } catch (EntityNotFoundException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: No se encontró el empleado.");
+            jefe = obtenerJefeAutenticado(session);
         } catch (AccessDeniedException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: No tienes permiso para realizar esta acción.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al asignar la nueva etiqueta.");
-        }
-        return redirectTo; // Vuelve a la página de gestión
-    }
-
-
-    /**
-     * Endpoint para ELIMINAR una etiqueta de un subordinado.
-     * Redirige de vuelta a la página de gestión de etiquetas.
-     */
-    @PostMapping("/{subordinadoId}/etiquetas/{etiquetaId}/eliminar")
-    @PreAuthorize("@empleadoServiceImpl.esJefeDirecto(#subordinadoId)")
-    public String eliminarEtiqueta(@PathVariable UUID subordinadoId,
-                                   @PathVariable UUID etiquetaId,
-                                   RedirectAttributes redirectAttributes) {
-        String redirectTo = "redirect:/empleados/" + subordinadoId + "/gestionar-etiquetas"; // Nueva redirección
-        try {
-            empleadoService.eliminarEtiquetaDeSubordinado(subordinadoId, etiquetaId);
-            redirectAttributes.addFlashAttribute("successMessage", "Etiqueta eliminada correctamente.");
-        } catch (EntityNotFoundException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: No se pudo eliminar la etiqueta (¿ya estaba eliminada?).");
-        } catch (AccessDeniedException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: No tienes permiso para realizar esta acción.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al eliminar la etiqueta.");
-        }
-        return redirectTo; // Vuelve a la página de gestión
-    }
-
-    @GetMapping("/etiquetado-masivo")
-    @PreAuthorize("isAuthenticated()")
-    public String mostrarFormularioEtiquetadoMasivo(Model model) {
-        try {
-            // Obtener subordinados del jefe autenticado
-            List<Empleado> subordinados = empleadoService.getSubordinadosDelJefeAutenticado();
-            List<EmpleadoSimpleDTO> subordinadosDTO = subordinados.stream()
-                    .map(e -> new EmpleadoSimpleDTO(e.getId(), e.getNombre(), e.getApellidos())) // Mapeo simple
-                    .collect(Collectors.toList());
-            model.addAttribute("subordinadosDisponibles", subordinadosDTO);
-
-            // Obtener todas las etiquetas
-            List<EtiquetaDTO> todasLasEtiquetas = etiquetaService.findAll()
-                    .stream()
-                    .map(et -> modelMapper.map(et, EtiquetaDTO.class))
-                    .collect(Collectors.toList());
-            model.addAttribute("etiquetasDisponibles", todasLasEtiquetas);
-
-            // Añadir un objeto DTO vacío para el binding del formulario
-            model.addAttribute("etiquetadoMasivoRequest", new EtiquetadoMasivoRequestDTO());
-
-        } catch (AccessDeniedException e) {
-            // Redirigir a una página de error o al área personal
-            model.addAttribute("errorMessage", "No tienes permiso para acceder a esta función.");
-            return "areaPersonal"; // O una vista de error
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error al cargar la página de etiquetado masivo.");
-            // Considera redirigir o mostrar una página de error genérica
-            return "areaPersonal"; // O una vista de error
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/usuarios/inicio-sesion";
         }
 
-        return "etiquetadoMasivo"; // Nombre de tu nueva vista Thymeleaf
-    }
-
-    @PostMapping("/etiquetado-masivo")
-    @PreAuthorize("isAuthenticated()")
-    public String procesarEtiquetadoMasivo(@Valid @ModelAttribute("etiquetadoMasivoRequest") EtiquetadoMasivoRequestDTO requestDTO,
-                                           BindingResult bindingResult,
-                                           Model model,
-                                           RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            try {
-                List<Empleado> subordinados = empleadoService.getSubordinadosDelJefeAutenticado();
-                List<EmpleadoSimpleDTO> subordinadosDTO = subordinados.stream()
-                        .map(e -> new EmpleadoSimpleDTO(e.getId(), e.getNombre(), e.getApellidos()))
-                        .collect(Collectors.toList());
-                model.addAttribute("subordinadosDisponibles", subordinadosDTO);
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.asignarEtiquetaRequestDTO", bindingResult);
+            redirectAttributes.addFlashAttribute("asignarEtiquetaRequestDTO", requestDTO);
+            redirectAttributes.addFlashAttribute("errorMessage", "Errores de validación en el formulario de nuevo etiquetado.");
 
-                List<EtiquetaDTO> todasLasEtiquetas = etiquetaService.findAll()
-                        .stream()
-                        .map(et -> modelMapper.map(et, EtiquetaDTO.class))
-                        .collect(Collectors.toList());
-                model.addAttribute("etiquetasDisponibles", todasLasEtiquetas);
-            } catch (Exception e) {
-                model.addAttribute("errorMessage", "Error al recargar datos del formulario.");
-            }
-            return "etiquetadoMasivo"; // Vuelve a mostrar el formulario
+            popularModeloParaGestionEtiquetas(model, jefe);
+            model.addAttribute("errorMessage", "Por favor, corrija los errores del formulario de nuevo etiquetado.");
+            return "gestionEtiquetas";
         }
 
         try {
-            empleadoService.asignarEtiquetasMasivo(requestDTO.getEmpleadoIds(), requestDTO.getEtiquetaIds());
-            redirectAttributes.addFlashAttribute("successMessage", "Etiquetas asignadas masivamente con éxito.");
-            return "redirect:/empleados/etiquetado-masivo"; // Redirige de nuevo al form (o donde quieras)
-        } catch (EntityNotFoundException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: Algún empleado o etiqueta seleccionada no existe.");
+            Etiqueta etiqueta = etiquetaService.findOrCreateEtiqueta(requestDTO.getNombreEtiqueta().trim());
+            empleadoService.asignarEtiquetaAUltiplesSubordinados(jefe.getId(), requestDTO.getEmpleadoIds(), etiqueta.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Etiqueta '" + etiqueta.getNombre() + "' asignada correctamente a los empleados seleccionados.");
         } catch (AccessDeniedException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: No tienes permiso para etiquetar a alguno de los empleados seleccionados.");
-        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error de permisos: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado durante el etiquetado masivo.");
+            logger.error("Error en procesarNuevoEtiquetado: ", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al asignar la etiqueta: " + e.getMessage());
+        }
+        return "redirect:/empleados/gestion-etiquetas";
+    }
+
+    @PostMapping("/etiquetado/eliminar")
+    public String procesarGestionEtiquetasEmpleado(@Valid @ModelAttribute("gestionarEtiquetasEmpleadoRequestDTO") GestionarEtiquetasEmpleadoRequestDTO requestDTO,
+                                                   BindingResult bindingResult,
+                                                   HttpSession session, RedirectAttributes redirectAttributes, Model model) {
+        Empleado jefe;
+        try {
+            jefe = obtenerJefeAutenticado(session);
+        } catch (AccessDeniedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/usuarios/inicio-sesion";
         }
 
-        // Si hubo excepción, redirige de vuelta al formulario para mostrar el mensaje de error
-        return "redirect:/empleados/etiquetado-masivo";
+        if (bindingResult.hasErrors()) {
+            popularModeloParaGestionEtiquetas(model, jefe);
+            model.addAttribute("errorMessage", "Por favor, corrija los errores del formulario de gestión de etiquetas.");
+            return "gestionEtiquetas";
+        }
+
+        try {
+            empleadoService.actualizarEtiquetasSubordinado(jefe.getId(), requestDTO.getEmpleadoId(), requestDTO.getEtiquetaIdsAMantener());
+            redirectAttributes.addFlashAttribute("successMessage", "Etiquetas actualizadas correctamente para el empleado.");
+        } catch (AccessDeniedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error de permisos: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error en procesarGestionEtiquetasEmpleado: ", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al actualizar etiquetas: " + e.getMessage());
+        }
+        return "redirect:/empleados/gestion-etiquetas";
+    }
+
+
+    @PostMapping("/etiquetado/masivo")
+    public String procesarEtiquetadoMasivo(@Valid @ModelAttribute("etiquetadoMasivoRequestDTO") EtiquetadoMasivoRequestDTO requestDTO,
+                                           BindingResult bindingResult,
+                                           Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        Empleado jefe;
+        try {
+            jefe = obtenerJefeAutenticado(session);
+        } catch (AccessDeniedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/usuarios/inicio-sesion";
+        }
+
+        if (bindingResult.hasErrors() || requestDTO.getEmpleadoIds() == null || requestDTO.getEmpleadoIds().isEmpty() || requestDTO.getEtiquetaIds() == null || requestDTO.getEtiquetaIds().isEmpty()) {
+            if (requestDTO.getEmpleadoIds() == null || requestDTO.getEmpleadoIds().isEmpty()) {
+                bindingResult.rejectValue("empleadoIds", "NotEmpty", "Debe seleccionar al menos un empleado.");
+            }
+            if (requestDTO.getEtiquetaIds() == null || requestDTO.getEtiquetaIds().isEmpty()) {
+                bindingResult.rejectValue("etiquetaIds", "NotEmpty", "Debe seleccionar al menos una etiqueta.");
+            }
+            popularModeloParaGestionEtiquetas(model, jefe);
+            model.addAttribute("errorMessage", "Errores en el formulario de etiquetado masivo. Verifique los campos.");
+            return "gestionEtiquetas";
+        }
+
+        try {
+            // La autorización se hace dentro del servicio
+            empleadoService.asignarEtiquetasMasivo(jefe.getId(), requestDTO.getEmpleadoIds(), requestDTO.getEtiquetaIds());
+            redirectAttributes.addFlashAttribute("successMessage", "Etiquetas asignadas masivamente con éxito.");
+        } catch (AccessDeniedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error de permisos: " + e.getMessage());
+        } catch (IllegalArgumentException | EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error en los datos: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error en procesarEtiquetadoMasivo: ", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado durante el etiquetado masivo: " + e.getMessage());
+        }
+        return "redirect:/empleados/gestion-etiquetas";
+    }
+
+
+    // --- API ENDPOINTS ---
+
+    @GetMapping("/etiquetado/api/empleado/{subordinadoId}/etiquetas")
+    @ResponseBody
+    public ResponseEntity<List<EtiquetaDTO>> obtenerEtiquetasDeEmpleado(@PathVariable UUID subordinadoId, HttpSession session) {
+        Empleado jefe;
+        try {
+            jefe = obtenerJefeAutenticado(session);
+            verificarJefeDirecto(jefe, subordinadoId);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Optional<Empleado> empleadoOpt = empleadoRepository.findById(subordinadoId);
+        if (empleadoOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<EtiquetaDTO> etiquetas = empleadoOpt.get().getEtiquetas().stream()
+                .map(et -> modelMapper.map(et, EtiquetaDTO.class))
+                .sorted(Comparator.comparing(EtiquetaDTO::getNombre))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(etiquetas);
     }
 
     @GetMapping("/consulta-productos")
@@ -876,6 +845,47 @@ public class EmpleadoController {
             return "redirect:/empleados/consulta-productos";
         }
     }
+
+    private Empleado obtenerJefeAutenticado(HttpSession session) throws AccessDeniedException {
+        String emailJefe = (String) session.getAttribute("emailAutenticado");
+        if (emailJefe == null) {
+            throw new AccessDeniedException("Usuario no autenticado.");
+        }
+        Usuario usuarioJefe = usuarioRepository.findByEmail(emailJefe)
+                .orElseThrow(() -> new AccessDeniedException("Usuario jefe no encontrado con email: " + emailJefe));
+        return (Empleado) empleadoRepository.findByUsuarioId(usuarioJefe.getId())
+                .orElseThrow(() -> new AccessDeniedException("Perfil de empleado (jefe) no encontrado para el usuario: " + emailJefe));
+    }
+
+    private void verificarJefeDirecto(Empleado jefe, UUID subordinadoId) throws AccessDeniedException {
+        Empleado subordinado = empleadoRepository.findById(subordinadoId)
+                .orElseThrow(() -> new EntityNotFoundException("Subordinado no encontrado con ID: " + subordinadoId));
+        if (subordinado.getJefe() == null || !subordinado.getJefe().getId().equals(jefe.getId())) {
+            throw new AccessDeniedException("Acceso denegado: No es jefe directo del empleado seleccionado.");
+        }
+    }
+
+    private void popularModeloParaGestionEtiquetas(Model model, Empleado jefe) {
+        List<Empleado> subordinados = empleadoRepository.findByJefeId(jefe.getId());
+        List<EmpleadoSimpleDTO> subordinadosDTO = subordinados.stream()
+                .map(e -> modelMapper.map(e, EmpleadoSimpleDTO.class))
+                .collect(Collectors.toList());
+        model.addAttribute("subordinados", subordinadosDTO);
+
+        List<EtiquetaDTO> todasLasEtiquetasDTO = etiquetaService.findAllDTO();
+        model.addAttribute("etiquetasParaMasivo", todasLasEtiquetasDTO);
+
+        if (!model.containsAttribute("asignarEtiquetaRequestDTO")) {
+            model.addAttribute("asignarEtiquetaRequestDTO", new AsignarEtiquetaRequestDTO());
+        }
+        if (!model.containsAttribute("gestionarEtiquetasEmpleadoRequestDTO")) {
+            model.addAttribute("gestionarEtiquetasEmpleadoRequestDTO", new GestionarEtiquetasEmpleadoRequestDTO());
+        }
+        if (!model.containsAttribute("etiquetadoMasivoRequestDTO")) {
+            model.addAttribute("etiquetadoMasivoRequestDTO", new EtiquetadoMasivoRequestDTO());
+        }
+    }
+
 }
 
 

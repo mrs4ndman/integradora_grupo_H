@@ -2,6 +2,8 @@ package org.grupo_h.empleados.service;
 
 import org.grupo_h.comun.entity.Etiqueta;
 import org.grupo_h.comun.repository.EtiquetaRepository;
+import org.grupo_h.empleados.dto.EtiquetaDTO;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,16 +17,29 @@ import java.util.stream.Collectors;
 public class EtiquetaServiceImpl implements EtiquetaService {
 
     private final EtiquetaRepository etiquetaRepository;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public EtiquetaServiceImpl(EtiquetaRepository etiquetaRepository) {
+    public EtiquetaServiceImpl(EtiquetaRepository etiquetaRepository, ModelMapper modelMapper) {
         this.etiquetaRepository = etiquetaRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<Etiqueta> findById(UUID id) {
-        return etiquetaRepository.findById(id);
+    @Transactional
+    public Etiqueta findOrCreateEtiqueta(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre de la etiqueta no puede ser vacío.");
+        }
+        String nombreNormalizado = nombre.trim();
+        Optional<Etiqueta> etiquetaExistente = etiquetaRepository.findByNombre(nombreNormalizado);
+        if (etiquetaExistente.isPresent()) {
+            return etiquetaExistente.get();
+        } else {
+            Etiqueta nuevaEtiqueta = new Etiqueta();
+            nuevaEtiqueta.setNombre(nombreNormalizado);
+            return etiquetaRepository.save(nuevaEtiqueta);
+        }
     }
 
     @Override
@@ -34,37 +49,32 @@ public class EtiquetaServiceImpl implements EtiquetaService {
     }
 
     @Override
-    @Transactional
-    public Etiqueta findOrCreateEtiqueta(String nombreEtiqueta) {
-        String nombreNormalizado = nombreEtiqueta.trim();
-        if (nombreNormalizado.isEmpty()) {
-            throw new IllegalArgumentException("El nombre de la etiqueta no puede estar vacío");
-        }
-
-        return etiquetaRepository.findByNombreIgnoreCase(nombreNormalizado)
-                .orElseGet(() -> {
-                    Etiqueta nuevaEtiqueta = new Etiqueta(nombreNormalizado);
-                    return etiquetaRepository.save(nuevaEtiqueta);
-                });
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public List<Etiqueta> searchByNombreStartingWith(String prefix) {
-        return etiquetaRepository.findByNombreStartingWithIgnoreCase(prefix.trim());
-    }
-
-    @Override
-    @Transactional
-    public List<Etiqueta> findOrCreateEtiquetas(List<String> nombresEtiquetas) {
-        return nombresEtiquetas.stream()
-                .map(this::findOrCreateEtiqueta)
+    public List<EtiquetaDTO> findAllDTO() {
+        return etiquetaRepository.findAll().stream()
+                .map(etiqueta -> modelMapper.map(etiqueta, EtiquetaDTO.class))
                 .collect(Collectors.toList());
     }
 
+
     @Override
     @Transactional(readOnly = true)
-    public List<Etiqueta> findByIds(List<UUID> ids) {
-        return etiquetaRepository.findAllById(ids);
+    public List<Etiqueta> findByNombreContaining(String term) {
+        return etiquetaRepository.findByNombreContainingIgnoreCaseOrderByNombreAsc(term);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Etiqueta> findEtiquetasUsadasPorSubordinadosDelJefe(UUID jefeId) {
+        return etiquetaRepository.findEtiquetasUsadasPorSubordinadosDelJefe(jefeId);
+    }
+
+    @Override
+    @Transactional
+    public Etiqueta guardarEtiqueta(Etiqueta etiqueta) {
+        if (etiqueta.getNombre() == null || etiqueta.getNombre().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre de la etiqueta no puede ser vacío.");
+        }
+        return etiquetaRepository.save(etiqueta);
     }
 }
