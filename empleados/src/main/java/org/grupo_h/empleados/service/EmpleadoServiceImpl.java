@@ -1,6 +1,5 @@
 package org.grupo_h.empleados.service;
 
-import jakarta.mail.Multipart;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import org.grupo_h.comun.entity.Empleado;
@@ -26,11 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.multipart.MultipartFile;
-import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
-import org.yaml.snakeyaml.events.Event;
 
-import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -175,7 +170,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
      */
     @Override
     public Optional<Empleado> findByNombreEmpleado(String nombreEmpleado) {
-        return empleadosRepository.findByNombre(nombreEmpleado);
+        return empleadosRepository.findByNombreAndActivoTrue(nombreEmpleado);
     }
 
     @Override
@@ -198,13 +193,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Transactional(readOnly = true)
     public List<Empleado> getSubordinadosDelJefeAutenticado() throws AccessDeniedException {
         Empleado jefe = getEmpleadoAutenticado();
-        return empleadosRepository.findByJefe(jefe);
+        return empleadosRepository.findByJefeAndActivoTrue(jefe);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Empleado> getSubordinadosByJefeId(UUID jefeId) {
-        return empleadosRepository.findByJefeId(jefeId);
+        return empleadosRepository.findByJefeIdAndActivoTrue(jefeId);
     }
 
 

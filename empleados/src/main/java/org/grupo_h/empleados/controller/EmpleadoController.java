@@ -26,7 +26,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -38,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -733,7 +731,7 @@ public class EmpleadoController {
     }
 
     @GetMapping("/consulta-productos")
-    public String mostrarConsultaProductosParaEmpleado(
+    public String mostrarConsultaProductos(
             @ModelAttribute("criteriosBusquedaProductos") ProductoCriteriosBusquedaDTO criterios,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -743,8 +741,6 @@ public class EmpleadoController {
             HttpServletRequest request,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
-
-        logger.info("[EmpleadoController] Vista consulta productos: sortField='{}', sortDir='{}', page={}, size={}", sortField, sortDir, page, size);
 
         if (session.getAttribute("emailAutenticado") == null && session.getAttribute("emailAutenticado") == null ) { // Ajusta el nombre del atributo de sesión
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
@@ -807,7 +803,6 @@ public class EmpleadoController {
 
         try {
             String apiUrlCompletaProductos = builder.toUriString();
-            logger.info("[EmpleadoController] URL API completa construida para productos (desde empleado): {}", apiUrlCompletaProductos);
 
             // Llamada para obtener productos
             ResponseEntity<RestPage<ProductoResultadoDTO>> responseEntity = restTemplate.exchange(
@@ -917,7 +912,7 @@ public class EmpleadoController {
     }
 
     private void popularModeloParaGestionEtiquetas(Model model, Empleado jefe) {
-        List<Empleado> subordinados = empleadoRepository.findByJefeId(jefe.getId());
+        List<Empleado> subordinados = empleadoRepository.findByJefeIdAndActivoTrue(jefe.getId());
         List<EmpleadoSimpleDTO> subordinadosDTO = subordinados.stream()
                 .map(e -> modelMapper.map(e, EmpleadoSimpleDTO.class))
                 .collect(Collectors.toList());

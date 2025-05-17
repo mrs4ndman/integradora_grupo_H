@@ -65,7 +65,38 @@
             color: #666;
             margin-top: 15px;
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input.clase-password-objetivo {
+            padding-right: 45px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .password-wrapper .toggle-password {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 40px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            color: #6c757d;
+        }
+
+        .password-wrapper .toggle-password:focus {
+            outline: none;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
 <div class="container">
@@ -114,9 +145,12 @@
           method="post">
         <h1>Bienvenido, <span th:text="${email}">Email</span></h1>
         <input type="hidden" name="email" th:value="${email}">
-        <div>
+        <div class="password-wrapper">
             <label for="contrasena">Contraseña</label>
-            <input type="password" id="contrasena" name="contrasena" required>
+            <input type="password" id="contrasena" name="contrasena" class="clase-password-objetivo" required>
+            <button type="button" class="toggle-password" onclick="mostrarContraseña(this)" aria-label="Mostrar u ocultar contraseña">
+                <i class="bi bi-eye-fill"></i>
+            </button>
         </div>
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
         <button type="submit">Ingresar</button>
@@ -125,6 +159,7 @@
     </form>
 
 </div>
+<script th:src="@{/js/script.js}"></script>
 <script>
     // Referencias a los elementos del DOM
     const formEmail = document.getElementById('formEmail'); // Formulario
@@ -234,11 +269,6 @@
             alert("Por favor, selecciona o introduce un email válido antes de intentar recuperar la contraseña.");
         }
         return false; // Prevenir comportamiento por defecto del enlace
-    }
-
-    function mostrarContraseña() {
-        const passwordField = document.getElementById('passwordField');
-        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
     }
 
     // --- Configuración Inicial ---

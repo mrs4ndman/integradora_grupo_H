@@ -8,15 +8,19 @@ import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
 import org.grupo_h.administracion.specs.EmpleadoSpecs;
 import org.grupo_h.comun.entity.Empleado;
+import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.repository.EmpleadoRepository;
+import org.grupo_h.comun.repository.UsuarioRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +36,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Autowired
     private final EmpleadoRepository empleadosRepository;
     @Autowired
+    private final UsuarioRepository usuarioRepository;
+    @Autowired
     private final ModelMapper modelMapper;
 
     /**
@@ -39,8 +45,9 @@ public class EmpleadoServiceImpl implements EmpleadoService {
      *
      * @param empleadosRepository Repositorio de empleados
      */
-    public EmpleadoServiceImpl(EmpleadoRepository empleadosRepository, ModelMapper modelMapper) {
+    public EmpleadoServiceImpl(EmpleadoRepository empleadosRepository, UsuarioRepository usuarioRepository, ModelMapper modelMapper) {
         this.empleadosRepository = empleadosRepository;
+        this.usuarioRepository = usuarioRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -128,39 +135,42 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     }
 
     @Override
+    @Transactional
     public List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro) {
-        List<Empleado> empleados;
+        Specification<Empleado> spec = Specification.where(EmpleadoSpecs.esActivo());
 
-        Specification<Empleado> spec = Specification.where(null);
-
-        if (filtro.getNombreDTO() != null && !filtro.getNombreDTO().isBlank()) {
-            spec = spec.and(EmpleadoSpecs.nombreContiene(filtro.getNombreDTO()));
+        if (filtro.getNombreDTO() != null && !filtro.getNombreDTO().trim().isEmpty()) {
+            spec = spec.and(EmpleadoSpecs.nombreContiene(filtro.getNombreDTO().trim()));
         }
 
-        if (filtro.getEdadMin() != null || filtro.getEdadMax() != null) {
-            spec = spec.and(EmpleadoSpecs.edadEntre(filtro.getEdadMin(), filtro.getEdadMax()));
+        if (filtro.getNumeroDni() != null && !filtro.getNumeroDni().trim().isEmpty()) {
+            spec = spec.and(EmpleadoSpecs.numeroDocumentoContiene(filtro.getNumeroDni().trim()));
+        }
+
+        if (filtro.getEdadMin() != null && filtro.getEdadMax() != null) {
+            Specification<Empleado> edadSpec = EmpleadoSpecs.edadEntre(filtro.getEdadMin(), filtro.getEdadMax());
+            if (edadSpec != null) {
+                spec = spec.and(edadSpec);
+            }
         }
 
         if (filtro.getDepartamentosDTO() != null && !filtro.getDepartamentosDTO().isEmpty()) {
             spec = spec.and(EmpleadoSpecs.departamentosEnLista(filtro.getDepartamentosDTO()));
         }
 
-        if (filtro.getNumeroDni() != null && !filtro.getNumeroDni().isBlank()) {
-            spec = spec.and(EmpleadoSpecs.numeroDocumentoContiene(filtro.getNumeroDni()));
-        }
+        Sort sort = Sort.by("apellidos").ascending().and(Sort.by("nombre").ascending());
+        List<Empleado> empleados = empleadosRepository.findAll(spec, sort);
 
-        Sort sort = Sort.by("nombre").ascending();
-        empleados = empleadosRepository.findAll(spec, sort);
-        // Convertimos a DTO
         return empleados.stream()
-                .map(e -> new EmpleadoDTO(
-                        e.getId(),
-                        e.getNombre(),
-                        e.getApellidos(),
-                        e.getEdad(),
-                        e.getDepartamento().getNombreDept(),
-                        e.getNumeroDocumento()
-                ))
+                .map(empleado -> {
+                    EmpleadoDTO dto = modelMapper.map(empleado, EmpleadoDTO.class);
+                    if (dto.getApellidos() == null && empleado.getApellidos() != null) {
+                    }
+                    if (empleado.getDepartamento() != null) {
+                        dto.setNombreDepartamento(empleado.getDepartamento().getNombreDept());
+                    }
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -168,7 +178,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     public Optional<Empleado> buscarPorDni(String dni) {
         System.err.println("Estoy en el Servicio");
         System.out.println("Hola");
-        return empleadosRepository.findByNumeroDocumento(dni);
+        return empleadosRepository.findByNumeroDocumentoAndActivoTrue(dni);
     }
 
     @Override
@@ -188,11 +198,70 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Transactional
     @Override
     public void eliminarPorDni(String dni) {
-        Optional<Empleado> opt = empleadosRepository.findByNumeroDocumento(dni);
+        Optional<Empleado> opt = empleadosRepository.findByNumeroDocumentoAndActivoTrue(dni);
         if (opt.isEmpty()) {
             throw new EntityNotFoundException("Empleado no existe con DNI " + dni);
         }
         empleadosRepository.delete(opt.get());
+    }
+
+    @Override
+    @Transactional
+    public Page<EmpleadoDTO> getEmpleadosParaGestionEstado(String searchTerm, Pageable pageable) {
+        Page<Empleado> paginaEmpleados;
+        if (StringUtils.hasText(searchTerm)) {
+            paginaEmpleados = empleadosRepository.findByNombreContainingIgnoreCaseOrApellidosContainingIgnoreCaseOrNumeroDocumentoContainingIgnoreCase(
+                    searchTerm, searchTerm, searchTerm, pageable
+            );
+        } else {
+            // Muestra todos los empleados (activos e inactivos)
+            paginaEmpleados = empleadosRepository.findAll(pageable);
+        }
+
+        List<EmpleadoDTO> dtos = paginaEmpleados.getContent().stream()
+                .map(this::convertirAEmpleadoDTOConEstado)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, paginaEmpleados.getTotalElements());
+    }
+
+    @Override
+    @Transactional
+    public void darDeBajaLogicaEmpleado(UUID empleadoId) {
+        Empleado empleado = empleadosRepository.findById(empleadoId)
+                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con ID: " + empleadoId));
+        empleado.setActivo(false);
+        empleadosRepository.save(empleado);
+
+        // También deshabilitar el usuario asociado para que no pueda iniciar sesión
+        Usuario usuario = empleado.getUsuario();
+        if (usuario != null) {
+            usuario.setHabilitado(false);
+            usuarioRepository.save(usuario);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void reactivarEmpleado(UUID empleadoId) {
+        Empleado empleado = empleadosRepository.findById(empleadoId)
+                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con ID: " + empleadoId));
+        empleado.setActivo(true);
+        empleadosRepository.save(empleado);
+
+        // También habilitar el usuario asociado
+        Usuario usuario = empleado.getUsuario();
+        if (usuario != null) {
+            usuario.setHabilitado(true);
+            usuarioRepository.save(usuario);
+        }
+    }
+
+    private EmpleadoDTO convertirAEmpleadoDTOConEstado(Empleado empleado) {
+        EmpleadoDTO dto = modelMapper.map(empleado, EmpleadoDTO.class);
+        if (empleado.getDepartamento() != null) {
+            dto.setNombreDepartamento(empleado.getDepartamento().getNombreDept());
+        }
+        return dto;
     }
 
 }

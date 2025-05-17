@@ -1,10 +1,13 @@
 package org.grupo_h.administracion.service;
 
+import jakarta.transaction.Transactional;
 import org.grupo_h.administracion.dto.EmpleadoConsultaDTO;
 import org.grupo_h.administracion.dto.EmpleadoDTO;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
 import org.grupo_h.comun.entity.Empleado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,4 +43,13 @@ public interface EmpleadoService {
     void eliminarPorId(UUID id);
 
     void eliminarPorDni(String dni);
+
+    @Transactional
+    void darDeBajaLogicaEmpleado(UUID empleadoId);
+
+    @Transactional
+    void reactivarEmpleado(UUID empleadoId);
+
+    @Transactional
+    Page<EmpleadoDTO> getEmpleadosParaGestionEstado(String searchTerm, Pageable pageable);
 }

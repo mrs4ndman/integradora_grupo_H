@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Búsqueda Empleados</title>
@@ -16,7 +16,7 @@
             padding: 20px;
             border-radius: 8px;
             max-width: 600px;
-            margin: auto;
+            margin: 20px auto; /* Margen superior e inferior añadido para separar de los nuevos enlaces */
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
@@ -34,6 +34,7 @@
             margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            box-sizing: border-box; /* Importante para que el padding no desborde el width */
         }
 
         button[type="submit"],
@@ -83,9 +84,36 @@
             background-color: #f1f1f1;
         }
 
+        .messages {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
         p {
             text-align: center;
             color: #555;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+        .nav-links a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-links a:hover,
+        .nav-links a.active-link {
+            border-bottom: 2px solid #007bff;
         }
     </style>
 </head>
@@ -94,86 +122,65 @@
 <div th:if="${error}" class="messages error" th:text="${error}"></div>
 <div th:if="${exito}" class="messages success" th:text="${exito}"></div>
 
+<div class="nav-links">
+    <a th:href="@{/administrador/consulta-empleado}" class="active-link">Consulta Avanzada Empleados</a> |
+    <a th:href="@{/administrador/gestion-estado-empleados}">Gestión Simple de Estado</a>
+</div>
 <form th:action="@{/administrador/consulta-empleado}" th:object="${filtro}" method="post">
+    <label for="nombreDTO">Nombre:</label>
+    <input type="text" th:field="*{nombreDTO}" id="nombreDTO" />
 
-
-    <label>Nombre:</label>
-    <input type="text" th:field="*{nombreDTO}" />
-
-    <label>DNI:</label>
-    <input type="text" th:field="*{numeroDni}" />
+    <label for="numeroDni">DNI:</label>
+    <input type="text" th:field="*{numeroDni}" id="numeroDni" />
 
     <label for="departamentoDTO">Departamento</label>
-    <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple>
-        <option value="">Selecciona un departamento</option>
+    <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple="multiple"> <option value="">Selecciona un departamento</option>
         <option th:each="departamento : ${departamentos}"
                 th:value="${departamento.id}"
                 th:text="${departamento.nombreDept}"></option>
     </select>
 
-    <label>Edad mínima:</label>
-    <input type="text" th:field="*{edadMin}" />
-
-    <label>Edad máxima:</label>
-    <input type="text" th:field="*{edadMax}" />
-
-    <button type="submit">Buscar</button>
+    <label for="edadMin">Edad mínima:</label>
+    <input type="text" th:field="*{edadMin}" id="edadMin" /> <label for="edadMax">Edad máxima:</label>
+    <input type="text" th:field="*{edadMax}" id="edadMax" /> <button type="submit">Buscar</button>
     <button type="reset">Borrar Campos</button>
 </form>
 
 <h3>Resultados:</h3>
 <div th:if="${resultados != null}">
 
-    <!-- Tabla de resultados si hay empleados -->
     <div th:if="${!#lists.isEmpty(resultados)}">
         <table>
             <thead>
             <tr>
                 <th>Nombre</th>
-                <th>Apellidos</th>
-                <th>Edad</th>
+                <th>Apellidos</th> <th>Edad</th>
                 <th>Departamento</th>
                 <th>DNI</th>
-            </tr>
+                <th>Acciones</th> </tr>
             </thead>
             <tbody>
             <tr th:each="emp : ${resultados}">
                 <td th:text="${emp.nombre}">Nombre</td>
-                <td th:text="${emp.apellido}">Apellido</td>
-                <td th:text="${emp.edad}">Edad</td>
-                <td th:text="${emp.nombreDepartamento}">Depto</td>
+                <td th:text="${emp.apellidos}">Apellido</td> <td th:text="${emp.edad}">Edad</td>
+                <td th:text="${emp.nombreDepartamento ?: 'N/A'}">Depto</td>
                 <td th:text="${emp.numeroDni}">DNI</td>
                 <td>
-
-<!--                    <form th:action="/administrador/editar-empleado/*{emp.numeroDni}" method="get">-->
-<!--                        <button type="submit">Editar</button>-->
-<!--                    </form>-->
-
                     <button>
-                        <a th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
-                            Editar
+                        <a th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}" style="color: inherit; text-decoration: none;"> Editar
                         </a>
-
-                    </button>
-
-                    <button>
-                        <a th:href="@{'/administrador/borrar-empleado/' + ${emp.numeroDni}}">
-                            Borrar
-                        </a>
-
                     </button>
                 </td>
             </tr>
-
             </tbody>
         </table>
     </div>
 
-    <!-- Si no hay empleados -->
     <div th:if="${#lists.isEmpty(resultados)}">
-        <p>No hay resultados</p>
+        <p>No hay resultados para empleados activos con los criterios seleccionados.</p>
     </div>
-
+</div>
+<div th:unless="${resultados != null}"> <p>Realice una búsqueda para ver los resultados.</p>
 </div>
 
 </body>
