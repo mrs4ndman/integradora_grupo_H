@@ -22,7 +22,7 @@ function vaciarFormulario() {
     const formulario = document.getElementById('formulario');
 
     // Recorrer todos los elementos del formulario
-    Array.from(formulario.elements).forEach(function(element) {
+    Array.from(formulario.elements).forEach(function (element) {
         if (element.type === 'text'
             || element.type === 'email'
             || element.type === 'textarea'
@@ -53,6 +53,7 @@ function seleccionarGeneroF() {
         radio.checked = true;
     }
 }
+
 // Selecciona todos los radios del Género
 function deseleccionaTodosGeneros() {
     const radios = document.querySelectorAll('input[type="radio"][name="generoSeleccionadoDTO.codigoGenero"]');
@@ -82,8 +83,6 @@ function alternarEstilos() {
         estilo.disabled = false; // Vuelve a aplicar los estilos
     }
 }
-
-
 
 
 // Validar contraseñas en registro
@@ -118,7 +117,7 @@ function validarRegistro() {
 }
 
 // Highlight de los botones del NavBar en Registro Empleados
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     let links = document.querySelectorAll("nav ul li a");
     let tipoDocumento = document.getElementById('tipoDocumento');
     let currentPath = window.location.pathname;
@@ -134,10 +133,39 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    if(tipoDocumento){
+    if (tipoDocumento) {
         tipoDocumento.checked = true;
     }
 });
 
+function mostrarContraseña(buttonElement) {
+    const wrapper = buttonElement.closest('.password-wrapper');
+    if (!wrapper) {
+        console.error("Contenedor .password-wrapper no encontrado.");
+        return;
+    }
 
+    const passwordInput = wrapper.querySelector('.clase-password-objetivo');
+    const icon = buttonElement.querySelector('i');
 
+    if (!passwordInput) {
+        console.error("Input .clase-password-objetivo no encontrado en el wrapper.");
+        return;
+    }
+    if (!icon) {
+        console.error("Icono <i> no encontrado en el botón.");
+        return;
+    }
+
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+        buttonElement.setAttribute('aria-label', 'Ocultar contraseña');
+    } else {
+        passwordInput.type = "password";
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+        buttonElement.setAttribute('aria-label', 'Mostrar contraseña');
+    }
+}

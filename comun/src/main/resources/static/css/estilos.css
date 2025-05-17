@@ -273,3 +273,33 @@ input.boton:hover{
 .btn-seleccionar{
     margin: 20px 0;
 }
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input.clase-password-objetivo {
+    padding-right: 45px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.password-wrapper .toggle-password {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 40px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: #6c757d;
+}
+
+.password-wrapper .toggle-password:focus {
+    outline: none;
+}

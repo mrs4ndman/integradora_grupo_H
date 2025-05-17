@@ -11,6 +11,10 @@ import org.grupo_h.comun.repository.DepartamentoRepository;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.grupo_h.comun.service.DepartamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Controller
 @RequestMapping("/administrador")
@@ -141,16 +148,15 @@ public class GestionEmpleadosController {
 
         EmpleadoDTO dto = new EmpleadoDTO();
         dto.setNombre(empleado.getNombre());
-        dto.setApellido(empleado.getApellidos());
+        dto.setApellidos(empleado.getApellidos());
         dto.setEdad(empleado.getEdad());
         dto.setNumeroDni(empleado.getNumeroDocumento());
         dto.setNombreDepartamento(empleado.getDepartamento().getNombreDept());
-        // Agrega los campos que quieras editar
 
         model.addAttribute("empleado", dto);
         model.addAttribute("departamentos", departamentoService.obtenerTodosDepartamentos());
 
-        return "edicion-empleado"; // Nombre del HTML/Thymeleaf para editar
+        return "edicion-empleado";
     }
 
     /**
@@ -173,7 +179,7 @@ public class GestionEmpleadosController {
 
         Empleado empleado = empleadoOpt.get();
         empleado.setNombre(dto.getNombre());
-        empleado.setApellidos(dto.getApellido());
+        empleado.setApellidos(dto.getApellidos());
 
         if (dto.getEdad() != null) {
             empleado.setEdad(dto.getEdad());
@@ -217,5 +223,70 @@ public class GestionEmpleadosController {
         return "redirect:/administrador/consulta-empleado";
     }
 
+    @GetMapping("/gestion-estado-empleados")
+    public String mostrarGestionEstadoEmpleados(
+            @RequestParam(name = "searchTerm", required = false) String searchTerm,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("nombre").ascending());
+        Page<EmpleadoDTO> paginaEmpleados = empleadoService.getEmpleadosParaGestionEstado(searchTerm, pageable);
+
+        model.addAttribute("paginaEmpleados", paginaEmpleados);
+        model.addAttribute("searchTerm", searchTerm);
+
+        int totalPages = paginaEmpleados.getTotalPages();
+        if (totalPages > 0) {
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages)
+                    .boxed()
+                    .collect(Collectors.toList());
+            model.addAttribute("pageNumbers", pageNumbers);
+        }
+        return "gestionEstadoEmpleados";
+    }
+
+    @PostMapping("/dar-baja-empleado/{id}")
+    public String darBajaEmpleado(@PathVariable("id") UUID id,
+                                  RedirectAttributes redirectAttributes,
+                                  HttpSession session) {
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+        try {
+            empleadoService.darDeBajaLogicaEmpleado(id);
+            redirectAttributes.addFlashAttribute("exito", "Empleado dado de baja correctamente.");
+        } catch (EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al dar de baja al empleado: " + e.getMessage());
+        }
+        return "redirect:/administrador/gestion-estado-empleados";
+    }
+
+    @PostMapping("/reactivar-empleado/{id}")
+    public String reactivarEmpleado(@PathVariable("id") UUID id,
+                                    RedirectAttributes redirectAttributes,
+                                    HttpSession session) {
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+        try {
+            empleadoService.reactivarEmpleado(id);
+            redirectAttributes.addFlashAttribute("exito", "Empleado reactivado correctamente.");
+        } catch (EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", "Empleado no encontrado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al reactivar al empleado: " + e.getMessage());
+        }
+        return "redirect:/administrador/gestion-estado-empleados";
+    }
 
 }

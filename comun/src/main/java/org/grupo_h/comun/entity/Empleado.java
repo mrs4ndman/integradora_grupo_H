@@ -178,6 +178,9 @@ public class Empleado {
     @EqualsAndHashCode.Exclude
     private List<Nomina> nominas = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean activo = true;
+
     @Transient
     public String getNombreCompleto() {
         return nombre + " " + apellidos;

@@ -1,6 +1,8 @@
 package org.grupo_h.comun.repository;
 
 import org.grupo_h.comun.entity.Empleado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,27 +15,36 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface EmpleadoRepository extends JpaRepository<Empleado, UUID> {
-    Optional<Empleado> findByNombre(String nombreEmpleado);
+public interface EmpleadoRepository extends JpaRepository<Empleado, UUID>, JpaSpecificationExecutor<Empleado> {
+    Optional<Empleado> findByNombreAndActivoTrue(String nombreEmpleado);
 //    Optional<Empleado> findByNombreEmpleado(String nombreEmpleado);
 
-    List<Empleado> findByJefe(Empleado jefe);
+    List<Empleado> findByJefeAndActivoTrue(Empleado jefe);
 
-    List<Empleado> findByJefeId(UUID jefeId);
+    List<Empleado> findByJefeIdAndActivoTrue(UUID jefeId);
 
     Optional<Object> findByUsuarioId(UUID id);
 
     Optional<Empleado> findById(UUID etiquetaId);
 
-    List<Empleado> findByNombreContainingOrApellidosContaining(String criterio, String criterio1);
+    List<Empleado> findByActivoTrueAndNombreContainingOrActivoTrueAndApellidosContaining(String criterio, String criterio1);
 
-    List<Empleado> findByNombreContainingIgnoreCase(String nombreDTO);
+    List<Empleado> findByActivoTrueAndNombreContainingIgnoreCase(String nombreDTO);
 
-    List<Empleado> findByFechaNacimientoBetween(LocalDate fechaMin, LocalDate fechaMax);;
+    List<Empleado> findByActivoTrueAndFechaNacimientoBetween(LocalDate fechaMin, LocalDate fechaMax);;
+
+    Optional<Empleado> findByNumeroDocumentoAndActivoTrue(String numeroDni);
+
+    Page<Empleado> findByNombreContainingIgnoreCaseOrApellidosContainingIgnoreCaseOrNumeroDocumentoContainingIgnoreCase(String nombre, String apellidos, String numeroDocumento, Pageable pageable);
+
 
     Optional<Empleado> findByNumeroDocumento(String numeroDni);
 
     List<Empleado> findAll(Specification<Empleado> spec, Sort sort);
+
+    Page<Empleado> findAll(Pageable pageable);
+
+    Page<Empleado> findByActivo(boolean activo, Pageable pageable);
 
     void deleteByNumeroDocumento(String numeroDocumento);
 }
