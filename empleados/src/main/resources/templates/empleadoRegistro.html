@@ -26,10 +26,9 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<h2>Formulario de Registro de Empleado</h2>
+<h2>Datos Personales </h2>
 
 <div class="contenedor-principal">
-
     <!--NavBar-->
     <div th:replace="~{fragments/navbar :: navbar}"></div>
 
@@ -54,11 +53,13 @@
             <div th:if="${#fields.hasErrors('apellidosDTO')}" th:errors="*{apellidosDTO}" class="error"></div>
         </div>
 
-        <div>
-            <span style="color:red">&#8226;</span> <label for="fotografia" th:text="#{Datos-personales.fotografia}"/>
-            <input type="file" id="fotografia" th:field="*{fotografiaDTO}">
+        <div style="margin-bottom: 15px">
+            <span style="color:red; display: block">&#8226;</span>
+            <label for="fotografia" th:text="#{Datos-personales.fotografia}" class="boton foto" />
+            <input type="file" id="fotografia" style="display: none;" th:field="*{fotografiaDTO}" >
             <div th:if="${#fields.hasErrors('fotografiaDTO')}" th:errors="*{fotografiaDTO}" class="error"></div>
-            <img src="" alt="" id="miniatura">
+            <img src="" alt="" id="miniatura"
+                 style="max-width:200px; max-height:200px; object-fit:cover;">
         </div>
 
         <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-personales.genero}"></span></p>
@@ -71,7 +72,7 @@
                    th:text="${g.nombreGenero}"></label><br>
         </div>
 
-        <div class="btn-seleccionar">
+        <div class="acciones">
             <input type="button" th:value="#{Boton.selecciona.genero}" onclick="seleccionarGeneroF()" class="boton">
             <input type="button" th:value="#{Boton.deselecciona.genero}" onclick="deseleccionaTodosGeneros()"
                    class="boton">
@@ -119,20 +120,21 @@
         <div th:if="${#fields.hasErrors('comentarios')}" th:errors="*{comentarios}" class="error"></div>
 
         <div class="btn-form">
-            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Logout</a>
 
             <input class="boton secundario"
                    type="button"
                    th:value="#{Boton.resetear}"
                    onclick="resetFormulario()">
-            <br><br>
+
 
             <input type="button"
+                   class="boton secundario"
                    th:value="#{Boton.vaciar}"
                    onclick="vaciarFormulario()">
-            <br><br>
 
-            <input type="submit"
+
+            <input type="submit" class="boton principal"
                    th:value="#{Boton.siguiente}">
 
         </div>

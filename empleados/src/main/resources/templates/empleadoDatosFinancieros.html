@@ -136,19 +136,20 @@
         <br><br>
 
         <div class="btn-form">
-            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+            <a class="boton secundario" th:href="@{/usuarios/logout}">logout</a>
 
             <input type="button"
+                   class="boton secundario"
                    th:value="#{Boton.resetear}"
                    onclick="resetFormulario()">
-            <br><br>
 
             <input type="button"
+                   class="boton secundario"
                    th:value="#{Boton.vaciar}"
                    onclick="vaciarFormulario()">
-            <br><br>
 
             <input type="submit"
+                   class="boton principal"
                    th:value="#{Boton.siguiente}">
 
         </div>

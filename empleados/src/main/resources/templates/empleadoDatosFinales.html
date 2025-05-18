@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Resumen</title>
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <body>
 
 
-<h2>Resumen de los Datos del Empleado</h2>
 
 <div th:if="${exito}">
     <p style="color: green;" th:text="${exito}"/>
 </div>
 <div th:if="${error != null}">
     <p style="color: red;" th:text="${error}"></p>
+
 </div>
+<label>
+    <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
+</label>
+
+<h2>Resumen de los Datos del Empleado</h2>
 <div class="contenedor-principal">
 
     <div class="fotografia">
-        <label>Fotografia</label>
         <img th:if="${fotoBase64 != null}" th:src="${fotoBase64}"
              style="width:150px;height:150px;object-fit:cover;" alt="Foto del empleado"/>
     </div>
@@ -31,53 +35,54 @@
           enctype="multipart/form-data"
           onsubmit="return confirmarAccionFormularioRegistroEmpleado(this, '¿Estás seguro de que deseas registrar este nuevo empleado?');">
         <h2>Empleado</h2>
-        <p th:text="'Nombre: ' + *{nombreDTO}"></p>
-        <p th:text="'Apellidos: ' + *{apellidosDTO}"></p>
-        <p th:text="'Género: ' + *{generoSeleccionadoDTO.codigoGenero}"></p>
+        <p><strong>Nombre:</strong> <span th:text="*{nombreDTO}"></span></p>
+        <p><strong>Apellidos:</strong> <span th:text="*{apellidosDTO}"></span></p>
+        <p><strong>Género:</strong> <span th:text="*{generoSeleccionadoDTO.codigoGenero}"></span></p>
 
-        <p th:text="${'Fecha de nacimiento: ' + #temporals.format(datos.fechaNacimientoDTO, 'dd/MM/yyyy')}"></p>
-        <p th:text="'Edad: ' + *{edadDTO}"></p>
-        <p th:text="'Pais de Nacimiento: ' + *{paisNacimiento.codigoPaisDTO}"></p>
-        <p th:text="'Comentarios: ' + *{comentarios}"></p>
+        <p><strong>Fecha de nacimiento:</strong> <span th:text="${#temporals.format(datos.fechaNacimientoDTO, 'dd/MM/yyyy')}"></span></p>
+        <p><strong>Edad:</strong> <span th:text="*{edadDTO}"></span></p>
+        <p><strong>País de nacimiento:</strong> <span th:text="*{paisNacimiento.codigoPaisDTO}"></span></p>
+        <p><strong>Comentarios:</strong> <span th:text="*{comentarios}"></span></p>
 
         <h2>Documentos Personales</h2>
-        <p th:text="'Tipo de documento: ' + *{tipoDocumentoDTO.tipoDocumento}"></p>
-        <p th:text="'Número de documento: ' + *{numeroDocumentoDTO}"></p>
-        <p th:text="'Teléfono Móvil: ' + *{prefijoTelefono} + ' ' + *{telefonoMovil}"></p>
+        <p><strong>Tipo de documento:</strong> <span th:text="*{tipoDocumentoDTO.tipoDocumento}"></span></p>
+        <p><strong>Número de documento:</strong> <span th:text="*{numeroDocumentoDTO}"></span></p>
+        <p><strong>Teléfono móvil:</strong> <span th:text="*{prefijoTelefono} + ' ' + *{telefonoMovil}"></span></p>
 
         <h2>Dirección</h2>
-        <p th:text="'Tipo de vía: ' + *{direccionDTO.tipoViaDireccionPpalDTO.tipoVia}"></p>
-        <p th:text="'Nombre de vía: ' + *{direccionDTO.nombreViaDireccionPpalDTO}"></p>
-        <p th:text="'Número de vía: ' + *{direccionDTO.numeroViaDireccionPpalDTO}"></p>
-        <p th:text="'Portal: ' + *{direccionDTO.portalDireccionPpalDTO}"></p>
-        <p th:text="'Planta: ' + *{direccionDTO.plantaDireccionPpalDTO}"></p>
-        <p th:text="'Puerta: ' + *{direccionDTO.puertaDireccionPpalDTO}"></p>
-        <p th:text="'Localidad: ' + *{direccionDTO.localidadDireccionPpalDTO}"></p>
-        <p th:text="'Código postal: ' + *{direccionDTO.codigoPostalDireccionPpalDTO}"></p>
-        <p th:text="'Región: ' + *{direccionDTO.regionDireccionPpalDTO}"></p>
+        <p><strong>Tipo de vía:</strong> <span th:text="*{direccionDTO.tipoViaDireccionPpalDTO.tipoVia}"></span></p>
+        <p><strong>Nombre de vía:</strong> <span th:text="*{direccionDTO.nombreViaDireccionPpalDTO}"></span></p>
+        <p><strong>Número de vía:</strong> <span th:text="*{direccionDTO.numeroViaDireccionPpalDTO}"></span></p>
+        <p><strong>Portal:</strong> <span th:text="*{direccionDTO.portalDireccionPpalDTO}"></span></p>
+        <p><strong>Planta:</strong> <span th:text="*{direccionDTO.plantaDireccionPpalDTO}"></span></p>
+        <p><strong>Puerta:</strong> <span th:text="*{direccionDTO.puertaDireccionPpalDTO}"></span></p>
+        <p><strong>Localidad:</strong> <span th:text="*{direccionDTO.localidadDireccionPpalDTO}"></span></p>
+        <p><strong>Código postal:</strong> <span th:text="*{direccionDTO.codigoPostalDireccionPpalDTO}"></span></p>
+        <p><strong>Región:</strong> <span th:text="*{direccionDTO.regionDireccionPpalDTO}"></span></p>
 
-        <h2>Departamentos Y Especialidades</h2>
-        <p th:text="'Departamento: ' + *{departamentoDTO.id}"></p>
+        <h2>Departamentos y Especialidades</h2>
+        <p><strong>Departamento:</strong> <span th:text="*{departamentoDTO.id}"></span></p>
 
-        <p>Especialidades seleccionadas:</p>
+        <p><strong>Especialidades seleccionadas:</strong></p>
         <div th:each="e : *{especialidadesSeleccionadasDTO}">
-            <div th:if="${e.seleccionada}"
-                 th:text="${e.nombreEspecialidad}"></div>
+            <div th:if="${e.seleccionada}" th:text="${e.nombreEspecialidad}"></div>
         </div>
 
-
         <h2>Datos Financieros</h2>
-        <p th:text="'Banco: ' + *{cuentaCorrienteDTO.entidadBancaria.nombreEntidadDTO}"></p>
-        <p th:text="'Cuenta Corriente: ' + *{cuentaCorrienteDTO.numeroCuentaDTO}"></p>
-        <p th:text="'Salario: ' + *{salarioDTO}"></p>
-        <p th:text="'Comisión: ' + *{comisionDTO}"></p>
+        <p><strong>Banco:</strong> <span th:text="*{cuentaCorrienteDTO.entidadBancaria.nombreEntidadDTO}"></span></p>
+        <p><strong>Cuenta Corriente:</strong> <span th:text="*{cuentaCorrienteDTO.numeroCuentaDTO}"></span></p>
+        <p><strong>Salario:</strong> <span th:text="*{salarioDTO}"></span></p>
+        <p><strong>Comisión:</strong> <span th:text="*{comisionDTO}"></span></p>
 
         <h2>Tarjeta de Crédito</h2>
-        <p th:text="'Tipo de Tarjeta: ' + *{tarjetasCreditoDTO.tipoTarjetaCreditoDTO.nombreTipoTarjetaDTO}"></p>
-        <p th:text="'Número de Tarjeta: ' + *{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}"></p>
-        <p th:text="'Caducidad de la Tarjeta: Mes:' + *{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}
-    + ' Año:' + *{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}"></p>
-        <p th:text="'CVC: ' + *{tarjetasCreditoDTO.cvcDTO}"></p>
+        <p><strong>Tipo de tarjeta:</strong> <span th:text="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO.nombreTipoTarjetaDTO}"></span></p>
+        <p><strong>Número de tarjeta:</strong> <span th:text="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}"></span></p>
+        <p>
+            <strong>Caducidad de la tarjeta:</strong>
+            <span th:text="'Mes: ' + *{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO} + ' Año: ' + *{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}"></span>
+        </p>
+        <p><strong>CVC:</strong> <span th:text="*{tarjetasCreditoDTO.cvcDTO}"></span></p>
+
 
         <hr>
 
@@ -93,9 +98,11 @@
         <hr>
 
         <div class="btn-form">
-            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+            <a class="boton secundario" th:href="@{/usuarios/logout}">logout</a>
 
-            <input type="submit" th:value="#{Boton.guardar}">
+            <input class="boton principal"
+                    type="submit"
+                    th:value="#{Boton.guardar}">
         </div>
 
     </form>

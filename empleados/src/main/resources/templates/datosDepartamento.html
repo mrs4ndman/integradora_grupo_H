@@ -13,6 +13,7 @@
 </label>
 
 <h2 th:text="#{Titulo.datosDepartamento}"/>
+
 <div class="contenedor-principal">
     <!--NavBar-->
     <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -36,7 +37,6 @@
             </select>
             <div th:if="${#fields.hasErrors('departamentoDTO')}" th:errors="*{departamentoDTO}" class="error"></div>
         </div>
-        <br><br>
 
         <!-- Sección de Especialidades -->
         <span style="color:red">&#8226;</span> <label>Especialidades:</label><br>
@@ -50,27 +50,36 @@
         <span th:if="${#fields.hasErrors('especialidadesSeleccionadasDTO')}"
               th:errors="*{especialidadesSeleccionadasDTO}" style="color:red"></span>
 
-        <br><br>
-        <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()"
-               class="boton">
-        <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()"
-               class="boton">
 
-        <br><br>
+        <div class="acciones">
+
+            <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()"
+                   class="boton">
+
+
+            <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()"
+                   class="boton">
+        </div>
+
+
         <div class="btn-form">
-            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+
+            <a class="boton secundario" th:href="@{/usuarios/logout}">logout</a>
 
             <input type="button"
+                   class="boton secundario"
                    th:value="#{Boton.resetear}"
                    onclick="resetFormulario()">
-            <br><br>
+
 
             <input type="button"
+                   class="boton secundario"
                    th:value="#{Boton.vaciar}"
                    onclick="vaciarFormulario()">
-            <br><br>
 
-            <input type="submit"
+
+            <input class="boton principal"
+                    type="submit"
                    th:value="#{Boton.siguiente}">
         </div>
     </form>

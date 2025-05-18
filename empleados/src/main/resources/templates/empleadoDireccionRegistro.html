@@ -11,7 +11,7 @@
 <label>
     <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
 </label>
-<h2>Formulario de Dirección</h2>
+<h2>Identificación, Contacto y Dirección</h2>
 
 <div class="contenedor-principal">
     <!--NavBar-->
@@ -129,19 +129,22 @@
         <br><br>
 
         <div class="btn-form">
-            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+            <a class="boton secundario" th:href="@{/usuarios/logout}">logout</a>
 
             <input type="button"
+                   class="boton secundario"
                    th:value="#{Boton.resetear}"
                    onclick="resetFormulario()">
             <br><br>
 
             <input type="button"
+                   class="boton secundario"
                    th:value="#{Boton.vaciar}"
                    onclick="vaciarFormulario()">
             <br><br>
 
             <input type="submit"
+                   class="boton principal"
                    th:value="#{Boton.siguiente}">
         </div>
     </form>
