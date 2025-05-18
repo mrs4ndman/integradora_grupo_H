@@ -11,11 +11,15 @@ import org.grupo_h.comun.repository.DepartamentoRepository;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.grupo_h.comun.service.DepartamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +88,8 @@ public class GestionEmpleadosController {
     @PostMapping("/consulta-empleado")
     public String procesarBusquedaEmpleado(@ModelAttribute("filtro") EmpleadoConsultaDTO filtro,
                                            HttpSession session,
+                                           @RequestParam(defaultValue = "0") int page,
+                                           @RequestParam(defaultValue = "10") int size,
                                            RedirectAttributes redirectAttributes,
                                            Model model) {
 
@@ -100,9 +106,14 @@ public class GestionEmpleadosController {
         List<Departamento> departamentos = departamentoService.obtenerTodosDepartamentos();
         model.addAttribute("departamentos", departamentos);
 
-        List<EmpleadoDTO> resultados = empleadoService.buscarEmpleados(filtro);
+//        List<EmpleadoDTO> resultados = empleadoService.buscarEmpleados(filtro);
+        Page<EmpleadoDTO> empleadosPage = empleadoService
+                .buscarEmpleadosPaginados(filtro, page, size);
 
-        model.addAttribute("resultados", resultados);
+        model.addAttribute("resultados", empleadosPage.getContent());
+        model.addAttribute("currentPage", empleadosPage.getNumber());
+        model.addAttribute("totalPages", empleadosPage.getTotalPages());
+        model.addAttribute("totalItems", empleadosPage.getTotalElements());
 
 
         return "consultaParametrizadaEmpleado";
@@ -146,6 +157,12 @@ public class GestionEmpleadosController {
         dto.setNumeroDni(empleado.getNumeroDocumento());
         dto.setNombreDepartamento(empleado.getDepartamento().getNombreDept());
 
+        // **Convertir foto a Base64** (si existe)
+        if (empleado.getFotografia() != null && empleado.getFotografia().length > 0) {
+            String b64 = Base64.getEncoder().encodeToString(empleado.getFotografia());
+            dto.setFotoBase64("data:image/jpeg;base64," + b64);
+        }
+
         model.addAttribute("empleado", dto);
         model.addAttribute("departamentos", departamentoService.obtenerTodosDepartamentos());
 
@@ -161,7 +178,8 @@ public class GestionEmpleadosController {
      */
     @PostMapping("/editar-empleado")
     public String procesarEdicionEmpleado(@ModelAttribute("empleado") EmpleadoDTO dto,
-                                          RedirectAttributes redirectAttributes) {
+                                          RedirectAttributes redirectAttributes,
+                                          @RequestParam(value = "fotografiaDTO", required = false) MultipartFile multipartFile) {
 
         Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dto.getNumeroDni());
         System.err.println(empleadoOpt);
@@ -185,6 +203,12 @@ public class GestionEmpleadosController {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+
+//        if(!multipartFile.isEmpty()){
+//            dto.setFotografiaArchivo(multipartFile.getBytes());
+//        }else{
+//            dto.setFotografiaArchivo(null);
+//        }
 
         System.out.println("AQUI → " + empleado);
 

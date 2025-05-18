@@ -7,16 +7,18 @@
     <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
 </head>
 <body>
-    <!--  Desactiva los estilos-->
-    <label>
-        <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
-    </label>
+<!--  Desactiva los estilos-->
+<label>
+    <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
+</label>
+
+<h2 th:text="#{Titulo.datosDepartamento}"/>
+<div class="contenedor-principal">
     <!--NavBar-->
     <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-    <h2 th:text="#{Titulo.datosDepartamento}"/>
-
-    <form th:action="@{/empleados/registro-departamento}" th:object="${empleadoRegistroDTO}" method="post" id="formulario" >
+    <form th:action="@{/empleados/registro-departamento}" th:object="${empleadoRegistroDTO}" method="post"
+          id="formulario">
 
         <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
         <div th:if="${#fields.hasGlobalErrors()}">
@@ -24,7 +26,8 @@
         </div>
 
         <div>
-            <span style="color:red">&#8226;</span> <label for="departamento" th:text="#{Datos-departamento.nombreDept}"></label>
+            <span style="color:red">&#8226;</span> <label for="departamento"
+                                                          th:text="#{Datos-departamento.nombreDept}"></label>
             <select th:field="*{departamentoDTO.id}" id="departamento">
                 <option th:each="d : ${departamentos}"
                         th:value="${d.id}"
@@ -44,14 +47,19 @@
                    th:id="'esp-' + ${e.id}"/>
             <label th:for="'esp-' + ${e.id}" th:text="${e.nombreEspecialidad}"></label>
         </div>
-        <span th:if="${#fields.hasErrors('especialidadesSeleccionadasDTO')}" th:errors="*{especialidadesSeleccionadasDTO}" style="color:red"></span>
+        <span th:if="${#fields.hasErrors('especialidadesSeleccionadasDTO')}"
+              th:errors="*{especialidadesSeleccionadasDTO}" style="color:red"></span>
 
         <br><br>
-        <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()" class="boton">
-        <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()" class="boton">
+        <input type="button" th:value="#{Boton.selecciona.especialidad}" onclick="seleccionaTodosCheckboxes()"
+               class="boton">
+        <input type="button" th:value="#{Boton.deselecciona.especialidad}" onclick="deseleccionaTodosCheckboxes()"
+               class="boton">
 
         <br><br>
         <div class="btn-form">
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+
             <input type="button"
                    th:value="#{Boton.resetear}"
                    onclick="resetFormulario()">
@@ -66,6 +74,8 @@
                    th:value="#{Boton.siguiente}">
         </div>
     </form>
-    <script th:src="@{/js/script.js}"></script>
+</div>
+
+<script th:src="@{/js/script.js}"></script>
 </body>
 </html>

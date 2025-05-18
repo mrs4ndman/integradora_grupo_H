@@ -11,15 +11,14 @@ import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -153,16 +152,76 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleados = empleadosRepository.findAll(spec, sort);
         // Convertimos a DTO
         return empleados.stream()
-                .map(e -> new EmpleadoDTO(
-                        e.getId(),
-                        e.getNombre(),
-                        e.getApellidos(),
-                        e.getEdad(),
-                        e.getDepartamento().getNombreDept(),
-                        e.getNumeroDocumento()
-                ))
+                .map(e -> {
+                    String fotoB64 = "";
+                    if (e.getFotografia() != null && e.getFotografia().length > 0) {
+                        fotoB64 = "data:image/jpeg;base64," +
+                                Base64.getEncoder().encodeToString(e.getFotografia());
+                    }
+                    return new EmpleadoDTO(
+                            e.getId(),
+                            e.getNombre(),
+                            e.getApellidos(),
+                            e.getEdad(),
+                            e.getDepartamento().getNombreDept(),
+                            e.getNumeroDocumento(),
+                            fotoB64,
+                            null
+                    );
+                })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Page<EmpleadoDTO> buscarEmpleadosPaginados(EmpleadoConsultaDTO filtro,
+                                                      int pagina,
+                                                      int tamaño) {
+        // 1) Construir la Specification como antes
+        Specification<Empleado> spec = Specification.where(null);
+
+        if (filtro.getNombreDTO() != null && !filtro.getNombreDTO().isBlank()) {
+            spec = spec.and(EmpleadoSpecs.nombreContiene(filtro.getNombreDTO()));
+        }
+        if (filtro.getEdadMin() != null || filtro.getEdadMax() != null) {
+            spec = spec.and(EmpleadoSpecs.edadEntre(filtro.getEdadMin(), filtro.getEdadMax()));
+        }
+
+        if (filtro.getDepartamentosDTO() != null && !filtro.getDepartamentosDTO().isEmpty()) {
+            spec = spec.and(EmpleadoSpecs.departamentosEnLista(filtro.getDepartamentosDTO()));
+        }
+
+        if (filtro.getNumeroDni() != null && !filtro.getNumeroDni().isBlank()) {
+            spec = spec.and(EmpleadoSpecs.numeroDocumentoContiene(filtro.getNumeroDni()));
+        }
+
+        // 2) Crear Pageable con orden por nombre
+        Pageable pageable = PageRequest.of(pagina, tamaño, Sort.by("nombre").ascending());
+
+        // 3) Llamar al repo con spec + pageable
+        Page<Empleado> pageEntidades = empleadosRepository.findAll(spec, pageable);
+
+        // 4) Mapear cada Empleado → EmpleadoDTO
+        Page<EmpleadoDTO> pageDTOs = pageEntidades.map(e -> {
+            String fotoB64 = "";
+            if (e.getFotografia() != null && e.getFotografia().length > 0) {
+                fotoB64 = "data:image/jpeg;base64," +
+                        Base64.getEncoder().encodeToString(e.getFotografia());
+            }
+            return new EmpleadoDTO(
+                    e.getId(),
+                    e.getNombre(),
+                    e.getApellidos(),
+                    e.getEdad(),
+                    e.getDepartamento() != null ? e.getDepartamento().getNombreDept() : null,
+                    e.getNumeroDocumento(),
+                    fotoB64,
+                    null
+            );
+        });
+
+        return pageDTOs;
+    }
+
 
     @Override
     public Optional<Empleado> buscarPorDni(String dni) {

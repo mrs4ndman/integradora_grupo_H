@@ -49,7 +49,9 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final DepartamentoRepository departamentoRepository;
     private final CuentaCorrienteRepository cuentaCorrienteRepository;
     private final ModelMapper modelMapper;
+    private  final FotografiaService fotografiaService;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+
 
     @Autowired
     public EmpleadoServiceImpl(EmpleadoRepository empleadosRepository,
@@ -61,7 +63,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                                TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository,
                                DepartamentoRepository departamentoRepository,
                                CuentaCorrienteRepository cuentaCorrienteRepository,
-                               ModelMapper modelMapper) {
+                               ModelMapper modelMapper, FotografiaService fotografiaService) {
         this.empleadosRepository = empleadosRepository;
         this.usuarioRepository = usuarioRepository;
         this.generoRepository = generoRepository;
@@ -72,11 +74,12 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         this.entidadBancariaRepository = entidadBancariaRepository;
         this.tipoTarjetaCreditoRepository = tipoTarjetaCreditoRepository;
         this.departamentoRepository = departamentoRepository;
+        this.fotografiaService = fotografiaService;
     }
 
     @Override
     @Transactional
-    public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario, byte[] foto) {
+    public Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario) throws IOException {
         Empleado empleado = modelMapper.map(empleadoDTO, Empleado.class);
         Optional<Usuario> usuario = usuarioRepository.findById(IdUsuario);
 
@@ -87,8 +90,15 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         System.out.println("imagen=" + empleadoDTO.getFotografiaDTO());
 
         // Convertir MultipartFile a byte[] y asignar
-        System.out.println("size=" + empleadoDTO.getFotografiaDTO().getSize());
-        empleado.setFotografia(foto);
+        try {
+            byte[] fotoBytes = empleadoDTO.getFotografiaArchivo();
+            empleado.setFotografia(fotoBytes);
+            log.info("La fotografía del empleado se procesó correctamente");
+        } catch (Exception e) {
+            log.error("Error al leer la fotografía en el servicio del Empleado: " + e.getMessage(), e);
+            throw new RuntimeException("No se pudo procesar la fotografía", e);
+        }
+
         log.info("La fotografia del empleado se procesó correctamente");
 
         if (empleado.getTarjetas() != null && empleado.getTarjetas().getTipoTarjetaCredito() != null) {
@@ -146,7 +156,6 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             // Persistir cuenta corriente
             cuentaCorrienteRepository.save(cuentaCorriente);
 
-
             // Asignar la cuenta ya persistida al empleado
             empleado.setCuentaCorriente(cuentaCorriente);
         }
@@ -155,6 +164,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         try {
             // Persistir el empleado
             return empleadosRepository.save(empleado);
+
         } catch (NonUniqueObjectException e) {
             // Si el usuario intenta registrarse de nuevo como empleado
             throw new EntidadDuplicadaEnSesionException("No puedes guardar más datos, ya existe una instancia con el mismo identificador en la sesión actual");

@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -97,10 +98,13 @@ public class EmpleadoController {
     private final TipoDocumentoService tipoDocumentoService;
     @Autowired
     private final RestTemplate restTemplate;
+    @Autowired
+    private final FotografiaService fotografiaService;
+
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, EtiquetaRepository etiquetaRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, ProductoService productoService, TipoDocumentoService tipoDocumentoService, RestTemplate restTemplate) {
+    public EmpleadoController(EmpleadoService empleadoService, EmpleadoRepository empleadoRepository, GeneroRepository generoRepository, PaisRepository paisRepository, TipoDocumentoRepository tipoDocumentoRepository, DepartamentoRepository departamentoRepository, TipoViaRepository tipoViaRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository, TipoTarjetaCreditoRepository tipoTarjetaCreditoRepository1, EntidadBancariaRepository entidadBancariaRepository, UsuarioRepository usuarioRepository, EtiquetaRepository etiquetaRepository, GeneroService generoService, DepartamentoService departamentoService, EspecialidadesEmpleadoService especialidadesEmpleadoService, EntidadBancariaService entidadBancariaService, TipoTarjetaService tipoTarjetaService, UsuarioService usuarioService, ModelMapper modelMapper, EtiquetaService etiquetaService, TipoViaService tipoViaService, ProductoService productoService, TipoDocumentoService tipoDocumentoService, RestTemplate restTemplate, FotografiaService fotografiaService) {
         this.empleadoService = empleadoService;
         this.empleadoRepository = empleadoRepository;
         this.generoRepository = generoRepository;
@@ -123,6 +127,7 @@ public class EmpleadoController {
         this.productoService = productoService;
         this.tipoDocumentoService = tipoDocumentoService;
         this.restTemplate = restTemplate;
+        this.fotografiaService = fotografiaService;
     }
 
     /**
@@ -165,21 +170,6 @@ public class EmpleadoController {
             return "redirect:/usuarios/inicio-sesion";
         }
 
-        //        if (archivoAdjunto != null && !archivoAdjunto.isEmpty()) {
-//            try {
-//                dtoSesion.setFotografia(archivoAdjunto.getBytes());
-//                dtoSesion.setArchivoNombreOriginal(archivoAdjunto.getOriginalFilename());
-//            } catch (IOException e) {
-//                model.addAttribute("errorArchivo", "Error al procesar el archivo subido.");
-//                model.addAttribute("empleadoRegistroDTO", dtoSesion);
-//                return "empleadoDatosFinancieros";
-//            }
-//        } else {
-//            dtoSesion.setFotografia(null);
-//            dtoSesion.setArchivoNombreOriginal(null);
-//        }
-
-
 
         List<Genero> generos = generoService.obtenerGeneros();
         if (empleadoRegistroDTO.getGeneroSeleccionadoDTO() == null && !generos.isEmpty()) {
@@ -207,9 +197,8 @@ public class EmpleadoController {
             @Validated(DatosPersonales.class) @ModelAttribute("empleadoRegistroDTO") EmpleadoRegistroDTO empleadoRegistroDTO,
             BindingResult result,
             HttpSession session,
-            Model model) {
-
-
+            @RequestParam("fotografiaDTO") MultipartFile multipartFile,
+            Model model) throws IOException {
 
         if (result.hasErrors()) {
             model.addAttribute("generos", generoService.obtenerGeneros());
@@ -219,23 +208,23 @@ public class EmpleadoController {
             return "empleadoRegistro";
         }
 
-        MultipartFile foto = empleadoRegistroDTO.getFotografiaDTO();
+        System.out.println(multipartFile.getOriginalFilename());
+        if(!multipartFile.isEmpty()){
+            String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+            empleadoRegistroDTO.setRutaArchivo(fileName);
+            // Convertimos de MultipartFile a bytes y lo seteamos para guardarlo
+            empleadoRegistroDTO.setFotografiaArchivo(multipartFile.getBytes());
+        }else {
+            empleadoRegistroDTO.setFotografiaDTO(null);
+        }
 
 
-//        // Verifica si el archivo es nulo o vacío
-//        if (foto == null || foto.isEmpty()) {
-//            System.out.println("¡El archivo está vacío o no se recibió!");
-//        } else {
-//            System.out.println(
-//                    "Archivo recibido: " + foto.getOriginalFilename() +
-//                            " | Tamaño: " + foto.getSize() + " bytes" +
-//                            " | Tipo: " + foto.getContentType()
-//            );
-//        }
 
         System.err.println(empleadoRegistroDTO.getFotografiaDTO());
         System.out.println("Estoy en el Post de registro de Datos del Empleado");
+
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
+
         System.out.println(empleadoRegistroDTO);
         return "redirect:/empleados/registro-direccion";
     }
@@ -299,7 +288,7 @@ public class EmpleadoController {
             model.addAttribute("paises", paisRepository.findAll());
             // Imprimir los errores para depurar
             result.getAllErrors().forEach(error -> System.out.println(error.toString()));
-            System.out.println(empleadoRegistroDTO);
+
             return "empleadoDireccionRegistro";
         }
 
@@ -339,7 +328,7 @@ public class EmpleadoController {
         }
         System.out.println("Me voy al siguiente registro");
         session.setAttribute("empleadoRegistroDTO", empleadoRegistroDTO);
-        System.out.println(empleadoRegistroDTO);
+
         return "redirect:/empleados/registro-financiero";
     }
 
@@ -429,10 +418,13 @@ public class EmpleadoController {
             empleadoRegistroDTO.setGeneroSeleccionadoDTO(new GeneroDTO());
         }
 
+        if (empleadoRegistroDTO.getPaisNacimiento() == null) {
+            empleadoRegistroDTO.setPaisNacimiento(new PaisDTO());
+        }
+
         if (empleadoRegistroDTO.getTipoDocumentoDTO() == null) {
             empleadoRegistroDTO.setTipoDocumentoDTO(new TipoDocumentoDTO());
         }
-
 
         if (empleadoRegistroDTO.getDireccionDTO() == null) {
             empleadoRegistroDTO.setDireccionDTO(new DireccionDTO());
@@ -446,10 +438,35 @@ public class EmpleadoController {
             empleadoRegistroDTO.setCuentaCorrienteDTO(new CuentaCorrienteDTO());
         }
 
+        if (empleadoRegistroDTO.getCuentaCorrienteDTO().getEntidadBancaria() == null) {
+            empleadoRegistroDTO.getCuentaCorrienteDTO().setEntidadBancaria(new EntidadBancariaDTO());
+        }
+
         if (empleadoRegistroDTO.getTarjetasCreditoDTO() == null) {
             empleadoRegistroDTO.setTarjetasCreditoDTO(new TarjetaCreditoDTO());
         }
 
+        if (empleadoRegistroDTO.getTarjetasCreditoDTO().getTipoTarjetaCreditoDTO() == null) {
+            empleadoRegistroDTO.getTarjetasCreditoDTO().setTipoTarjetaCreditoDTO(new TipoTarjetaCreditoDTO());
+        }
+
+        if (empleadoRegistroDTO.getDepartamentoDTO() == null) {
+            empleadoRegistroDTO.setDepartamentoDTO(new DepartamentoDTO());
+        }
+
+        if (empleadoRegistroDTO.getEspecialidadesSeleccionadasDTO() == null) {
+            empleadoRegistroDTO.setEspecialidadesSeleccionadasDTO(new ArrayList<>());
+        }
+
+
+        // Convertir byte[] a Base64 si existe imagen
+        String fotoBase64 = null;
+        if (empleadoRegistroDTO.getFotografiaArchivo() != null && empleadoRegistroDTO.getFotografiaArchivo().length > 0) {
+            fotoBase64 = "data:image/jpeg;base64," +
+                    Base64.getEncoder().encodeToString(empleadoRegistroDTO.getFotografiaArchivo());
+        }
+
+        model.addAttribute("fotoBase64", fotoBase64);
         model.addAttribute("datos", empleadoRegistroDTO);
 
         return "empleadoDatosFinales";
@@ -491,19 +508,19 @@ public class EmpleadoController {
             return "redirect:/usuarios/inicio-sesion";
         }
 
+
         try {
-            byte[] fotoBytes = null;
-            if (!empleadoRegistroDTO.getFotografiaDTO().isEmpty()) {
-                fotoBytes = empleadoRegistroDTO.getFotografiaDTO().getBytes();
-            }
 
-            empleadoService.registrarEmpleado(dtoSesion, usuario.get().getId(), fotoBytes);
+            empleadoService.registrarEmpleado(dtoSesion, usuario.get().getId());
 
-            model.addAttribute("mostrarAlerta", true);
-            model.addAttribute("mensaje", "¡Sus datos se guardaron correctamente!");
+            model.addAttribute("exito", "Datos guardados correctamente");
+
+//            model.addAttribute("mensaje", "¡Sus datos se guardaron correctamente!");
         } catch (RuntimeException ex) {
             model.addAttribute("error", ex.getMessage());
-            System.err.println("Error RunTime" + ex.getMessage());
+            System.err.println("Error RunTime: " + ex.getMessage());
+            model.addAttribute("error", "Ya existe un empleado con el mismo ID o DNI");
+            return "redirect:/empleados/registro-finales";
             // Si el usuario vuelve a introducir los datos, se redirige al área personal
 //            return "redirect:/empleados/registro-finales";
         } catch (Exception e) {

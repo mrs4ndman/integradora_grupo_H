@@ -11,135 +11,143 @@
 <label>
     <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
 </label>
-<!--NavBar-->
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<h2>Formulario de Dirección</h2>
 
-<!--<h1>Formulario de Dirección</h1>-->
-<!--Error del Servidor se muestran aquí cuando no salen en Logs-->
-<th:block th:text="${error}"/>
+<div class="contenedor-principal">
+    <!--NavBar-->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<form th:action="@{/empleados/registro-direccion}" th:object="${empleadoRegistroDTO}" method="post" id="formulario">
-    <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
-    <div th:if="${#fields.hasGlobalErrors()}">
-        <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
-    </div>
+    <!--Error del Servidor se muestran aquí cuando no salen en Logs-->
+    <th:block th:text="${error}"/>
 
-    <h2>Documentos de Identificacion y Contacto</h2>
+    <form th:action="@{/empleados/registro-direccion}" th:object="${empleadoRegistroDTO}" method="post" id="formulario">
+        <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+        </div>
 
-    <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-documento.tipoDocumento}"></span></p>
-    <div th:each="tipo : ${tiposDocumento}">
-        <input type="radio"
-               th:field="*{tipoDocumentoDTO.id}"
-               th:value="${tipo.id}"
-               id="tipoDocumento"/>
-        <label for="tipoDocumento"
-               th:text="${tipo.tipoDocumento}"></label><br>
-        <div th:if="${#fields.hasErrors('tipoDocumentoDTO.tipoDocumento')}"
-             th:errors="*{tipoDocumentoDTO.tipoDocumento}" class="error"></div>
-    </div>
-    <br><br>
+        <h2>Documentos de Identificacion y Contacto</h2>
 
-    <span style="color:red">&#8226;</span> <label for="documento" th:text="#{Datos-documento.documento}"/>
-    <input type="text" id="documento" th:field="*{numeroDocumentoDTO}"/>
-    <div th:if="${#fields.hasErrors('numeroDocumentoDTO')}" th:errors="*{numeroDocumentoDTO}" class="error"></div>
-    <br><br>
-
-    <div>
-        <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-documento.prefijo}"></span></p>
-        <select th:field="*{prefijoTelefono}" id="prefijo">
-            <option th:each="p : ${paises}"
-                    th:value="${p.prefijoPais}"
-                    th:text="${p.prefijoPais}">
-            </option>
-        </select>
-        <div th:if="${#fields.hasErrors('prefijoTelefono')}" th:errors="*{prefijoTelefono}" class="error"></div>
-    </div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="TelfMovil" th:text="#{Datos-documento.telf}"/>
-    <input type="text" id="TelfMovil" th:field="*{telefonoMovil}"/>
-    <div th:if="${#fields.hasErrors('telefonoMovil')}" th:errors="*{telefonoMovil}" class="error"></div>
-    <br><br>
-
-    <h2>Formulario de Dirección del Empleado</h2>
-
-    <div>
-        <span style="color:red">&#8226;</span> <label for="tipoVia" th:text="#{Datos-direccion.tipoVia}"/>
-        <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO.id}" id="tipoVia">
-            <option th:each="via : ${tiposVia}"
-                    th:value="${via.id}"
-                    th:text="${via.tipoVia}">
-            </option>
-        </select>
-        <div th:if="${#fields.hasErrors('direccionDTO.tipoViaDireccionPpalDTO.tipoVia')}"
-             th:errors="*{direccionDTO.tipoViaDireccionPpalDTO.tipoVia}" class="error"></div>
-    </div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="via" th:text="#{Datos-direccion.nombreViaDirreccion}"/>
-    <input type="text" id="via" th:field="*{direccionDTO.nombreViaDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.nombreViaDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.nombreViaDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="numero" th:text="#{Datos-direccion.numeroViaDirreccion}"/>
-    <input type="text" id="numero" th:field="*{direccionDTO.numeroViaDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.numeroViaDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.numeroViaDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <label for="portal" th:text="#{Datos-direccion.portalViaDirreccion}"/>
-    <input type="text" id="portal" th:field="*{direccionDTO.portalDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.portalDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.portalDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <label for="planta" th:text="#{Datos-direccion.plantaViaDirreccion}"/>
-    <input type="text" id="planta" th:field="*{direccionDTO.plantaDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.plantaDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.plantaDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <label for="puerta" th:text="#{Datos-direccion.puertaViaDirreccion}"/>
-    <input type="text" id="puerta" th:field="*{direccionDTO.puertaDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.puertaDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.puertaDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="localidad" th:text="#{Datos-direccion.localidadViaDirreccion}"/>
-    <input type="text" id="localidad" th:field="*{direccionDTO.localidadDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.localidadDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.localidadDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <label for="region" th:text="#{Datos-direccion.regionDirreccion}"/>
-    <input type="text" id="region" th:field="*{direccionDTO.regionDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.regionDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.regionDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="codigoPostal"
-                                                  th:text="#{Datos-direccion.codigoPostalDirreccion}"/>
-    <input type="text" id="codigoPostal" th:field="*{direccionDTO.codigoPostalDireccionPpalDTO}"/>
-    <div th:if="${#fields.hasErrors('direccionDTO.codigoPostalDireccionPpalDTO')}"
-         th:errors="*{direccionDTO.codigoPostalDireccionPpalDTO}" class="error"></div>
-    <br><br>
-
-    <div class="btn-form">
-        <input type="button"
-               th:value="#{Boton.resetear}"
-               onclick="resetFormulario()">
+        <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-documento.tipoDocumento}"></span></p>
+        <div th:each="tipo : ${tiposDocumento}">
+            <input type="radio"
+                   th:field="*{tipoDocumentoDTO.id}"
+                   th:value="${tipo.id}"
+                   id="tipoDocumento"/>
+            <label for="tipoDocumento"
+                   th:text="${tipo.tipoDocumento}"></label><br>
+            <div th:if="${#fields.hasErrors('tipoDocumentoDTO.tipoDocumento')}"
+                 th:errors="*{tipoDocumentoDTO.tipoDocumento}" class="error"></div>
+        </div>
         <br><br>
 
-        <input type="button"
-               th:value="#{Boton.vaciar}"
-               onclick="vaciarFormulario()">
+        <span style="color:red">&#8226;</span> <label for="documento" th:text="#{Datos-documento.documento}"/>
+        <input type="text" id="documento" th:field="*{numeroDocumentoDTO}"/>
+        <div th:if="${#fields.hasErrors('numeroDocumentoDTO')}" th:errors="*{numeroDocumentoDTO}" class="error"></div>
         <br><br>
 
-        <input type="submit"
-               th:value="#{Boton.siguiente}">
-    </div>
-</form>
+        <div>
+            <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-documento.prefijo}"></span></p>
+            <select th:field="*{prefijoTelefono}" id="prefijo">
+                <option th:each="p : ${paises}"
+                        th:value="${p.prefijoPais}"
+                        th:text="${p.prefijoPais}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('prefijoTelefono')}" th:errors="*{prefijoTelefono}" class="error"></div>
+        </div>
+        <br><br>
+
+        <span style="color:red">&#8226;</span> <label for="TelfMovil" th:text="#{Datos-documento.telf}"/>
+        <input type="text" id="TelfMovil" th:field="*{telefonoMovil}"/>
+        <div th:if="${#fields.hasErrors('telefonoMovil')}" th:errors="*{telefonoMovil}" class="error"></div>
+        <br><br>
+
+        <h2>Formulario de Dirección del Empleado</h2>
+
+        <div>
+            <span style="color:red">&#8226;</span> <label for="tipoVia" th:text="#{Datos-direccion.tipoVia}"/>
+            <select th:field="*{direccionDTO.tipoViaDireccionPpalDTO.id}" id="tipoVia">
+                <option th:each="via : ${tiposVia}"
+                        th:value="${via.id}"
+                        th:text="${via.tipoVia}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('direccionDTO.tipoViaDireccionPpalDTO.tipoVia')}"
+                 th:errors="*{direccionDTO.tipoViaDireccionPpalDTO.tipoVia}" class="error"></div>
+        </div>
+        <br><br>
+
+        <span style="color:red">&#8226;</span> <label for="via" th:text="#{Datos-direccion.nombreViaDirreccion}"/>
+        <input type="text" id="via" th:field="*{direccionDTO.nombreViaDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.nombreViaDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.nombreViaDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <span style="color:red">&#8226;</span> <label for="numero" th:text="#{Datos-direccion.numeroViaDirreccion}"/>
+        <input type="text" id="numero" th:field="*{direccionDTO.numeroViaDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.numeroViaDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.numeroViaDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <label for="portal" th:text="#{Datos-direccion.portalViaDirreccion}"/>
+        <input type="text" id="portal" th:field="*{direccionDTO.portalDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.portalDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.portalDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <label for="planta" th:text="#{Datos-direccion.plantaViaDirreccion}"/>
+        <input type="text" id="planta" th:field="*{direccionDTO.plantaDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.plantaDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.plantaDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <label for="puerta" th:text="#{Datos-direccion.puertaViaDirreccion}"/>
+        <input type="text" id="puerta" th:field="*{direccionDTO.puertaDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.puertaDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.puertaDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <span style="color:red">&#8226;</span> <label for="localidad"
+                                                      th:text="#{Datos-direccion.localidadViaDirreccion}"/>
+        <input type="text" id="localidad" th:field="*{direccionDTO.localidadDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.localidadDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.localidadDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <label for="region" th:text="#{Datos-direccion.regionDirreccion}"/>
+        <input type="text" id="region" th:field="*{direccionDTO.regionDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.regionDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.regionDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <span style="color:red">&#8226;</span> <label for="codigoPostal"
+                                                      th:text="#{Datos-direccion.codigoPostalDirreccion}"/>
+        <input type="text" id="codigoPostal" th:field="*{direccionDTO.codigoPostalDireccionPpalDTO}"/>
+        <div th:if="${#fields.hasErrors('direccionDTO.codigoPostalDireccionPpalDTO')}"
+             th:errors="*{direccionDTO.codigoPostalDireccionPpalDTO}" class="error"></div>
+        <br><br>
+
+        <div class="btn-form">
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+
+            <input type="button"
+                   th:value="#{Boton.resetear}"
+                   onclick="resetFormulario()">
+            <br><br>
+
+            <input type="button"
+                   th:value="#{Boton.vaciar}"
+                   onclick="vaciarFormulario()">
+            <br><br>
+
+            <input type="submit"
+                   th:value="#{Boton.siguiente}">
+        </div>
+    </form>
+
+</div>
+
 
 <script th:src="@{/js/script.js}"></script>
 

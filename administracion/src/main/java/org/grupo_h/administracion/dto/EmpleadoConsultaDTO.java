@@ -25,6 +25,8 @@ public class EmpleadoConsultaDTO {
 
     private UUID departamentoDTO;
 
+    private String foto;
+
     private LocalDate fechaNacimientoDTO;
 
     private Integer edadMin;

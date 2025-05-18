@@ -5,6 +5,8 @@ import org.grupo_h.administracion.dto.EmpleadoDTO;
 import org.grupo_h.administracion.dto.EmpleadoDetalleDTO;
 import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
 import org.grupo_h.comun.entity.Empleado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +34,8 @@ public interface EmpleadoService {
     List<EmpleadoSimpleDTO> obtenerTodosLosEmpleadosParaSeleccion();
 
     List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro);
+
+    Page<EmpleadoDTO> buscarEmpleadosPaginados(EmpleadoConsultaDTO filtro, int pagina, int tamanio);
 
     Optional<Empleado> buscarPorDni(String dni);
 

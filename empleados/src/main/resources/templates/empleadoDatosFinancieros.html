@@ -10,9 +10,6 @@
 <label>
     <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
 </label>
-<!--NavBar-->
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-
 <h2 th:text="#{Titulo.datosFinancieros}"/>
 
 <!-- Se muestra un mensaje de éxito si lo hay -->
@@ -25,128 +22,140 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post" id="formulario"
-      enctype="multipart/form-data">
+<div class="contenedor-principal">
+    <!--NavBar-->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-    <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
-    <div th:if="${#fields.hasGlobalErrors()}">
-        <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
-    </div>
+    <form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post" id="formulario"
+          enctype="multipart/form-data">
 
-
-    <div>
-        <span style="color:red">&#8226;</span> <label for="entidadBancaria"
-                                                      th:text="#{Datos.Economicos.entidad }"></label>
-        <select th:field="*{cuentaCorrienteDTO.entidadBancaria}" id="entidadBancaria">
-            <option th:each="e : ${entidades}"
-                    th:value="${e.nombreEntidad}"
-                    th:text="${e.nombreEntidad}">
-            </option>
-        </select>
-        <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.entidadBancaria')}"
-             th:errors="*{cuentaCorrienteDTO.entidadBancaria}" class="error"></div>
-    </div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="cuentaCorriente" th:text="#{Datos.Economicos.cuenta}"/>
-    <input type="text" id="cuentaCorriente" th:field="*{cuentaCorrienteDTO.numeroCuentaDTO}"/>
-    <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.numeroCuentaDTO')}"
-         th:errors="*{cuentaCorrienteDTO.numeroCuentaDTO}" class="error"></div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="salario" th:text="#{Datos.Economicos.Salario}"/>
-    <input type="text" id="salario" th:field="*{salarioDTO}"/>
-    <div th:if="${#fields.hasErrors('salarioDTO')}"
-         th:errors="*{salarioDTO}" class="error"></div>
-    <br><br>
-
-    <label for="comision" th:text="#{Datos.Economicos.Comision}"/>
-    <input type="text" id="comision" th:field="*{comisionDTO}"/>
-    <div th:if="${#fields.hasErrors('comisionDTO')}"
-         th:errors="*{comisionDTO}" class="error"></div>
-    <br><br>
-
-    <h2 th:text="#{Titulo.tarjetaCredito}"/>
-
-    <div>
-        <span style="color:red">&#8226;</span> <label for="tipoTarjeta"
-                                                      th:text="#{Datos.Economicos.tipoTarjeta}"></label>
-        <select th:field="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO.nombreTipoTarjetaDTO}" id="tipoTarjeta">
-            <option th:each="t : ${tiposTarjeta}"
-                    th:value="${t.nombreTipoTarjeta}"
-                    th:text="${t.nombreTipoTarjeta}">
-            </option>
-        </select>
-        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.tipoTarjetaCreditoDTO')}"
-             th:errors="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO}" class="error"></div>
-    </div>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="numeroTarjetaCredito"
-                                                  th:text="#{Datos.Economicos.numeroTarjetaCredito}"/>
-    <input type="text" id="numeroTarjetaCredito" th:field="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}"/>
-    <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.numeroTarjetaCreditoDTO')}"
-         th:errors="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}" class="error"></div>
-    <br><br>
+        <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+        </div>
 
 
-    <!-- Tarjeta de Crédito - Fecha Caducidad (Separado en Mes y Año) -->
-    <span style="color:red">&#8226;</span> <label for="mesCaducidadTarjetaCredito"
-                                                  th:text="#{Datos.Economicos.mesCaducidad}"/>
-    <select th:field="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" id="mesCaducidadTarjetaCredito">
-        <option value="" disabled selected>Seleccione el mes</option>
-        <option value="01">01</option>
-        <option value="02">02</option>
-        <option value="03">03</option>
-        <option value="04">04</option>
-        <option value="05">05</option>
-        <option value="06">06</option>
-        <option value="07">07</option>
-        <option value="08">08</option>
-        <option value="09">09</option>
-        <option value="10">10</option>
-        <option value="11">11</option>
-        <option value="12">12</option>
-    </select>
-    <span th:if="${#fields.hasErrors('tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO')}"
-          th:errors="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" style="color:red"></span>
-    <br><br>
-
-
-    <span style="color:red">&#8226;</span> <label for="anioCaducidadTarjetaCredito"
-                                                  th:text="#{Datos.Economicos.anioCaducidad}"/>
-    <select th:field="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" id="anioCaducidadTarjetaCredito">
-        <option value="" disabled selected>Seleccione el año</option>
-        <option th:each="anio : ${#numbers.sequence(#dates.year(#dates.createNow()), #dates.year(#dates.createNow()) + 20)}"
-                th:value="${anio}"
-                th:text="${anio}">
-        </option>
-    </select>
-
-    <span th:if="${#fields.hasErrors('tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO')}"
-          th:errors="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" style="color:red"></span>
-    <br><br>
-
-    <span style="color:red">&#8226;</span> <label for="cvc" th:text="#{Datos.Economicos.cvc}"/>
-    <input type="text" id="cvc" th:field="*{tarjetasCreditoDTO.cvcDTO}"/>
-    <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.cvcDTO')}"
-         th:errors="*{tarjetasCreditoDTO.cvcDTO}" class="error"></div>
-    <br><br>
-
-    <div class="btn-form">
-        <input type="button"
-               th:value="#{Boton.resetear}"
-               onclick="resetFormulario()">
+        <div>
+            <span style="color:red">&#8226;</span> <label for="entidadBancaria"
+                                                          th:text="#{Datos.Economicos.entidad }"></label>
+            <select th:field="*{cuentaCorrienteDTO.entidadBancaria}" id="entidadBancaria">
+                <option th:each="e : ${entidades}"
+                        th:value="${e.nombreEntidad}"
+                        th:text="${e.nombreEntidad}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.entidadBancaria')}"
+                 th:errors="*{cuentaCorrienteDTO.entidadBancaria}" class="error"></div>
+        </div>
         <br><br>
 
-        <input type="button"
-               th:value="#{Boton.vaciar}"
-               onclick="vaciarFormulario()">
+        <span style="color:red">&#8226;</span> <label for="cuentaCorriente" th:text="#{Datos.Economicos.cuenta}"/>
+        <input type="text" id="cuentaCorriente" th:field="*{cuentaCorrienteDTO.numeroCuentaDTO}"/>
+        <div th:if="${#fields.hasErrors('cuentaCorrienteDTO.numeroCuentaDTO')}"
+             th:errors="*{cuentaCorrienteDTO.numeroCuentaDTO}" class="error"></div>
         <br><br>
 
-        <input type="submit"
-               th:value="#{Boton.siguiente}">
-    </div>
+        <span style="color:red">&#8226;</span> <label for="salario" th:text="#{Datos.Economicos.Salario}"/>
+        <input type="text" id="salario" th:field="*{salarioDTO}"/>
+        <div th:if="${#fields.hasErrors('salarioDTO')}"
+             th:errors="*{salarioDTO}" class="error"></div>
+        <br><br>
+
+        <label for="comision" th:text="#{Datos.Economicos.Comision}"/>
+        <input type="text" id="comision" th:field="*{comisionDTO}"/>
+        <div th:if="${#fields.hasErrors('comisionDTO')}"
+             th:errors="*{comisionDTO}" class="error"></div>
+        <br><br>
+
+        <h2 th:text="#{Titulo.tarjetaCredito}"/>
+
+        <div>
+            <span style="color:red">&#8226;</span> <label for="tipoTarjeta"
+                                                          th:text="#{Datos.Economicos.tipoTarjeta}"></label>
+            <select th:field="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO.nombreTipoTarjetaDTO}" id="tipoTarjeta">
+                <option th:each="t : ${tiposTarjeta}"
+                        th:value="${t.nombreTipoTarjeta}"
+                        th:text="${t.nombreTipoTarjeta}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.tipoTarjetaCreditoDTO')}"
+                 th:errors="*{tarjetasCreditoDTO.tipoTarjetaCreditoDTO}" class="error"></div>
+        </div>
+        <br><br>
+
+        <span style="color:red">&#8226;</span> <label for="numeroTarjetaCredito"
+                                                      th:text="#{Datos.Economicos.numeroTarjetaCredito}"/>
+        <input type="text" id="numeroTarjetaCredito" th:field="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}"/>
+        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.numeroTarjetaCreditoDTO')}"
+             th:errors="*{tarjetasCreditoDTO.numeroTarjetaCreditoDTO}" class="error"></div>
+        <br><br>
+
+
+        <!-- Tarjeta de Crédito - Fecha Caducidad (Separado en Mes y Año) -->
+        <span style="color:red">&#8226;</span> <label for="mesCaducidadTarjetaCredito"
+                                                      th:text="#{Datos.Economicos.mesCaducidad}"/>
+        <select th:field="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" id="mesCaducidadTarjetaCredito">
+            <option value="" disabled selected>Seleccione el mes</option>
+            <option value="01">01</option>
+            <option value="02">02</option>
+            <option value="03">03</option>
+            <option value="04">04</option>
+            <option value="05">05</option>
+            <option value="06">06</option>
+            <option value="07">07</option>
+            <option value="08">08</option>
+            <option value="09">09</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+        </select>
+        <span th:if="${#fields.hasErrors('tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO')}"
+              th:errors="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" style="color:red"></span>
+        <br><br>
+
+
+        <span style="color:red">&#8226;</span> <label for="anioCaducidadTarjetaCredito"
+                                                      th:text="#{Datos.Economicos.anioCaducidad}"/>
+        <select th:field="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" id="anioCaducidadTarjetaCredito">
+            <option value="" disabled selected>Seleccione el año</option>
+            <option th:each="anio : ${#numbers.sequence(#dates.year(#dates.createNow()), #dates.year(#dates.createNow()) + 20)}"
+                    th:value="${anio}"
+                    th:text="${anio}">
+            </option>
+        </select>
+
+        <span th:if="${#fields.hasErrors('tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO')}"
+              th:errors="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" style="color:red"></span>
+        <br><br>
+
+        <span style="color:red">&#8226;</span> <label for="cvc" th:text="#{Datos.Economicos.cvc}"/>
+        <input type="text" id="cvc" th:field="*{tarjetasCreditoDTO.cvcDTO}"/>
+        <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.cvcDTO')}"
+             th:errors="*{tarjetasCreditoDTO.cvcDTO}" class="error"></div>
+
+        <br><br>
+
+        <div class="btn-form">
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+
+            <input type="button"
+                   th:value="#{Boton.resetear}"
+                   onclick="resetFormulario()">
+            <br><br>
+
+            <input type="button"
+                   th:value="#{Boton.vaciar}"
+                   onclick="vaciarFormulario()">
+            <br><br>
+
+            <input type="submit"
+                   th:value="#{Boton.siguiente}">
+
+        </div>
+
+    </form>
+
+</div>
 
 
 <script th:src="@{/js/script.js}"></script>
