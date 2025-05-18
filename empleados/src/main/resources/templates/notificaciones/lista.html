@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"> <head>
+  <title>Mis Notificaciones</title> <th:block layout:fragment="page_css">
+  <link rel="stylesheet" th:href="@{/css/estilos.css}"/> <style>
+  .notificacion { border-bottom: 1px solid #eee; padding: 10px; }
+  .notificacion.no-leida { font-weight: bold; background-color: #f9f9f9; }
+  .notificacion .fecha { font-size: 0.9em; color: #777; }
+  .notificacion .mensaje { margin-bottom: 5px; }
+  .acciones-notificacion button { margin-right: 5px; }
+</style>
+</th:block>
+</head>
+<body>
+<section layout:fragment="content">
+  <div class="container mt-4"> <h2>Mis Notificaciones</h2>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <div class="mb-3" th:if="${paginaNotificaciones != null && paginaNotificaciones.hasContent()}">
+      <form th:action="@{/empleados/notificaciones/marcar-todas-leidas}" method="post" style="display: inline;">
+        <button type="submit" class="btn btn-sm btn-info">Marcar todas como leídas</button>
+      </form>
+    </div>
+
+    <div th:if="${paginaNotificaciones == null || !paginaNotificaciones.hasContent()}">
+      <p>No tienes notificaciones.</p>
+    </div>
+
+    <div th:if="${paginaNotificaciones != null && paginaNotificaciones.hasContent()}">
+      <div th:each="notif : ${paginaNotificaciones.content}" class="notificacion" th:classappend="${!notif.leida} ? 'no-leida' : ''">
+        <div class="mensaje" th:text="${notif.mensaje}"></div>
+        <div class="fecha" th:text="${notif.fechaHoraFormateada}"></div>
+        <div class="acciones-notificacion mt-2">
+          <a th:if="${notif.urlReferencia}" th:href="@{${notif.urlReferencia}}" class="btn btn-sm btn-outline-primary">Ver Detalle</a>
+          <form th:if="${!notif.leida}" th:action="@{'/empleados/notificaciones/' + ${notif.id} + '/marcar-leida'}" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">Marcar como leída</button>
+          </form>
+        </div>
+      </div>
+
+      <nav aria-label="Page navigation" th:if="${paginaNotificaciones.totalPages > 1}">
+        <ul class="pagination">
+          <li class="page-item" th:classappend="${paginaNotificaciones.first} ? 'disabled' : ''">
+            <a class="page-link" th:href="@{/empleados/notificaciones(page=${paginaNotificaciones.number-1}, size=${paginaNotificaciones.size})}">Anterior</a>
+          </li>
+          <th:block th:each="i : ${#numbers.sequence(0, paginaNotificaciones.totalPages - 1)}">
+            <li class="page-item" th:classappend="${i == paginaNotificaciones.number} ? 'active' : ''">
+              <a class="page-link" th:href="@{/empleados/notificaciones(page=${i}, size=${paginaNotificaciones.size})}" th:text="${i+1}"></a>
+            </li>
+          </th:block>
+          <li class="page-item" th:classappend="${paginaNotificaciones.last} ? 'disabled' : ''">
+            <a class="page-link" th:href="@{/empleados/notificaciones(page=${paginaNotificaciones.number+1}, size=${paginaNotificaciones.size})}">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</section>
+
+<th:block layout:fragment="page_scripts">
+</th:block>
+</body>
+</html>

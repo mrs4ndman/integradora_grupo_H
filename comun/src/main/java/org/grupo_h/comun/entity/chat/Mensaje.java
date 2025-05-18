@@ -28,14 +28,28 @@ public class Mensaje {
     private LocalDateTime fechaEmision;
 
     /** Empleado que envía el mensaje. */
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "emisor_id", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_MENSAJE_EMISOR"))
     private Empleado emisor;
 
     /** Empleado que recibe el mensaje. */
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "receptor_id", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_MENSAJE_RECEPTOR"))
     private Empleado receptor;
 
     /** Contenido del mensaje. No puede estar vacío. */
     @NotBlank
     private String mensaje;
+
+    @ManyToOne
+    @JoinColumn(name = "colaboracion_id", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_MENSAJE_COLABORACION"))
+    private Colaboracion colaboracion;
+
+    @ManyToOne
+    @JoinColumn(name = "respuesta_a_id",
+            foreignKey = @ForeignKey(name = "FK_MENSAJE_RESPUESTA"))
+    private Mensaje mensajeRespuesta; // Opcional:  Puede ser null
 }

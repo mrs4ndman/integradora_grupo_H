@@ -1,10 +1,14 @@
 package org.grupo_h.comun.repository;
 
 import org.grupo_h.comun.entity.Empleado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -29,11 +33,25 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, UUID> {
 
     List<Empleado> findByNombreContainingIgnoreCase(String nombreDTO);
 
-    List<Empleado> findByFechaNacimientoBetween(LocalDate fechaMin, LocalDate fechaMax);;
+    List<Empleado> findByFechaNacimientoBetween(LocalDate fechaMin, LocalDate fechaMax);
+
+    ;
 
     Optional<Empleado> findByNumeroDocumento(String numeroDni);
 
     List<Empleado> findAll(Specification<Empleado> spec, Sort sort);
 
     void deleteByNumeroDocumento(String numeroDocumento);
+
+    Optional<Empleado> findByUsuarioEmail(String email);
+
+    Page<Empleado> findByIdNot(UUID id, Pageable pageable); // Para listar todos menos uno
+
+    // Para búsqueda por término (ejemplo, ajusta a tus campos)
+    @Query("SELECT e FROM Empleado e LEFT JOIN e.usuario u WHERE " +
+            "(LOWER(e.nombre) LIKE LOWER(concat('%', :termino, '%')) OR " +
+            "LOWER(e.apellidos) LIKE LOWER(concat('%', :termino, '%')) OR " +
+            "LOWER(u.email) LIKE LOWER(concat('%', :termino, '%'))) AND " +
+            "e.id <> :idExcluido")
+    Page<Empleado> buscarPorTerminoExcluyendoId(@Param("termino") String termino, @Param("idExcluido") UUID idExcluido, Pageable pageable);
 }
