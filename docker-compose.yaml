@@ -1,0 +1,75 @@
+services:
+  mysql-app-db:
+    image: juanmananesprieto/mi_mysql_app:latest
+    container_name: mysql_app_db_container
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 'tu_password_root_muy_seguro' # ¡CAMBIA ESTO!
+      MYSQL_DATABASE: 'mi_app_db'
+      MYSQL_USER: 'user_app'
+      MYSQL_PASSWORD: 'password_app_muy_seguro' # ¡CAMBIA ESTO!
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_app_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck: # NUEVA SECCIÓN
+      # Comando para verificar la salud de MySQL.
+      # mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_PASSWORD} fallará si MYSQL_USER aún no existe
+      # por lo que usar el usuario root para el healthcheck es más fiable durante la inicialización.
+      # La opción --silent es para que no muestre errores en la salida estándar si falla, solo el código de salida.
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "--silent"]
+      interval: 10s     # Con qué frecuencia ejecutar el healthcheck
+      timeout: 5s       # Cuánto tiempo esperar por una respuesta
+      retries: 5        # Cuántas veces reintentar antes de marcar como 'unhealthy'
+      start_period: 30s # Tiempo de gracia al inicio antes de que los fallos cuenten para 'unhealthy' (para dar tiempo a inicializar)
+
+  empleados-app-tomcat:
+    build:
+      context: ./empleados
+      args:
+        WAR_FILE: build/libs/empleados.war
+    container_name: empleados_app_tomcat_container
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-app-db:3306/mi_app_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: 'user_app'
+      SPRING_DATASOURCE_PASSWORD: 'password_app_muy_seguro'
+      SPRING_JPA_HIBERNATE_DDL_AUTO: 'validate'
+      # CATALINA_OPTS: "-Xms256m -Xmx512m"
+    depends_on: # MODIFICADO/EXTENDIDO
+      mysql-app-db:
+        condition: service_healthy # Espera a que el healthcheck de mysql-app-db pase
+    networks:
+      - app-network
+
+  administracion-app-tomcat:
+    build:
+      context: ./administracion
+      args:
+        WAR_FILE: build/libs/administracion.war
+    container_name: administracion_app_tomcat_container
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-app-db:3306/mi_app_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: 'user_app'
+      SPRING_DATASOURCE_PASSWORD: 'password_app_muy_seguro'
+      SPRING_JPA_HIBERNATE_DDL_AUTO: 'validate'
+      # CATALINA_OPTS: "-Xms256m -Xmx512m"
+    depends_on: # MODIFICADO/EXTENDIDO
+      mysql-app-db:
+        condition: service_healthy # Espera a que el healthcheck de mysql-app-db pase
+    networks:
+      - app-network
+
+volumes:
+  mysql_app_data:
+
+networks:
+  app-network:
+    driver: bridge

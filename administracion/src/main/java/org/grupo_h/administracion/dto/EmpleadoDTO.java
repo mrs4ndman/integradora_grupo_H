@@ -29,6 +29,9 @@ public class EmpleadoDTO {
     }
     private String fotoBase64; // para mostrar la foto
     private MultipartFile fotografiaDTO;
+
+    public EmpleadoDTO(UUID id, String nombre, String apellidos, Integer edad, String nombreDept, String numeroDocumento, String fotoB64, Object o) {
+    }
 //    private byte[] fotografiaArchivo;
 
 }

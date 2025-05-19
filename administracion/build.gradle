@@ -10,8 +10,16 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(23)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
+}
+
+war {
+    archiveFileName = "${project.name}.war"
+}
+
+springBoot {
+    mainClass = (project.name == 'empleados') ? 'org.grupo_h.empleados.EmpleadosApplication' : 'org.grupo_h.administracion.AdministracionApplication'
 }
 
 configurations {
@@ -42,6 +50,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 }
 
 tasks.named('test') {
