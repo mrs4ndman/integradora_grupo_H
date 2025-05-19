@@ -107,7 +107,7 @@
     <div class="search-container">
         <form th:action="@{/administrador/dashboardGestionUsuarios}" method="get">
             <input type="text" name="filtro" th:value="${filtro}" placeholder="Buscar por correo"/>
-            <button type="submit">Buscar</button>
+            <button type="submit" >Buscar</button>
         </form>
     </div>
 
@@ -136,6 +136,10 @@
                 <!-- Botón para editar -->
                 <button>
                     <a th:href="@{/administrador/editar-usuario/{id}(id=${usuario.id})}">Ajustes</a>
+                </button>
+
+                <button>
+                    <a th:href="@{/administrador/info}">area</a>
                 </button>
             </td>
         </tr>
