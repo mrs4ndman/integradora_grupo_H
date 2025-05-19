@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"> <head>
+  <title>Chat de Colaboraciones</title>
+  <th:block layout:fragment="page_css">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/> <style>
+    .chat-app-container { display: flex; height: calc(100vh - 200px); /* Ajusta según tu header/footer */ background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: .375rem; }
+    #lista-colaboraciones-chat { width: 300px; min-width:280px; border-right: 1px solid #dee2e6; overflow-y: auto; padding: 0; background-color: #fff; }
+    .colaboracion-item-chat { display: flex; align-items: center; padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background-color 0.2s ease; }
+    .colaboracion-item-chat:hover { background-color: #f0f8ff; }
+    .colaboracion-item-chat.active { background-color: #0d6efd; color: white; border-left: none;}
+    .colaboracion-item-chat.active .info .nombre,
+    .colaboracion-item-chat.active .info .ultimo-mensaje { color: white; }
+    .colaboracion-item-chat .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #6c757d; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; text-transform: uppercase; font-size: 0.9rem; flex-shrink: 0;}
+    .colaboracion-item-chat .info { overflow: hidden; flex-grow: 1;}
+    .colaboracion-item-chat .info .nombre { font-weight: 500; color: #343a40; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .colaboracion-item-chat .info .ultimo-mensaje { font-size: 0.85em; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+
+    #chat-area-wrapper { flex-grow: 1; display: flex; flex-direction: column; background-color: #fff; }
+    #chat-header { padding: 12px 20px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; }
+    #chat-con-nombre { font-size: 1.15em; font-weight: 500; color: #212529;}
+    #btn-cancelar-colaboracion-chat { font-size: 0.8rem; }
+    #mensajes-display-container { flex-grow: 1; overflow-y: auto; padding: 20px; background-color: #f4f7f9; /* Fondo más suave */ }
+    .mensaje-chat-wrapper { margin-bottom: 10px; display: flex; width: 100%;}
+    .mensaje-chat { padding: 8px 14px; border-radius: 18px; max-width: 70%; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.08); line-height: 1.4; font-size: 0.9rem;}
+    .mensaje-chat .texto-mensaje { margin: 0; }
+    .mensaje-chat .fecha { font-size: 0.7em; color: #999; margin-top: 4px; text-align: right; display: block; }
+
+    .mensaje-chat-wrapper.mio { justify-content: flex-end; }
+    .mensaje-chat-wrapper.mio .mensaje-chat { background-color: #dcf8c6; /* Verde WhatsApp */ }
+    .mensaje-chat-wrapper.otro { justify-content: flex-start; }
+    .mensaje-chat-wrapper.otro .mensaje-chat { background-color: #ffffff; border: 1px solid #e9e9e9;}
+
+    #form-enviar-mensaje-chat { padding: 10px 15px; background-color: #f0f0f0; border-top: 1px solid #ddd; display:flex; align-items:center;}
+    #form-enviar-mensaje-chat #contenidoMensajeChat { border-radius: 20px; border-right:0; flex-grow:1;}
+    #form-enviar-mensaje-chat #btnEnviarMensajeChat { border-radius: 20px; border-top-left-radius:0; border-bottom-left-radius:0;}
+    #chat-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align: center; padding: 50px; color: #6c757d; background-color: #f8f9fa;}
+    #chat-placeholder img { max-width: 120px; margin-bottom: 20px; opacity: 0.6;}
+    .spinner-border-sm { width: 1rem; height: 1rem; border-width: .2em;}
+  </style>
+  </th:block>
+</head>
+<body>
+<section layout:fragment="content">
+  <div class="container-fluid mt-3 mb-3">
+    <h2 class="mb-3">Chat de Colaboraciones</h2>
+    <div id="global-messages-chat-ui" class="mb-3"></div>
+
+    <div class="chat-app-container shadow-sm">
+      <div id="lista-colaboraciones-chat">
+        <div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Cargando colaboraciones...</div>
+      </div>
+
+      <div id="chat-area-wrapper">
+        <div id="chat-placeholder">
+          <img th:src="@{/img/chat-bubble-placeholder.svg}" alt="[Icono de conversación]" />
+          <p class="fs-5">Selecciona una colaboración</p>
+          <p class="text-muted">Tus conversaciones activas aparecerán aquí.</p>
+        </div>
+
+        <div id="chat-active-area" style="display:none; height:100%; display:flex; flex-direction:column;">
+          <div id="chat-header">
+            <span id="chat-con-nombre"></span>
+            <button id="btn-cancelar-colaboracion-chat" class="btn btn-outline-danger btn-sm py-1 px-2">
+              <i class="fas fa-times-circle"></i> Cancelar
+            </button>
+          </div>
+          <div id="mensajes-display-container">
+          </div>
+          <form id="form-enviar-mensaje-chat">
+            <input type="text" class="form-control" id="contenidoMensajeChat" placeholder="Escribe un mensaje..." required autocomplete="off">
+            <button class="btn btn-primary" type="submit" id="btnEnviarMensajeChat">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+            <input type="hidden" id="chatColaboracionIdActual">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="plantilla-colaboracion-chat-item">
+    <div class="colaboracion-item-chat">
+      <div class="avatar">XX</div>
+      <div class="info">
+        <div class="nombre">Nombre del Colaborador</div>
+        <div class="ultimo-mensaje text-muted">Haz clic para chatear...</div>
+      </div>
+    </div>
+  </template>
+
+  <template id="plantilla-mensaje-chat-item">
+    <div class="mensaje-chat-wrapper">
+      <div class="mensaje-chat">
+        <p class="texto-mensaje mb-0"></p>
+        <small class="fecha text-muted"></small>
+      </div>
+    </div>
+  </template>
+</section>
+
+<th:block layout:fragment="page_scripts">
+  <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    // Inyectado desde el modelo por ColaboracionUIController
+    const CURRENT_USER_EMAIL_CHAT_UI = /*[[${currentUserEmail}]]*/ null;
+    const PRESELECTED_COLAB_ID = /*[[${selectedColaboracionId}]]*/ null;
+    /*]]>*/
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!CURRENT_USER_EMAIL_CHAT_UI) {
+        mostrarMensajeGlobalChatUI('Error: Usuario no identificado. Recargue o inicie sesión.', 'danger');
+        console.error("currentUserEmail no está disponible en el script de chat.html");
+        return;
+      }
+
+      const chatApiHeadersUI = { 'Content-Type': 'application/json' };
+      // Si usas tokens JWT para APIs, descomenta y ajusta:
+      // const tokenChat = localStorage.getItem('jwtToken');
+      // if (tokenChat) { chatApiHeadersUI['Authorization'] = 'Bearer ' + tokenChat; }
+
+      const listaColabsDivChatUI = document.getElementById('lista-colaboraciones-chat');
+      const chatPlaceholderDivChatUI = document.getElementById('chat-placeholder');
+      const chatActiveAreaDivChatUI = document.getElementById('chat-active-area');
+      const chatConNombreSpanChatUI = document.getElementById('chat-con-nombre');
+      const btnCancelarColabChatElUI = document.getElementById('btn-cancelar-colaboracion-chat');
+      const mensajesContainerChatElUI = document.getElementById('mensajes-display-container');
+      const formEnviarMsgChatElUI = document.getElementById('form-enviar-mensaje-chat');
+      const inputContenidoMsgChatElUI = document.getElementById('contenidoMensajeChat');
+      const inputChatColabIdActualElUI = document.getElementById('chatColaboracionIdActual');
+      const plantillaColabChatItemElUI = document.getElementById('plantilla-colaboracion-chat-item');
+      const plantillaMensajeChatItemElUI = document.getElementById('plantilla-mensaje-chat-item');
+      const globalMessagesChatUIDivEl = document.getElementById('global-messages-chat-ui');
+
+      let chatColaboracionIdActualSeleccionadaJsUI = null;
+      let intervaloActualizacionMensajesJsUI = null;
+      let ultimoTimestampMensajeMostradoUI = 0;
+
+      function formatTimestampChatUI(fechaISO) {
+        if (!fechaISO) return '';
+        try {
+          return new Date(fechaISO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        } catch(e) { return "Hora inválida"; }
+      }
+
+      function mostrarMensajeGlobalChatUI(mensaje, tipo = 'success') {
+        const alertType = tipo === 'danger' ? 'alert-danger' : (tipo === 'warning' ? 'alert-warning' : 'alert-success');
+        globalMessagesChatUIDivEl.innerHTML =
+                `<div class="alert ${alertType} alert-dismissible fade show" role="alert">
+                        ${mensaje}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                     </div>`;
+        if (tipo !== 'danger') {
+          setTimeout(() => {
+            const alertElement = globalMessagesChatUIDivEl.querySelector('.alert');
+            if (alertElement && typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+              new bootstrap.Alert(alertElement).close();
+            } else if (alertElement) {
+              alertElement.remove();
+            }
+          }, 7000);
+        }
+      }
+
+      function getAvatarInitialsUI(name) {
+        if (!name || typeof name !== 'string') return "??";
+        const parts = name.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        } else if (parts.length === 1 && parts[0].length > 0) {
+          return parts[0].substring(0, Math.min(2, parts[0].length)).toUpperCase();
+        }
+        return "??";
+      }
+
+      async function cargarColaboracionesActivasParaChatUI() {
+        listaColabsDivChatUI.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Cargando...</div>';
+        try {
+          const response = await fetch('/api/empleados/colaboraciones/activas?sort=id,DESC', { headers: chatApiHeadersUI });
+          if (!response.ok) throw new Error(`Error ${response.status} al cargar colaboraciones.`);
+          const pagina = await response.json();
+
+          listaColabsDivChatUI.innerHTML = '';
+          if (pagina.content && pagina.content.length > 0) {
+            pagina.content.forEach(colab => {
+              const clone = plantillaColabChatItemElUI.content.cloneNode(true);
+              const itemDiv = clone.querySelector('.colaboracion-item-chat');
+
+              let otroEmpleadoNombre = "Colaborador";
+              let otroEmpleadoEmail = ""; // Para el título del chat
+              // Determinar el "otro" empleado basado en el email del usuario actual
+              if (colab.emailEmpleadoA && colab.emailEmpleadoA.toLowerCase() === CURRENT_USER_EMAIL_CHAT_UI.toLowerCase()) {
+                otroEmpleadoNombre = colab.nombreEmpleadoB || colab.emailEmpleadoB || "Colaborador B";
+                otroEmpleadoEmail = colab.emailEmpleadoB || "";
+              } else if (colab.emailEmpleadoB && colab.emailEmpleadoB.toLowerCase() === CURRENT_USER_EMAIL_CHAT_UI.toLowerCase()) {
+                otroEmpleadoNombre = colab.nombreEmpleadoA || colab.emailEmpleadoA || "Colaborador A";
+                otroEmpleadoEmail = colab.emailEmpleadoA || "";
+              }
+
+              itemDiv.querySelector('.avatar').textContent = getAvatarInitialsUI(otroEmpleadoNombre);
+              itemDiv.querySelector('.nombre').textContent = otroEmpleadoNombre;
+              // itemDiv.querySelector('.id-colaboracion-display').textContent = colab.id; // No visible
+              itemDiv.querySelector('.ultimo-mensaje').textContent = "Abrir chat para ver mensajes...";
+
+              itemDiv.dataset.colaboracionId = colab.id;
+              itemDiv.dataset.otroNombre = otroEmpleadoNombre;
+              itemDiv.dataset.otroEmail = otroEmpleadoEmail;
+              itemDiv.onclick = () => seleccionarColaboracionParaChatUI(colab.id, otroEmpleadoNombre, otroEmpleadoEmail);
+              listaColabsDivChatUI.appendChild(clone);
+            });
+          } else {
+            listaColabsDivChatUI.innerHTML = '<div class="p-3 text-center text-muted fst-italic">No tienes colaboraciones activas en este momento.</div>';
+          }
+        } catch (error) {
+          listaColabsDivChatUI.innerHTML = '<div class="p-3"><p class="alert alert-danger">Error al cargar colaboraciones activas.</p></div>';
+          console.error("Error cargando colaboraciones para chat:", error);
+        }
+      }
+
+      function seleccionarColaboracionParaChatUI(idColaboracion, otroNombre, otroEmail) {
+        if (intervaloActualizacionMensajesJsUI) clearInterval(intervaloActualizacionMensajesJsUI);
+        ultimoTimestampMensajeMostradoUI = 0;
+
+        chatColaboracionIdActualSeleccionadaJsUI = idColaboracion;
+        inputChatColabIdActualElUI.value = idColaboracion;
+
+        document.querySelectorAll('#lista-colaboraciones-chat .colaboracion-item-chat').forEach(item => item.classList.remove('active'));
+        const itemActivo = document.querySelector(`#lista-colaboraciones-chat .colaboracion-item-chat[data-colaboracion-id="${idColaboracion}"]`);
+        if(itemActivo) itemActivo.classList.add('active');
+
+        chatConNombreSpanChatUI.textContent = otroNombre + (otroEmail ? ` (${otroEmail})` : '');
+        chatPlaceholderDivChatUI.style.display = 'none';
+        chatActiveAreaDivChatUI.style.display = 'flex';
+        btnCancelarColabChatElUI.onclick = () => confirmarCancelarColaboracionChatUI(idColaboracion);
+
+        cargarMensajesChatUI(idColaboracion, true);
+        intervaloActualizacionMensajesJsUI = setInterval(() => cargarMensajesChatUI(idColaboracion, false), 7000); // Polling
+        inputContenidoMsgChatElUI.focus();
+      }
+
+      async function cargarMensajesChatUI(idColaboracion, hacerScrollInicial) {
+        if (!idColaboracion) return;
+        if(hacerScrollInicial) mensajesContainerChatElUI.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm" role="status"></div> Cargando...</div>';
+
+        try {
+          const response = await fetch(`/api/empleados/mensajes/colaboracion/${idColaboracion}?sort=fechaEmision,ASC&size=50`, { headers: chatApiHeadersUI }); // Cargar más mensajes, orden ASC
+          if (!response.ok) throw new Error(`Error ${response.status}`);
+          const paginaMensajes = await response.json();
+
+          const fragmentoMensajes = document.createDocumentFragment();
+          let nuevosMensajesAnadidosEsteCiclo = false;
+
+          if (paginaMensajes.content && paginaMensajes.content.length > 0) {
+            paginaMensajes.content.forEach(msg => {
+              const fechaMsgTimestamp = new Date(msg.fechaEmision).getTime();
+              // Solo renderizar si es carga inicial o si el mensaje es más nuevo que el último mostrado
+              if (hacerScrollInicial || fechaMsgTimestamp > ultimoTimestampMensajeMostradoUI) {
+                const clone = plantillaMensajeChatItemElUI.content.cloneNode(true);
+                const msgWrapperDiv = clone.querySelector('.mensaje-chat-wrapper');
+                const msgDiv = clone.querySelector('.mensaje-chat');
+
+                msgDiv.querySelector('.texto-mensaje').textContent = msg.contenido;
+                msgDiv.querySelector('.fecha').textContent = formatTimestampChatUI(msg.fechaEmision);
+
+                if (msg.emailEmisor && msg.emailEmisor.toLowerCase() === CURRENT_USER_EMAIL_CHAT_UI.toLowerCase()) {
+                  msgWrapperDiv.classList.add('mio');
+                } else {
+                  msgWrapperDiv.classList.add('otro');
+                  // Opcional: Mostrar nombre del emisor si no es el usuario actual
+                  // const emisorNombreEl = msgDiv.querySelector('.emisor');
+                  // emisorNombreEl.textContent = msg.nombreEmisor || msg.emailEmisor;
+                  // emisorNombreEl.style.display = 'block';
+                }
+                fragmentoMensajes.appendChild(clone);
+                nuevosMensajesAnadidosEsteCiclo = true;
+                if(fechaMsgTimestamp > ultimoTimestampMensajeMostradoUI) ultimoTimestampMensajeMostradoUI = fechaMsgTimestamp;
+              }
+            });
+          }
+
+          if (hacerScrollInicial) {
+            mensajesContainerChatElUI.innerHTML = ''; // Limpiar para la carga inicial
+            if (fragmentoMensajes.childNodes.length === 0) {
+              mensajesContainerChatElUI.innerHTML = '<p class="text-center text-muted p-3 fst-italic">No hay mensajes en esta conversación. ¡Sé el primero en escribir!</p>';
+            }
+          }
+
+          if (nuevosMensajesAnadidosEsteCiclo) {
+            mensajesContainerChatElUI.appendChild(fragmentoMensajes);
+            mensajesContainerChatElUI.scrollTop = mensajesContainerChatElUI.scrollHeight;
+          }
+
+        } catch (error) {
+          if(hacerScrollInicial) mensajesContainerChatElUI.innerHTML = '<p class="text-center text-danger p-3">Error al cargar mensajes.</p>';
+          console.error("Error cargando mensajes para chat:", error);
+          if (intervaloActualizacionMensajesJsUI) clearInterval(intervaloActualizacionMensajesJsUI);
+        }
+      }
+
+      formEnviarMsgChatElUI.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        if (!chatColaboracionIdActualSeleccionadaJsUI) return;
+
+        const contenido = inputContenidoMsgChatElUI.value.trim();
+        if (!contenido) return;
+
+        const btnEnviar = document.getElementById('btnEnviarMensajeChat');
+        inputContenidoMsgChatElUI.disabled = true;
+        btnEnviar.disabled = true;
+        btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+
+        try {
+          const response = await fetch('/api/empleados/mensajes', {
+            method: 'POST',
+            headers: chatApiHeadersUI,
+            body: JSON.stringify({ idColaboracion: chatColaboracionIdActualSeleccionadaJsUI, contenido: contenido })
+          });
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({message: `Error ${response.status}`}));
+            throw new Error(errorData.message || 'Error al enviar mensaje');
+          }
+          inputContenidoMsgChatElUI.value = '';
+          cargarMensajesChatUI(chatColaboracionIdActualSeleccionadaJsUI, false); // Cargar mensajes sin scroll completo, solo añade nuevos
+        } catch (error) {
+          mostrarMensajeGlobalChatUI('Error al enviar el mensaje: ' + error.message, 'danger');
+          console.error("Error enviando mensaje:", error);
+        } finally {
+          inputContenidoMsgChatElUI.disabled = false;
+          btnEnviar.disabled = false;
+          btnEnviar.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+          inputContenidoMsgChatElUI.focus();
+        }
+      });
+
+      function confirmarCancelarColaboracionChatUI(idColaboracion) {
+        if (confirm('¿Estás seguro de que quieres cancelar esta colaboración? Esta acción no se puede deshacer y se cerrará el chat.')) {
+          cancelarColaboracionChatUI(idColaboracion);
+        }
+      }
+
+      async function cancelarColaboracionChatUI(idColaboracion) {
+        try {
+          const response = await fetch(`/api/empleados/colaboraciones/${idColaboracion}/cancelar`, {
+            method: 'PUT',
+            headers: chatApiHeadersUI
+          });
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({message: `Error ${response.status}`}));
+            throw new Error(errorData.message || 'Error al cancelar colaboración');
+          }
+          mostrarMensajeGlobalChatUI('Colaboración cancelada exitosamente.', 'success');
+
+          if (intervaloActualizacionMensajesJsUI) clearInterval(intervaloActualizacionMensajesJsUI);
+          chatColaboracionIdActualSeleccionadaJsUI = null;
+          chatActiveAreaDivChatUI.style.display = 'none';
+          chatPlaceholderDivChatUI.style.display = 'flex';
+          cargarColaboracionesActivasParaChatUI();
+        } catch (error) {
+          mostrarMensajeGlobalChatUI('Error al cancelar la colaboración: ' + error.message, 'danger');
+          console.error("Error cancelando colaboración desde chat:", error);
+        }
+      }
+
+      // Inicialización
+      cargarColaboracionesActivasParaChatUI().then(() => {
+        if (PRESELECTED_COLAB_ID) {
+          const item = document.querySelector(`.colaboracion-item-chat[data-colaboracion-id="${PRESELECTED_COLAB_ID}"]`);
+          if (item) {
+            seleccionarColaboracionParaChatUI(PRESELECTED_COLAB_ID, item.dataset.otroNombre || 'Colaborador', item.dataset.otroEmail || '');
+          } else {
+            logger.warn(`No se encontró el item de colaboración para el ID preseleccionado: ${PRESELECTED_COLAB_ID}`);
+          }
+        }
+      });
+    });
+  </script>
+</th:block>
+</body>
+</html>

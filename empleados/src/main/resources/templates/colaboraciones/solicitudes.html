@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"> <head>
+  <title>Solicitudes de Colaboración</title>
+  <th:block layout:fragment="page_css">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/> <style>
+    .solicitud-card { margin-bottom: 15px; padding: 15px; border: 1px solid #dee2e6; border-radius: .25rem; background-color: #fff; }
+    .solicitud-card h5 { margin-top: 0; font-size: 1.1rem; color: #212529; border-bottom: 1px solid #eee; padding-bottom: .5rem; margin-bottom: .75rem;}
+    .solicitud-card .card-text { font-size: 0.9rem; color: #495057;}
+    .solicitud-card .text-muted {color: #6c757d !important;}
+    .solicitud-card .estado { font-weight: bold; text-transform: uppercase; font-size: 0.8rem; padding: .2em .4em; border-radius: .2rem;}
+    .solicitud-card .estado-PENDING { color: #664d03; background-color: #fff3cd; border: 1px solid #ffecb5;}
+    .solicitud-card .estado-ACCEPTED { color: #0f5132; background-color: #d1e7dd; border: 1px solid #badbcc;}
+    .solicitud-card .estado-REJECTED { color: #842029; background-color: #f8d7da; border: 1px solid #f5c2c7;}
+    .acciones button, .acciones .btn { margin-top: 10px; margin-right: 5px; font-size:0.85rem; }
+    .nav-tabs .nav-link { color: #495057; border: 1px solid transparent;}
+    .nav-tabs .nav-link.active { color: #0d6efd; border-color: #dee2e6 #dee2e6 #fff; font-weight:500; background-color: #fff;}
+    .tab-content { border: 1px solid #dee2e6; border-top: none; padding: 20px; background-color: #fff; border-radius: 0 0 0.25rem 0.25rem;}
+    #form-nueva-solicitud-container { padding: 20px; background-color: #f8f9fa; border-radius: 5px; border: 1px solid #dee2e6;}
+    .pagination .page-link { font-size: 0.9rem; color: #0d6efd; }
+    .pagination .page-item.active .page-link { z-index: 3; color: #fff; background-color: #0d6efd; border-color: #0d6efd;}
+    .pagination .page-item.disabled .page-link { color: #6c757d; pointer-events: none; background-color: #fff; border-color: #dee2e6;}
+    .spinner-border-sm { width: 1rem; height: 1rem; border-width: .2em;}
+    #lista-empleados-busqueda .list-group-item { cursor: pointer; }
+    #lista-empleados-busqueda .list-group-item:hover { background-color: #f0f0f0; }
+    #lista-empleados-busqueda .list-group-item small { font-size: 0.8em; }
+  </style>
+  </th:block>
+</head>
+<body>
+<section layout:fragment="content">
+  <div class="container mt-4 mb-5">
+    <h2 class="mb-4">Gestión de Solicitudes de Colaboración</h2>
+
+    <div id="global-messages-solicitudes" class="mb-3">
+    </div>
+
+    <ul class="nav nav-tabs" id="solicitudesTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="recibidas-tab-btn" data-bs-toggle="tab" data-bs-target="#recibidasPane" type="button" role="tab" aria-controls="recibidasPane" aria-selected="true">
+          Recibidas <span id="conteo-recibidas-pendientes-badge" class="badge bg-warning ms-1" style="display:none;">0</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="emitidas-tab-btn" data-bs-toggle="tab" data-bs-target="#emitidasPane" type="button" role="tab" aria-controls="emitidasPane" aria-selected="false">Emitidas</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="nueva-solicitud-tab-btn" data-bs-toggle="tab" data-bs-target="#nuevaSolicitudPane" type="button" role="tab" aria-controls="nuevaSolicitudPane" aria-selected="false">Nueva Solicitud</button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="solicitudesTabsContent">
+      <div class="tab-pane fade show active" id="recibidasPane" role="tabpanel" aria-labelledby="recibidas-tab-btn">
+        <h4 class="mt-3 mb-3">Solicitudes Recibidas</h4>
+        <div id="lista-solicitudes-recibidas" class="row">
+          <div class="col-12 text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>
+        </div>
+        <div id="paginacion-recibidas" class="mt-4 d-flex justify-content-center"></div>
+      </div>
+
+      <div class="tab-pane fade" id="emitidasPane" role="tabpanel" aria-labelledby="emitidas-tab-btn">
+        <h4 class="mt-3 mb-3">Solicitudes Emitidas</h4>
+        <div id="lista-solicitudes-emitidas" class="row">
+          <div class="col-12 text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>
+        </div>
+        <div id="paginacion-emitidas" class="mt-4 d-flex justify-content-center"></div>
+      </div>
+
+      <div class="tab-pane fade" id="nuevaSolicitudPane" role="tabpanel" aria-labelledby="nueva-solicitud-tab-btn">
+        <div id="form-nueva-solicitud-container" class="mt-3">
+          <h4 class="mb-3">Crear Nueva Solicitud de Colaboración</h4>
+
+          <div class="mb-3">
+            <label for="buscarEmpleadoInput" class="form-label">Buscar Empleado Destino:</label>
+            <input type="text" class="form-control" id="buscarEmpleadoInput" placeholder="Escribe nombre, apellidos o email del empleado...">
+            <div id="lista-empleados-busqueda-spinner" class="mt-2" style="display: none;">
+              <div class="spinner-border spinner-border-sm text-primary" role="status"></div> Buscando empleados...
+            </div>
+            <div id="lista-empleados-busqueda" class="list-group mt-2" style="max-height: 200px; overflow-y: auto; border: 1px solid #ced4da; border-radius: .25rem;">
+            </div>
+            <div id="paginacion-busqueda-empleados" class="mt-2 d-flex justify-content-center"></div>
+          </div>
+
+          <form id="form-nueva-solicitud" class="mt-3">
+            <div class="mb-3">
+              <label for="emailEmpleadoDestino" class="form-label">Email del Empleado Destino:</label>
+              <input type="email" class="form-control" id="emailEmpleadoDestino" name="emailEmpleadoDestino" required readonly
+                     placeholder="Selecciona un empleado de la lista de búsqueda">
+            </div>
+            <div class="mb-3">
+              <label for="mensajeSolicitud" class="form-label">Mensaje (opcional):</label>
+              <textarea class="form-control" id="mensajeSolicitud" name="mensaje" rows="3" placeholder="Ej: Necesito tu experiencia en el proyecto Alpha para una revisión..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Enviar Solicitud</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="plantilla-solicitud-card">
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="solicitud-card shadow-sm h-100 d-flex flex-column">
+        <h5 class="card-title">Solicitud <span class="tipo-solicitud badge"></span></h5>
+        <div class="card-body p-3 flex-grow-1">
+          <p class="card-text mb-1"><strong><span class="etiqueta-interlocutor"></span>:</strong> <span class="nombre-interlocutor"></span></p>
+          <p class="card-text mb-1"><small class="email-interlocutor text-muted"></small></p>
+          <p class="card-text mb-1"><strong>Fecha:</strong> <span class="fechaSolicitud text-muted"></span></p>
+          <p class="card-text mb-2" style="min-height: 40px; max-height: 80px; overflow-y: auto; white-space: pre-wrap;"><strong>Mensaje:</strong> <em class="mensaje d-block mt-1" style="font-size:0.9em;"></em></p>
+          <p class="card-text mb-0"><strong>Estado:</strong> <span class="estado"></span></p>
+        </div>
+        <div class="acciones mt-auto p-3 border-top pt-2 text-end">
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="plantilla-empleado-busqueda-item">
+    <a href="#" class="list-group-item list-group-item-action">
+      <div class="d-flex w-100 justify-content-between">
+        <h6 class="mb-1 nombre-empleado">Nombre Apellido</h6>
+      </div>
+      <p class="mb-1 email-empleado small text-primary"></p>
+      <small class="text-muted departamento-empleado"></small>
+    </a>
+  </template>
+
+</section>
+
+<th:block layout:fragment="page_scripts">
+  <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    // Inyectado desde el modelo por ColaboracionUIController
+    const CURRENT_USER_EMAIL_SOLICITUDES_PAGE = /*[[${currentUserEmail}]]*/ null;
+    /*]]>*/
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Asegurarse de que Bootstrap (si se usa para tabs) esté cargado y listo
+      // if (typeof bootstrap === 'undefined') {
+      //     console.error('Bootstrap no está cargado. Las pestañas pueden no funcionar.');
+      // }
+
+      if (!CURRENT_USER_EMAIL_SOLICITUDES_PAGE) {
+        mostrarMensajeGlobalSolicitudesUI('Error: Usuario actual no identificado. Intente recargar.', 'danger');
+        console.error("currentUserEmail no está disponible en el script de solicitudes.html");
+        return;
+      }
+
+      const apiHeadersSolicitudesPage = { 'Content-Type': 'application/json' };
+      // const token = localStorage.getItem('jwtToken'); // Si usaras JWT
+      // if (token) { apiHeadersSolicitudesPage['Authorization'] = 'Bearer ' + token; }
+
+      // ** VERIFICAR NOMBRES DE VARIABLES Y IDs **
+      // Estas variables deben coincidir exactamente con los IDs en el HTML y usarse consistentemente.
+      const tabsSolicitudesPageEl = {
+        recibidas: document.getElementById('recibidas-tab-btn'),
+        emitidas: document.getElementById('emitidas-tab-btn'),
+        nueva: document.getElementById('nueva-solicitud-tab-btn')
+      };
+      const panesSolicitudesPageEl = { // Variable que causaba error si se usaba como panesSolicitudesEl
+        recibidas: document.getElementById('lista-solicitudes-recibidas'),
+        emitidas: document.getElementById('lista-solicitudes-emitidas'),
+        formNueva: document.getElementById('form-nueva-solicitud')
+      };
+      const paginacionContainersPageEl = {
+        recibidas: document.getElementById('paginacion-recibidas'),
+        emitidas: document.getElementById('paginacion-emitidas'),
+        busquedaEmpleados: document.getElementById('paginacion-busqueda-empleados')
+      };
+      const conteoRecibidasPendientesBadgePageEl = document.getElementById('conteo-recibidas-pendientes-badge');
+      const plantillaSolicitudCardPageEl = document.getElementById('plantilla-solicitud-card');
+      const globalMessagesDivPageEl = document.getElementById('global-messages-solicitudes');
+
+      const buscarEmpleadoInputPageEl = document.getElementById('buscarEmpleadoInput');
+      const listaEmpleadosBusquedaDivPageEl = document.getElementById('lista-empleados-busqueda');
+      const listaEmpleadosBusquedaSpinnerPageEl = document.getElementById('lista-empleados-busqueda-spinner'); // Variable que causaba error
+      const plantillaEmpleadoBusquedaItemPageEl = document.getElementById('plantilla-empleado-busqueda-item');
+      const emailEmpleadoDestinoInputPageEl = document.getElementById('emailEmpleadoDestino');
+
+      let debounceTimerEmpleadoSearchPage;
+      let currentSearchPage = 0;
+      const searchPageSize = 5;
+
+      function formatearFechaUIPage(fechaISO) {
+        if (!fechaISO) return 'N/A';
+        try {
+          return new Date(fechaISO).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch (e) { return fechaISO; }
+      }
+
+      function mostrarMensajeGlobalSolicitudesUI(mensaje, tipo = 'success') {
+        const alertType = tipo === 'danger' ? 'alert-danger' : (tipo === 'warning' ? 'alert-warning' : 'alert-success');
+        if (globalMessagesDivPageEl) { // Verificar si el elemento existe
+          globalMessagesDivPageEl.innerHTML =
+                  `<div class="alert ${alertType} alert-dismissible fade show" role="alert">
+                            ${mensaje}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                         </div>`;
+          if (tipo !== 'danger') {
+            setTimeout(() => {
+              const alertElement = globalMessagesDivPageEl.querySelector('.alert');
+              if (alertElement && typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                new bootstrap.Alert(alertElement).close();
+              } else if (alertElement) {
+                alertElement.remove();
+              }
+            }, 7000);
+          }
+        } else {
+          console.error("Elemento para mensajes globales 'global-messages-solicitudes' no encontrado.");
+        }
+      }
+
+      function crearPaginacionUIPage(container, paginaInfo, tipo, callbackPaginacion) {
+        if (!container) {
+          console.error("Contenedor de paginación no encontrado para tipo:", tipo);
+          return;
+        }
+        container.innerHTML = '';
+        if (!paginaInfo || paginaInfo.totalPages <= 1) return;
+
+        const nav = document.createElement('nav');
+        nav.setAttribute('aria-label', `Paginación de ${tipo}`);
+        const ul = document.createElement('ul');
+        ul.className = 'pagination pagination-sm';
+
+        const createPageItem = (text, pageNum, isDisabled, isActive, isHtml = false) => {
+          const li = document.createElement('li');
+          li.className = `page-item ${isDisabled ? 'disabled' : ''} ${isActive ? 'active' : ''}`;
+          const a = document.createElement('a');
+          a.className = 'page-link';
+          a.href = '#';
+          if(isHtml) a.innerHTML = text; else a.textContent = text;
+
+          if (!isDisabled && pageNum >= 0 && pageNum < paginaInfo.totalPages) {
+            a.onclick = (e) => { e.preventDefault(); callbackPaginacion(pageNum); };
+          } else if (isDisabled) {
+            a.onclick = (e) => e.preventDefault();
+          }
+          li.appendChild(a);
+          return li;
+        };
+
+        ul.appendChild(createPageItem('&laquo;', paginaInfo.number - 1, paginaInfo.first, false, true));
+
+        const maxPagesToShow = 5;
+        let startPage = Math.max(0, paginaInfo.number - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(paginaInfo.totalPages - 1, startPage + maxPagesToShow - 1);
+        if (endPage - startPage + 1 < maxPagesToShow) {
+          startPage = Math.max(0, endPage - maxPagesToShow + 1);
+        }
+
+        if (startPage > 0) {
+          ul.appendChild(createPageItem('1', 0, false, 0 === paginaInfo.number));
+          if (startPage > 1) ul.appendChild(createPageItem('...', -1, true, false));
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          ul.appendChild(createPageItem(i + 1, i, false, i === paginaInfo.number));
+        }
+
+        if (endPage < paginaInfo.totalPages - 1) {
+          if (endPage < paginaInfo.totalPages - 2) ul.appendChild(createPageItem('...', -1, true, false));
+          ul.appendChild(createPageItem(paginaInfo.totalPages, paginaInfo.totalPages - 1, false, (paginaInfo.totalPages - 1) === paginaInfo.number));
+        }
+
+        ul.appendChild(createPageItem('&raquo;', paginaInfo.number + 1, paginaInfo.last, false, true));
+
+        nav.appendChild(ul);
+        container.appendChild(nav);
+      }
+
+      async function cargarSolicitudesUIPage(tipo, page = 0, size = 6) {
+        const endpoint = tipo === 'recibidas'
+                ? `/api/empleados/colaboraciones/solicitudes/recibidas?page=${page}&size=${size}&sort=fechaSolicitud,DESC`
+                : `/api/empleados/colaboraciones/solicitudes/emitidas?page=${page}&size=${size}&sort=fechaSolicitud,DESC`;
+        const container = tipo === 'recibidas' ? panesSolicitudesPageEl.recibidas : panesSolicitudesPageEl.emitidas;
+        const paginacionContainer = tipo === 'recibidas' ? paginacionContainersPageEl.recibidas : paginacionContainersPageEl.emitidas;
+
+        if (!container || !paginacionContainer) {
+          console.error("Elementos del DOM para solicitudes no encontrados para tipo:", tipo);
+          return;
+        }
+
+        container.innerHTML = '<div class="col-12 text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        paginacionContainer.innerHTML = '';
+
+        try {
+          const response = await fetch(endpoint, { headers: apiHeadersSolicitudesPage });
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: `Error HTTP ${response.status} al cargar solicitudes.` }));
+            throw new Error(errorData.message || `Error al cargar solicitudes: ${response.statusText}`);
+          }
+          const pagina = await response.json();
+
+          container.innerHTML = '';
+          if (pagina.content && pagina.content.length > 0) {
+            pagina.content.forEach(sol => renderizarSolicitudUIPage(sol, tipo, container));
+            crearPaginacionUIPage(paginacionContainer, pagina, tipo, (newPage) => cargarSolicitudesUIPage(tipo, newPage, size));
+          } else {
+            container.innerHTML = `<div class="col-12 text-center p-4"><p class="text-muted fst-italic">No hay solicitudes ${tipo === 'recibidas' ? 'recibidas' : 'emitidas'} para mostrar.</p></div>`;
+          }
+          if (tipo === 'recibidas') {
+            actualizarConteoRecibidasPendientesBadgeUIPage();
+          }
+        } catch (error) {
+          container.innerHTML = `<div class="col-12"><p class="alert alert-danger">Error al cargar solicitudes ${tipo}. ${error.message}</p></div>`;
+          console.error(`Error cargando solicitudes ${tipo}:`, error);
+        }
+      }
+
+      async function actualizarConteoRecibidasPendientesBadgeUIPage() {
+        try {
+          const response = await fetch('/api/empleados/colaboraciones/solicitudes/recibidas/pendientes/conteo', { headers: apiHeadersSolicitudesPage });
+          if (response.ok) {
+            const conteo = await response.json();
+            if (conteoRecibidasPendientesBadgePageEl) { // Verificar si existe
+              if (conteo > 0) {
+                conteoRecibidasPendientesBadgePageEl.textContent = conteo;
+                conteoRecibidasPendientesBadgePageEl.style.display = 'inline-block';
+              } else {
+                conteoRecibidasPendientesBadgePageEl.style.display = 'none';
+              }
+            }
+          } else {
+            if (conteoRecibidasPendientesBadgePageEl) conteoRecibidasPendientesBadgePageEl.style.display = 'none';
+          }
+        } catch (error) {
+          console.warn("Error al actualizar conteo de pendientes:", error);
+          if (conteoRecibidasPendientesBadgePageEl) conteoRecibidasPendientesBadgePageEl.style.display = 'none';
+        }
+      }
+
+      function renderizarSolicitudUIPage(sol, tipo, container) {
+        if (!plantillaSolicitudCardPageEl) { console.error("Plantilla de tarjeta de solicitud no encontrada."); return; }
+        const clone = plantillaSolicitudCardPageEl.content.cloneNode(true);
+        // ... (resto de la lógica de renderizado, asegurándose que los querySelector no fallen) ...
+        clone.querySelector('.tipo-solicitud').textContent = tipo === 'recibidas' ? 'Recibida' : 'Emitida';
+        clone.querySelector('.etiqueta-interlocutor').textContent = tipo === 'recibidas' ? 'De' : 'Para';
+        clone.querySelector('.nombre-interlocutor').textContent = tipo === 'recibidas' ? (sol.nombreEmpleadoOrigen || 'Desconocido') : (sol.nombreEmpleadoDestino || 'Desconocido');
+        clone.querySelector('.email-interlocutor').textContent = tipo === 'recibidas' ? (sol.emailEmpleadoOrigen || 'N/A') : (sol.emailEmpleadoDestino || 'N/A');
+        clone.querySelector('.fechaSolicitud').textContent = formatearFechaUIPage(sol.fechaSolicitud);
+        clone.querySelector('.mensaje').textContent = sol.mensaje || '(Sin mensaje adicional)';
+
+        const estadoSpan = clone.querySelector('.estado');
+        estadoSpan.textContent = sol.estado ? sol.estado.replace('_', ' ') : "DESCONOCIDO";
+        estadoSpan.className = 'estado estado-' + sol.estado; // Asegurar que sol.estado existe
+
+        const accionesDiv = clone.querySelector('.acciones');
+        if (accionesDiv) { // Verificar que accionesDiv exista
+          if (tipo === 'recibidas' && sol.estado === 'PENDING') {
+            const btnAceptar = document.createElement('button');
+            btnAceptar.className = 'btn btn-success btn-sm';
+            btnAceptar.innerHTML = '<i class="fas fa-check me-1"></i>Aceptar';
+            btnAceptar.onclick = () => gestionarSolicitudUIPage(sol.id, 'ACEPTAR');
+
+            const btnRechazar = document.createElement('button');
+            btnRechazar.className = 'btn btn-danger btn-sm';
+            btnRechazar.innerHTML = '<i class="fas fa-times me-1"></i>Rechazar';
+            btnRechazar.onclick = () => gestionarSolicitudUIPage(sol.id, 'RECHAZAR');
+
+            accionesDiv.appendChild(btnAceptar);
+            accionesDiv.appendChild(btnRechazar);
+          } else if (sol.estado === 'ACCEPTED' && sol.colaboracionId) {
+            const btnIrChat = document.createElement('a');
+            btnIrChat.className = 'btn btn-primary btn-sm';
+            btnIrChat.innerHTML = '<i class="fas fa-comments me-1"></i>Ir al Chat';
+            btnIrChat.href = `/empleados/colaboraciones/chat-ui?colaboracionId=${sol.colaboracionId}`;
+            accionesDiv.appendChild(btnIrChat);
+          } else if (accionesDiv.children.length === 0 && (sol.estado === 'PENDING' || (sol.estado === 'ACCEPTED' && !sol.colaboracionId))) {
+            accionesDiv.innerHTML = '<small class="text-muted"><em>No hay acciones disponibles.</em></small>';
+          }
+        }
+        if (container) container.appendChild(clone);
+      }
+
+      async function gestionarSolicitudUIPage(idSolicitud, accion) {
+        try {
+          const payload = { accion: accion };
+          if (accion === 'RECHAZAR') {
+            const motivo = prompt('Motivo del rechazo (opcional):');
+            if (motivo === null) return;
+            payload.mensajeRespuesta = motivo;
+          }
+
+          const response = await fetch(`/api/empleados/colaboraciones/solicitudes/${idSolicitud}`, {
+            method: 'PUT',
+            headers: apiHeadersSolicitudesPage,
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: `Error HTTP ${response.status}` }));
+            throw new Error(errorData.message || `Error al ${accion.toLowerCase()} la solicitud.`);
+          }
+          mostrarMensajeGlobalSolicitudesUI(`Solicitud ${accion.toLowerCase()}da exitosamente.`, 'success');
+          cargarSolicitudesUIPage('recibidas', 0);
+          cargarSolicitudesUIPage('emitidas', 0);
+          actualizarConteoRecibidasPendientesBadgeUIPage();
+        } catch (error) {
+          mostrarMensajeGlobalSolicitudesUI(error.message, 'danger');
+          console.error(`Error gestionando solicitud ${idSolicitud}:`, error);
+        }
+      }
+
+      async function buscarEmpleadosUI(termino, page = 0, size = 5) {
+        if (!listaEmpleadosBusquedaSpinnerPageEl || !listaEmpleadosBusquedaDivPageEl || !paginacionContainersPageEl.busquedaEmpleados) {
+          console.error("Elementos del DOM para búsqueda de empleados no encontrados.");
+          return;
+        }
+        listaEmpleadosBusquedaSpinnerPageEl.style.display = 'block';
+        if(page === 0) listaEmpleadosBusquedaDivPageEl.innerHTML = '';
+
+        const endpoint = `/api/empleados/colaboraciones/empleados-disponibles?buscar=${encodeURIComponent(termino)}&page=${page}&size=${size}&sort=apellidos,ASC`;
+        try {
+          const response = await fetch(endpoint, { headers: apiHeadersSolicitudesPage });
+          if (!response.ok) throw new Error('Error al buscar empleados.');
+          const paginaEmpleados = await response.json();
+
+          if (paginaEmpleados.content && paginaEmpleados.content.length > 0) {
+            paginaEmpleados.content.forEach(emp => {
+              if (!plantillaEmpleadoBusquedaItemPageEl) { console.error("Plantilla de item de búsqueda no encontrada."); return; }
+              const clone = plantillaEmpleadoBusquedaItemPageEl.content.cloneNode(true);
+              const itemLink = clone.querySelector('.list-group-item');
+              if (!itemLink) { console.error("Elemento .list-group-item no encontrado en plantilla de búsqueda."); return; }
+
+              itemLink.querySelector('.nombre-empleado').textContent = `${emp.nombre || ''} ${emp.apellidos || ''}`.trim();
+              itemLink.querySelector('.email-empleado').textContent = emp.email || 'Email no disponible';
+              itemLink.querySelector('.departamento-empleado').textContent = emp.departamentoNombre || 'Dpto. no especificado';
+
+              itemLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (emailEmpleadoDestinoInputPageEl) emailEmpleadoDestinoInputPageEl.value = emp.email || '';
+                listaEmpleadosBusquedaDivPageEl.innerHTML = '';
+                paginacionContainersPageEl.busquedaEmpleados.innerHTML = '';
+                if (buscarEmpleadoInputPageEl) buscarEmpleadoInputPageEl.value = `${emp.nombre || ''} ${emp.apellidos || ''} (${emp.email || ''})`.trim();
+                const mensajeSolicitudEl = document.getElementById('mensajeSolicitud');
+                if (mensajeSolicitudEl) mensajeSolicitudEl.focus();
+              });
+              listaEmpleadosBusquedaDivPageEl.appendChild(clone);
+            });
+            crearPaginacionUIPage(paginacionContainersPageEl.busquedaEmpleados, paginaEmpleados, 'busquedaEmpleados', (newPage) => buscarEmpleadosUI(termino, newPage, size));
+          } else {
+            if(page === 0) listaEmpleadosBusquedaDivPageEl.innerHTML = '<li class="list-group-item text-muted">No se encontraron empleados con ese término.</li>';
+          }
+        } catch (error) {
+          if(page === 0) listaEmpleadosBusquedaDivPageEl.innerHTML = '<li class="list-group-item text-danger">Error al realizar la búsqueda.</li>';
+          console.error("Error buscando empleados:", error);
+        } finally {
+          if (listaEmpleadosBusquedaSpinnerPageEl) listaEmpleadosBusquedaSpinnerPageEl.style.display = 'none';
+        }
+      }
+
+      if(buscarEmpleadoInputPageEl) { // Asegurar que el input existe antes de añadir listener
+        buscarEmpleadoInputPageEl.addEventListener('input', function() {
+          clearTimeout(debounceTimerEmpleadoSearchPage);
+          const termino = this.value.trim();
+          if (termino.length === 0) {
+            if(listaEmpleadosBusquedaDivPageEl) listaEmpleadosBusquedaDivPageEl.innerHTML = '';
+            if(paginacionContainersPageEl.busquedaEmpleados) paginacionContainersPageEl.busquedaEmpleados.innerHTML = '';
+            return;
+          }
+          if (termino.length >= 2) {
+            debounceTimerEmpleadoSearchPage = setTimeout(() => {
+              currentSearchPage = 0;
+              buscarEmpleadosUI(termino, currentSearchPage, searchPageSize);
+            }, 400);
+          }
+        });
+      }
+
+      if(panesSolicitudesPageEl.formNueva) { // Asegurar que el formulario existe
+        panesSolicitudesPageEl.formNueva.addEventListener('submit', async function(event) {
+          event.preventDefault();
+          const emailEmpleadoDestino = emailEmpleadoDestinoInputPageEl ? emailEmpleadoDestinoInputPageEl.value.trim() : '';
+          const mensaje = document.getElementById('mensajeSolicitud') ? document.getElementById('mensajeSolicitud').value.trim() : '';
+
+          if (!emailEmpleadoDestino) {
+            mostrarMensajeGlobalSolicitudesUI('Por favor, selecciona un empleado de la lista de búsqueda o introduce su email válido.', 'warning');
+            return;
+          }
+
+          const btnSubmit = this.querySelector('button[type="submit"]');
+          if (!btnSubmit) return;
+
+          btnSubmit.disabled = true;
+          btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Enviando...';
+
+          try {
+            const response = await fetch('/api/empleados/colaboraciones/solicitudes', {
+              method: 'POST',
+              headers: apiHeadersSolicitudesPage,
+              body: JSON.stringify({ emailEmpleadoDestino: emailEmpleadoDestino, mensaje: mensaje })
+            });
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ message: `Error HTTP ${response.status}` }));
+              throw new Error(errorData.message || 'Error al enviar la solicitud.');
+            }
+            mostrarMensajeGlobalSolicitudesUI('Solicitud enviada exitosamente.', 'success');
+            this.reset();
+            if(emailEmpleadoDestinoInputPageEl) emailEmpleadoDestinoInputPageEl.value = '';
+            if(buscarEmpleadoInputPageEl) buscarEmpleadoInputPageEl.value = '';
+            if(listaEmpleadosBusquedaDivPageEl) listaEmpleadosBusquedaDivPageEl.innerHTML = '';
+            if(paginacionContainersPageEl.busquedaEmpleados) paginacionContainersPageEl.busquedaEmpleados.innerHTML = '';
+            cargarSolicitudesUIPage('emitidas', 0);
+            if (tabsSolicitudesPageEl.emitidas && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+              const emitidasTabBootstrap = new bootstrap.Tab(tabsSolicitudesPageEl.emitidas);
+              emitidasTabBootstrap.show();
+            }
+          } catch (error) {
+            mostrarMensajeGlobalSolicitudesUI('Error al enviar la solicitud: ' + error.message, 'danger');
+            console.error('Error enviando nueva solicitud:', error);
+          } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Enviar Solicitud';
+          }
+        });
+      }
+
+      // Inicialización
+      cargarSolicitudesUIPage('recibidas', 0);
+      actualizarConteoRecibidasPendientesBadgeUIPage();
+
+      if (tabsSolicitudesPageEl.recibidas) {
+        tabsSolicitudesPageEl.recibidas.addEventListener('shown.bs.tab', () => cargarSolicitudesUIPage('recibidas', 0));
+      }
+      if (tabsSolicitudesPageEl.emitidas) {
+        tabsSolicitudesPageEl.emitidas.addEventListener('shown.bs.tab', () => cargarSolicitudesUIPage('emitidas', 0));
+      }
+    });
+  </script>
+</th:block>
+</body>
+</html>

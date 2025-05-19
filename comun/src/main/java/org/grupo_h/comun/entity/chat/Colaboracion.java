@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.grupo_h.comun.entity.Empleado;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,21 +19,36 @@ import java.util.UUID;
 @Entity
 public class Colaboracion {
 
-    /** Identificador único de la colaboración. */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /** Empleado asociado a la colaboración. */
     @ManyToOne
-    @JoinColumn(name = "empleado_id")
-    private Empleado empleado;
+    @JoinColumn(name = "empleado_a_id", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_COLABORACION_EMPLEADO_A"))
+    private Empleado empleadoA;
 
-    // Lista de períodos de colaboración (comentado).
-    // @OneToMany(mappedBy = "colaboracion")
-    // private List<PeriodoColaboracion> periodos;
+    @ManyToOne
+    @JoinColumn(name = "empleado_b_id", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_COLABORACION_EMPLEADO_B"))
+    private Empleado empleadoB;
 
-    // Lista de solicitudes de colaboración (comentado).
-    // @OneToMany(mappedBy = "colaboracion")
-    // private List<SolicitudColaboracion> solicitudes;
+    @OneToMany(mappedBy = "colaboracion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PeriodoColaboracion> periodos;
+
+    @OneToMany(mappedBy = "colaboracion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SolicitudColaboracion> solicitudes;
+
+    // Nuevos campos para el bloqueo de colaboración
+    private LocalDateTime fechaBloqueoRechazo;
+    private LocalDateTime fechaBloqueoCancelacion;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoColaboracion estado;
+
+    public enum EstadoColaboracion {
+        ACTIVA,
+        INACTIVA,
+        BLOQUEADA
+    }
 }

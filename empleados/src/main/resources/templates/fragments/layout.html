@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"> <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Mi Aplicación de Empleados</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" type="text/css" th:href="@{/css/estilos.css}"/>
+  <th:block layout:fragment="page_css"></th:block>
+</head>
+<body>
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" th:href="@{/empleados/areaPersonal}">App Empleados</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link" th:href="@{/empleados/detalle}">Mi Perfil</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link" th:href="@{/empleados/notificaciones}">
+              Notificaciones
+              <span id="conteo-notificaciones-global" class="badge bg-danger rounded-pill" style="display:none;"></span>
+            </a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link" th:href="@{/empleados/colaboraciones/solicitudes-ui}">Solicitudes Colab.</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link" th:href="@{/empleados/colaboraciones/chat-ui}">Chat Colaboraciones</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <form th:action="@{/logout}" method="post" class="d-inline">
+              <button type="submit" class="nav-link btn btn-link">Cerrar Sesión (<span sec:authentication="name"></span>)</button>
+            </form>
+          </li>
+          <li class="nav-item" sec:authorize="!isAuthenticated()">
+            <a class="nav-link" th:href="@{/usuarios/inicio-sesion}">Iniciar Sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main class="container mt-4">
+  <th:block layout:fragment="content"></th:block>
+</main>
+
+<footer class="text-center mt-5 mb-3">
+  <p>&copy; <span th:text="${#dates.year(#dates.createNow())}"></span> Tu Empresa</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<th:block layout:fragment="page_scripts"></th:block>
+
+<script sec:authorize="isAuthenticated()" th:inline="javascript">
+  // Script para cargar conteo de notificaciones en el navbar globalmente
+  async function actualizarConteoNotificacionesNavbar() {
+    try {
+      const response = await fetch(/*[[@{/empleados/notificaciones/conteo-no-leidas}]]*/ '/empleados/notificaciones/conteo-no-leidas', {
+        headers: {
+          // Incluye tu cabecera de autorización si es necesaria para este endpoint
+          // 'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+        }
+      });
+      if (response.ok) {
+        const conteo = await response.json();
+        const badge = document.getElementById('conteo-notificaciones-global');
+        if (badge) {
+          if (conteo > 0) {
+            badge.textContent = conteo;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error al cargar conteo de notificaciones:", error);
+    }
+  }
+  // Llama al cargar la página y podrías poner un intervalo para actualizar
+  document.addEventListener('DOMContentLoaded', actualizarConteoNotificacionesNavbar);
+</script>
+</body>
+</html>
