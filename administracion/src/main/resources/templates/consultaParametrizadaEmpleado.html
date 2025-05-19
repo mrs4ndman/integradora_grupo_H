@@ -3,185 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <title>Búsqueda Empleados</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f7f9fc;
-            margin: 0;
-            padding: 20px;
-        }
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
+    <!--    <style>-->
+    <!--        body {-->
+    <!--            font-family: Arial, sans-serif;-->
+    <!--            background-color: #f7f9fc;-->
+    <!--            margin: 0;-->
+    <!--            padding: 20px;-->
+    <!--        }-->
 
-        form {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 600px;
-            margin: 20px auto; /* Margen superior e inferior añadido para separar de los nuevos enlaces */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
+    <!--        form {-->
+    <!--            background-color: #ffffff;-->
+    <!--            padding: 20px;-->
+    <!--            border-radius: 8px;-->
+    <!--            max-width: 600px;-->
+    <!--            margin: auto;-->
+    <!--            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);-->
+    <!--        }-->
 
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
+    <!--        label {-->
+    <!--            display: block;-->
+    <!--            margin-top: 15px;-->
+    <!--            font-weight: bold;-->
+    <!--        }-->
 
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box; /* Importante para que el padding no desborde el width */
-        }
+    <!--        input[type="text"],-->
+    <!--        input[type="number"],-->
+    <!--        select {-->
+    <!--            width: 100%;-->
+    <!--            padding: 8px;-->
+    <!--            margin-top: 5px;-->
+    <!--            border: 1px solid #ccc;-->
+    <!--            border-radius: 4px;-->
+    <!--        }-->
 
-        button[type="submit"],
-        button[type="reset"]{
-            margin-top: 20px;
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    <!--        button[type="submit"],-->
+    <!--        button[type="reset"] {-->
+    <!--            margin-top: 20px;-->
+    <!--            background-color: #007bff;-->
+    <!--            color: white;-->
+    <!--            padding: 10px 15px;-->
+    <!--            border: none;-->
+    <!--            border-radius: 4px;-->
+    <!--            cursor: pointer;-->
+    <!--        }-->
 
-        button[type="submit"]:hover,
-        button[type="reset"]:hover{
-            background-color: #0056b3;
-        }
+    <!--        button[type="submit"]:hover,-->
+    <!--        button[type="reset"]:hover {-->
+    <!--            background-color: #0056b3;-->
+    <!--        }-->
 
-        h3 {
-            text-align: center;
-            margin-top: 40px;
-            color: #333;
-        }
+    <!--        h3 {-->
+    <!--            text-align: center;-->
+    <!--            margin-top: 40px;-->
+    <!--            color: #333;-->
+    <!--        }-->
 
-        table {
-            width: 90%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background-color: #ffffff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
+    <!--        table {-->
+    <!--            width: 90%;-->
+    <!--            margin: 20px auto;-->
+    <!--            border-collapse: collapse;-->
+    <!--            background-color: #ffffff;-->
+    <!--            border-radius: 8px;-->
+    <!--            overflow: hidden;-->
+    <!--            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);-->
+    <!--        }-->
 
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
+    <!--        th, td {-->
+    <!--            padding: 12px;-->
+    <!--            text-align: left;-->
+    <!--            border-bottom: 1px solid #e0e0e0;-->
+    <!--        }-->
 
-        th {
-            background-color: #007bff;
-            color: white;
-        }
+    <!--        th {-->
+    <!--            background-color: #007bff;-->
+    <!--            color: white;-->
+    <!--        }-->
 
-        tr:hover {
-            background-color: #f1f1f1;
-        }
+    <!--        tr:hover {-->
+    <!--            background-color: #f1f1f1;-->
+    <!--        }-->
 
-        .messages {
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            text-align: center;
-        }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-
-        p {
-            text-align: center;
-            color: #555;
-        }
-
-        .nav-links {
-            text-align: center;
-            margin-bottom: 25px;
-            margin-top: 10px;
-        }
-        .nav-links a {
-            margin: 0 15px;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
-            padding: 5px 0;
-            border-bottom: 2px solid transparent;
-        }
-        .nav-links a:hover,
-        .nav-links a.active-link {
-            border-bottom: 2px solid #007bff;
-        }
-    </style>
+    <!--        p {-->
+    <!--            text-align: center;-->
+    <!--            color: #555;-->
+    <!--        }-->
+    <!--    </style>-->
 </head>
 <body>
+<div class="contenedor-principal">
 
-<div th:if="${error}" class="messages error" th:text="${error}"></div>
-<div th:if="${exito}" class="messages success" th:text="${exito}"></div>
+    <div th:if="${error}" class="messages error" th:text="${error}"></div>
+    <div th:if="${exito}" class="messages success" th:text="${exito}" id="exito"></div>
 
-<div class="nav-links">
+    <div class="nav-links">
     <a th:href="@{/administrador/consulta-empleado}" class="active-link">Consulta Avanzada Empleados</a> |
     <a th:href="@{/administrador/gestion-estado-empleados}">Gestión Simple de Estado</a>
 </div>
 <form th:action="@{/administrador/consulta-empleado}" th:object="${filtro}" method="post">
     <label for="nombreDTO">Nombre:</label>
-    <input type="text" th:field="*{nombreDTO}" id="nombreDTO" />
+        <input type="text" th:field="*{nombreDTO}"id="nombreDTO" />
 
     <label for="numeroDni">DNI:</label>
-    <input type="text" th:field="*{numeroDni}" id="numeroDni" />
+        <input type="text" th:field="*{numeroDni}"id="numeroDni" />
 
-    <label for="departamentoDTO">Departamento</label>
-    <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple="multiple"> <option value="">Selecciona un departamento</option>
+        <label for="departamentoDTO">Departamento</label>
+        <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple="multiple"> <option value="">Selecciona un departamento</option>
         <option th:each="departamento : ${departamentos}"
                 th:value="${departamento.id}"
                 th:text="${departamento.nombreDept}"></option>
     </select>
 
     <label for="edadMin">Edad mínima:</label>
-    <input type="text" th:field="*{edadMin}" id="edadMin" /> <label for="edadMax">Edad máxima:</label>
-    <input type="text" th:field="*{edadMax}" id="edadMax" /> <button type="submit">Buscar</button>
+        <input type="text" th:field="*{edadMin}"id="edadMin" /> <label for="edadMax">Edad máxima:</label>
+        <input type="text" th:field="*{edadMax}"id="edadMax" /> <button type="submit">Buscar</button>
     <button type="reset">Borrar Campos</button>
 </form>
 
-<h3>Resultados:</h3>
-<div th:if="${resultados != null}">
+    <div th:if="${resultados != null}">
+        <h3>Resultados:</h3>
 
-    <div th:if="${!#lists.isEmpty(resultados)}">
-        <table>
-            <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Apellidos</th> <th>Edad</th>
-                <th>Departamento</th>
-                <th>DNI</th>
-                <th>Acciones</th> </tr>
-            </thead>
-            <tbody>
-            <tr th:each="emp : ${resultados}">
-                <td th:text="${emp.nombre}">Nombre</td>
-                <td th:text="${emp.apellidos}">Apellido</td> <td th:text="${emp.edad}">Edad</td>
-                <td th:text="${emp.nombreDepartamento ?: 'N/A'}">Depto</td>
-                <td th:text="${emp.numeroDni}">DNI</td>
-                <td>
-                    <button>
-                        <a th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}" style="color: inherit; text-decoration: none;"> Editar
-                        </a>
-                    </button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+        <div th:if="${!#lists.isEmpty(resultados)}">
+            <table class="tabla-datos">
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th class="texto-centrado">Edad</th>
+                    <th>Departamento</th>
+                    <th>DNI</th>
+                    <th>Foto</th>
+                    <th class="texto-derecha">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="emp : ${resultados}">
+                    <td th:text="${emp.nombre}">Nombre</td>
+                    <td th:text="${emp.apellido}">Apellido</td>
+                    <td class="texto-centrado" th:text="${emp.edad}">Edad</td>
+                    <td th:text="${emp.nombreDepartamento}">Depto</td>
+                    <td th:text="${emp.numeroDni}">DNI</td>
+                    <td><img th:if="${emp.fotoBase64 != ''}"
+                             th:src="${emp.fotoBase64}"
+                             style="width:50px;height:50px;object-fit:cover;" alt="foto_empleado"/></td>
+                    <td class="texto-derecha">
+                        <div class="acciones">
+                            <a class="boton" th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
+                                Editar
+                            </a>
+                            <a class="boton secundario" th:href="@{'/administrador/borrar-empleado/' + ${emp.numeroDni}}">
+                                Borrar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
 
-    <div th:if="${#lists.isEmpty(resultados)}">
-        <p>No hay resultados para empleados activos con los criterios seleccionados.</p>
+            <div class="pagination">
+                <a th:if="${currentPage > 0}"
+                   th:href="@{/administrador/consulta-empleado(page=${currentPage-1}, size=${pageSize})}">
+                    « Anterior
+                </a>
+                <span>Página [[${currentPage+1}]] de [[${totalPages}]]</span>
+                <a th:if="${currentPage+1 < totalPages}"
+                   th:href="@{/administrador/consulta-empleado(page=${currentPage+1}, size=${pageSize})}">
+                    Siguiente »
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(resultados)}">
+            <p>No hay resultados para empleados activos con los criterios seleccionados.</p>
+        </div>
     </div>
 </div>
-<div th:unless="${resultados != null}"> <p>Realice una búsqueda para ver los resultados.</p>
-</div>
 
+<script th:if="${exito}">
+    alert("Empleado actualizado correctamente");
+</script>
+
+<script th:if="${error}">
+    alert("Empleado no actualizado correctamente");
+</script>
 </body>
 </html>

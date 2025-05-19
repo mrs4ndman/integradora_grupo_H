@@ -3,6 +3,7 @@ package org.grupo_h.comun.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.grupo_h.comun.entity.auxiliar.*; // Asegúrate que Genero está aquí
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -186,8 +187,8 @@ public class Empleado {
         return nombre + " " + apellidos;
     }
 
-//    @Version
-//    private Integer version;
+    @Version
+    private Integer version;
 
     public void addEtiqueta(Etiqueta etiqueta) {
         this.etiquetas.add(etiqueta);

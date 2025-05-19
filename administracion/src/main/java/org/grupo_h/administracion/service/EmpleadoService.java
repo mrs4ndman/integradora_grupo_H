@@ -36,6 +36,8 @@ public interface EmpleadoService {
 
     List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro);
 
+    Page<EmpleadoDTO> buscarEmpleadosPaginados(EmpleadoConsultaDTO filtro, int pagina, int tamanio);
+
     Optional<Empleado> buscarPorDni(String dni);
 
     Optional<Empleado> buscarEmpleado(UUID empleadoID);

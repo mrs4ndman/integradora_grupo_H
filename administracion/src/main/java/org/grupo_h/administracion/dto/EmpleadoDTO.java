@@ -3,6 +3,7 @@ package org.grupo_h.administracion.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -26,4 +27,8 @@ public class EmpleadoDTO {
         this.nombreDepartamento = nombreDept;
         this.numeroDni = numeroDocumento;
     }
+    private String fotoBase64; // para mostrar la foto
+    private MultipartFile fotografiaDTO;
+//    private byte[] fotografiaArchivo;
+
 }

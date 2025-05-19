@@ -1,14 +1,9 @@
 package org.grupo_h.empleados.dto;
 
-import jakarta.mail.Multipart;
-import jakarta.persistence.Column;
+import jakarta.persistence.Transient;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.grupo_h.comun.entity.auxiliar.Genero;
-import org.grupo_h.comun.entity.auxiliar.TipoDocumento;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.*;
 import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.DniValido;
 import org.grupo_h.empleados.Validaciones.ValidacionesPersonalizadas.EdadCoherente; // Importa la anotación personalizada
@@ -52,6 +47,11 @@ public class EmpleadoRegistroDTO {
     @NotNull(groups = DatosPersonales.class)
     @ImagenValida(groups = DatosPersonales.class)
     private MultipartFile fotografiaDTO;
+
+    private byte[] fotografiaArchivo;
+
+    @Transient
+    private String rutaArchivo;
 
     /**
      * Género del empleado. No requiere validación. Insertado en tabla por defecto

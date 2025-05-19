@@ -4,6 +4,8 @@
     <title>Datos Empleado</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script th:src="@{/js/script.js}"></script>
 
 </head>
@@ -14,10 +16,6 @@
     <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
 </label>
 
-<!--NavBar-->
-<div th:replace="~{fragments/navbar :: navbar}"></div>
-
-<h2>Formulario de Registro de Empleado</h2>
 <!-- Se muestra un mensaje de éxito si lo hay -->
 <div th:if="${param.success}">
     <p style="color: green;">¡Registro exitoso!</p>
@@ -28,77 +26,89 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
-<form th:action="@{/empleados/registro-datos}" enctype="multipart/form-data" th:object="${empleadoRegistroDTO}"
-      method="post" id="formulario"
->
+<h2>Datos Personales </h2>
 
-    <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
-    <div th:if="${#fields.hasGlobalErrors()}">
-        <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
-    </div>
+<div class="contenedor-principal">
+    <!--NavBar-->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-    <!--  Aquí empiezan los campos del Formulario-->
-    <div>
-        <span style="color:red">&#8226;</span> <label for="nombre" th:text="#{Datos-personales.nombre}"/>
-        <input type="text" id="nombre" th:field="*{nombreDTO}"/>
-        <div th:if="${#fields.hasErrors('nombreDTO')}" th:errors="*{nombreDTO}" class="error"></div>
-    </div>
+    <form th:action="@{/empleados/registro-datos}" enctype="multipart/form-data" th:object="${empleadoRegistroDTO}"
+          method="post" id="formulario">
 
-    <div>
-        <span style="color:red">&#8226;</span> <label for="apellidos" th:text="#{Datos-personales.apellido}"/>
-        <input type="text" id="apellidos" th:field="*{apellidosDTO}"/>
-        <div th:if="${#fields.hasErrors('apellidosDTO')}" th:errors="*{apellidosDTO}" class="error"></div>
-    </div>
+        <!-- Mostrar errores globales y validadciones que afectan a dos campos-->
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+        </div>
 
-    <div>
-        <span style="color:red">&#8226;</span> <label for="fotografia" th:text="#{Datos-personales.fotografia}"/>
-        <input type="file" id="fotografia" th:field="*{fotografiaDTO}">
-        <div th:if="${#fields.hasErrors('fotografiaDTO')}" th:errors="*{fotografiaDTO}" class="error"></div>
-    </div>
+        <!--  Aquí empiezan los campos del Formulario-->
+        <div>
+            <span style="color:red">&#8226;</span> <label for="nombre" th:text="#{Datos-personales.nombre}"/>
+            <input type="text" id="nombre" th:field="*{nombreDTO}"/>
+            <div th:if="${#fields.hasErrors('nombreDTO')}" th:errors="*{nombreDTO}" class="error"></div>
+        </div>
 
-    <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-personales.genero}"></span></p>
-    <div th:each="g : ${generos}">
-        <input type="radio"
-               th:field="*{generoSeleccionadoDTO.codigoGenero}"
-               th:value="${g.codigoGenero}"
-               th:id="${'genero'}"/>
-        <label th:for="${'genero'}"
-               th:text="${g.nombreGenero}"></label><br>
-    </div>
+        <div>
+            <span style="color:red">&#8226;</span> <label for="apellidos" th:text="#{Datos-personales.apellido}"/>
+            <input type="text" id="apellidos" th:field="*{apellidosDTO}"/>
+            <div th:if="${#fields.hasErrors('apellidosDTO')}" th:errors="*{apellidosDTO}" class="error"></div>
+        </div>
 
-    <div class="btn-seleccionar">
-        <input type="button" th:value="#{Boton.selecciona.genero}" onclick="seleccionarGeneroF()" class="boton">
-        <input type="button" th:value="#{Boton.deselecciona.genero}" onclick="deseleccionaTodosGeneros()" class="boton">
-    </div>
+        <div style="margin-bottom: 15px">
+            <span style="color:red; display: block">&#8226;</span>
+            <label for="fotografia" th:text="#{Datos-personales.fotografia}" class="boton foto" />
+            <input type="file" id="fotografia" style="display: none;" th:field="*{fotografiaDTO}" >
+            <div th:if="${#fields.hasErrors('fotografiaDTO')}" th:errors="*{fotografiaDTO}" class="error"></div>
+            <img src="" alt="" id="miniatura"
+                 style="max-width:200px; max-height:200px; object-fit:cover;">
+        </div>
+
+        <p><span style="color:red">&#8226;</span> <span th:text="#{Datos-personales.genero}"></span></p>
+        <div th:each="g : ${generos}">
+            <input type="radio"
+                   th:field="*{generoSeleccionadoDTO.codigoGenero}"
+                   th:value="${g.codigoGenero}"
+                   th:id="${'genero'}"/>
+            <label th:for="${'genero'}"
+                   th:text="${g.nombreGenero}"></label><br>
+        </div>
+
+        <div class="acciones">
+            <input type="button" th:value="#{Boton.selecciona.genero}" onclick="seleccionarGeneroF()" class="boton">
+            <input type="button" th:value="#{Boton.deselecciona.genero}" onclick="deseleccionaTodosGeneros()"
+                   class="boton">
+        </div>
 
 
-    <div>
-        <span style="color:red">&#8226;</span> <label for="fechaNacimiento"
-         th:text="#{Datos-personales.fechaNacimiento}"/>
-        <input type="text" id="fechaNacimiento" th:field="*{fechaNacimientoDTO}"/>
-        <div th:if="${#fields.hasErrors('fechaNacimientoDTO')}" th:errors="*{fechaNacimientoDTO}" class="error"></div>
-    </div>
+        <div>
+            <span style="color:red">&#8226;</span> <label for="fechaNacimiento"
+                                                          th:text="#{Datos-personales.fechaNacimiento}"/>
+            <input type="text" id="fechaNacimiento" th:field="*{fechaNacimientoDTO}"/>
+            <div th:if="${#fields.hasErrors('fechaNacimientoDTO')}" th:errors="*{fechaNacimientoDTO}"
+                 class="error"></div>
+        </div>
 
-    <div>
-        <span style="color:red">&#8226;</span> <label for="edad" th:text="#{Datos-personales.edad}"/>
-        <input type="text" id="edad" th:field="*{edadDTO}"/>
-        <div th:if="${#fields.hasErrors('edadDTO')}" th:errors="*{edadDTO}" class="error"></div>
-    </div>
+        <div>
+            <span style="color:red">&#8226;</span> <label for="edad" th:text="#{Datos-personales.edad}"/>
+            <input type="text" id="edad" th:field="*{edadDTO}"/>
+            <div th:if="${#fields.hasErrors('edadDTO')}" th:errors="*{edadDTO}" class="error"></div>
+        </div>
 
-    <div>
-        <span style="color:red">&#8226;</span> <label for="paisNacimiento" th:text="#{Datos-Personales.pais}"></label>
-        <select th:field="*{paisNacimiento.codigoPaisDTO}" id="paisNacimiento">
-            <option th:each="p : ${paises}"
-                    th:value="${p.codigoPais}"
-                    th:text="${p.nombrePais}">
-            </option>
-        </select>
-        <div th:if="${#fields.hasErrors('paisNacimiento.codigoPaisDTO')}" th:errors="*{paisNacimiento.codigoPaisDTO}"
-             class="error"></div>
-    </div>
+        <div>
+            <span style="color:red">&#8226;</span> <label for="paisNacimiento"
+                                                          th:text="#{Datos-Personales.pais}"></label>
+            <select th:field="*{paisNacimiento.codigoPaisDTO}" id="paisNacimiento">
+                <option th:each="p : ${paises}"
+                        th:value="${p.codigoPais}"
+                        th:text="${p.nombrePais}">
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('paisNacimiento.codigoPaisDTO')}"
+                 th:errors="*{paisNacimiento.codigoPaisDTO}"
+                 class="error"></div>
+        </div>
 
-    <label for="comentario" th:text="#{Datos-Personales.comentario}"></label>
-    <div>
+        <label for="comentario" th:text="#{Datos-Personales.comentario}"></label>
+        <div>
           <textarea
                   th:field="*{comentarios}"
                   id="comentario"
@@ -106,25 +116,52 @@
                   rows="10"
                   th:placeholder="#{Placeholder.comentario}"
                   tabindex="21"></textarea>
-    </div>
-    <div th:if="${#fields.hasErrors('comentarios')}" th:errors="*{comentarios}" class="error"></div>
+        </div>
+        <div th:if="${#fields.hasErrors('comentarios')}" th:errors="*{comentarios}" class="error"></div>
 
-    <div class="btn-form">
-        <input type="button"
-               th:value="#{Boton.resetear}"
-               onclick="resetFormulario()">
-        <br><br>
+        <div class="btn-form">
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Logout</a>
 
-        <input type="button"
-               th:value="#{Boton.vaciar}"
-               onclick="vaciarFormulario()">
-        <br><br>
+            <input class="boton secundario"
+                   type="button"
+                   th:value="#{Boton.resetear}"
+                   onclick="resetFormulario()">
 
-        <input type="submit"
-               th:value="#{Boton.siguiente}">
-    </div>
 
-</form>
+            <input type="button"
+                   class="boton secundario"
+                   th:value="#{Boton.vaciar}"
+                   onclick="vaciarFormulario()">
+
+
+            <input type="submit" class="boton principal"
+                   th:value="#{Boton.siguiente}">
+
+        </div>
+
+    </form>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('#fotografia').on('change', function () {
+            // console.log(this.files);
+
+            muestraMiniatura(this)
+
+            function muestraMiniatura(fileInput) {
+                let file = fileInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#miniatura').attr('src', e.target.result)
+                }
+                reader.readAsDataURL(file);
+            }
+
+        });
+    });
+</script>
 
 </body>
 </html>

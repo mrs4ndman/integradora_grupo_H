@@ -6,6 +6,7 @@ import org.grupo_h.empleados.dto.EmpleadoDetalleDTO;
 import org.grupo_h.empleados.dto.EmpleadoRegistroDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 @Service
 public interface EmpleadoService {
-    Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario, byte[] foto) throws Exception;
+    Empleado registrarEmpleado(EmpleadoRegistroDTO empleadoDTO, UUID IdUsuario) throws Exception;
 
     Optional<Empleado> obtenerEmpleadoPorId(UUID id);
 
