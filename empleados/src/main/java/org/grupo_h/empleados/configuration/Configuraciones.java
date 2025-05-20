@@ -42,7 +42,7 @@ public class Configuraciones {
                                 "/api/**",
                                 "/sendMail",
                                 "/prueba",
-                                "/css/*", "/js/", "/img/*").permitAll()
+                                "/css/*", "/js/*", "/img/*").permitAll()
 
                         .anyRequest().authenticated()
                 );

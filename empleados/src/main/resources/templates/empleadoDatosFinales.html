@@ -98,11 +98,17 @@
         <hr>
 
         <div class="btn-form">
-            <a class="boton secundario" th:href="@{/usuarios/logout}">logout</a>
 
-            <input class="boton principal"
+            <input class="boton principal "
                     type="submit"
                     th:value="#{Boton.guardar}">
+        </div>
+
+        <hr>
+
+        <div class="btn-form">
+            <a class="boton secundario" th:href="@{/usuarios/info}"> < Área Personal</a>
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Logout</a>
         </div>
 
     </form>
