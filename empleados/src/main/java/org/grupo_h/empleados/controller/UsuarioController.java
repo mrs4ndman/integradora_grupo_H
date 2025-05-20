@@ -6,11 +6,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.grupo_h.comun.entity.Usuario;
+import org.grupo_h.empleados.component.HistorialSesionUsuario;
+import org.grupo_h.empleados.dto.PaginaVisitada;
 import org.grupo_h.empleados.dto.ReseteoContrasenaDTO;
 import org.grupo_h.empleados.dto.UsuarioRegistroDTO;
 import org.grupo_h.comun.repository.UsuarioRepository;
 import org.grupo_h.empleados.service.ParametrosService;
 import org.grupo_h.empleados.service.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,6 +42,10 @@ public class UsuarioController {
     private final ParametrosService parametrosService;
     private final BCryptPasswordEncoder passwordEncoder;
     private static final int MAX_INTENTOS_FALLIDOS = 3;
+    @Autowired
+    private HistorialSesionUsuario historialSesionUsuario;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public UsuarioController(UsuarioService usuarioService, UsuarioRepository usuarioRepository, ParametrosService parametrosService, BCryptPasswordEncoder passwordEncoder) {
@@ -547,6 +555,14 @@ public class UsuarioController {
         removeCookie.setMaxAge(0);
         response.addCookie(removeCookie);
         // --- Fin Limpiar Remember Me ---
+
+        if (historialSesionUsuario != null) {
+            List<PaginaVisitada> pages = historialSesionUsuario.getVisitedPages();
+
+            historialSesionUsuario.clearHistory();
+            logger.info("logoutManual: Se ha limpiado el historial de paginas visitadas.");
+            List<PaginaVisitada> pagesAfterClear = historialSesionUsuario.getVisitedPages();
+        }
 
         if (session != null) {
             session.invalidate();

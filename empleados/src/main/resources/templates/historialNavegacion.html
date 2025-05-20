@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Historial de Navegación</title>
+</head>
+<body>
+<div>
+    <div class="container mt-4">
+        <h1>Historial de Páginas Visitadas</h1>
+        <hr/>
+
+        <div th:if="${visitedPages == null || visitedPages.isEmpty()}" class="alert alert-info" role="alert">
+            <p>Aún no has visitado ninguna página en esta sesión.</p>
+        </div>
+
+        <div th:if="${visitedPages != null && !visitedPages.isEmpty()}">
+            <ul class="list-group">
+                <li th:each="page : ${visitedPages}" class="list-group-item">
+                    <a th:href="@{${page.url}}" th:text="${page.url}">/ejemplo/url</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="mt-3">
+            <a th:href="@{/usuarios/info}" class="btn btn-primary">Volver al Inicio</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

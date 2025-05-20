@@ -12,6 +12,7 @@ import org.grupo_h.comun.entity.auxiliar.Genero;
 import org.grupo_h.comun.repository.*;
 import org.grupo_h.comun.service.DepartamentoService;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.*;
+import org.grupo_h.empleados.component.HistorialSesionUsuario;
 import org.grupo_h.empleados.dto.*;
 import org.grupo_h.empleados.service.*;
 import org.modelmapper.ModelMapper;
@@ -99,6 +100,8 @@ public class EmpleadoController {
     private final RestTemplate restTemplate;
     @Autowired
     private final FotografiaService fotografiaService;
+    @Autowired
+    private HistorialSesionUsuario historialSesionUsuario;
 
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -948,6 +951,22 @@ public class EmpleadoController {
         if (!model.containsAttribute("etiquetadoMasivoRequestDTO")) {
             model.addAttribute("etiquetadoMasivoRequestDTO", new EtiquetadoMasivoRequestDTO());
         }
+    }
+
+    @GetMapping("/historial")
+    public String mostrarHistorialNavegacion(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("emailAutenticado") == null && session.getAttribute("emailAutenticado") == null ) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            return "redirect:/usuarios/inicio-sesion";
+        }
+
+        if (historialSesionUsuario != null) {
+            model.addAttribute("visitedPages", historialSesionUsuario.getVisitedPages());
+        } else {
+            model.addAttribute("visitedPages", Collections.emptyList());
+        }
+        model.addAttribute("pageTitle", "Historial de Navegación");
+        return "historialNavegacion";
     }
 
 }

@@ -1,7 +1,10 @@
 package org.grupo_h.empleados.listener;
 
 import org.grupo_h.empleados.service.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
@@ -12,7 +15,9 @@ import org.springframework.stereotype.Component;
  * Listener que maneja eventos de autenticación exitosa y fallida.
  */
 @Component
-public class EventoAutenticacionListener {
+public class EventoAutenticacionListener{
+
+    private static final Logger logger = LoggerFactory.getLogger(EventoAutenticacionListener.class);
 
     @Autowired
     private UsuarioService usuarioService;
