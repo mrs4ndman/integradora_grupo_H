@@ -1,78 +1,49 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Editar Usuario</title>
-  <style>
-    .form-container {
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-    .form-container label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-    .form-container input[type="email"],
-    .form-container input[type="password"] {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    .form-container button {
-      padding: 10px 15px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .form-container button:hover {
-      background-color: #0056b3;
-    }
-    .back-link {
-      display: block;
-      margin-top: 20px;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Editar Usuario</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
 </head>
 <body>
-<div class="form-container">
-  <h1>Editar Usuario</h1>
-  <form th:action="@{/administrador/editar-usuario}" th:object="${usuario}" method="post">
-    <!-- Campo oculto para el ID del usuario -->
-    <input type="hidden" th:field="*{id}" />
+<h2>Editar Usuario</h2>
+<div class="contenedor-principal">
+    <form th:action="@{/administrador/editar-usuario}" th:object="${usuario}" method="post">
+        <!-- Campo oculto para el ID del usuario -->
+        <input type="hidden" th:field="*{id}"/>
 
-    <!-- Campo para el email -->
-    <label for="email">Correo electrónico:</label>
-    <input type="email" id="email" th:field="*{email}" required />
+        <!-- Campo para el email -->
+        <div>
+            <label for="email">Correo electrónico:</label>
+            <input type="email" id="email" th:field="*{email}" required/>
+        </div>
 
-    <!-- Campo para la nueva contraseña (opcional) -->
-    <label for="nuevaContrasena">Nueva Contraseña:</label>
-    <input type="password" id="nuevaContrasena" name="nuevaContrasena" />
+        <!-- Campo para la nueva contraseña (opcional) -->
+        <div>
+            <label for="nuevaContrasena">Nueva Contraseña:</label>
+            <input type="password" id="nuevaContrasena" name="nuevaContrasena"/>
+        </div>
 
-    <!-- Campo para confirmar la nueva contraseña (opcional) -->
-    <label for="confirmarContrasena">Confirmar Contraseña:</label>
-    <input type="password" id="confirmarContrasena" name="confirmarContrasena" />
+        <!-- Campo para confirmar la nueva contraseña (opcional) -->
+        <div>
+            <label for="confirmarContrasena">Confirmar Contraseña:</label>
+            <input type="password" id="confirmarContrasena" name="confirmarContrasena"/>
+        </div>
 
-    <!-- Campo para el estado de la cuenta (bloqueada o no) -->
-    <label for="cuentaBloqueada">Estado de la cuenta:</label>
-    <input type="checkbox" id="cuentaBloqueada" th:field="*{cuentaBloqueada}" />
-    <label for="cuentaBloqueada" style="font-weight: normal;">Bloqueada</label>
+        <!-- Campo para el estado de la cuenta (bloqueada o no) -->
+        <div>
+            <label for="cuentaBloqueada">Estado de la cuenta:</label>
+            <input type="checkbox" id="cuentaBloqueada" th:field="*{cuentaBloqueada}"/>
+            <label for="cuentaBloqueada" style="font-weight: normal;">Bloqueada</label>
+        </div>
 
-    <!-- Botón para guardar cambios -->
-    <button type="submit">Guardar Cambios</button>
-  </form>
-
-  <!-- Enlace para volver al dashboard -->
-  <a th:href="@{/administrador/dashboardGestionUsuarios}" class="back-link">Volver al Dashboard</a>
+        <div class="btn-form">
+            <!-- Enlace para volver al dashboard -->
+            <a th:href="@{/administrador/dashboardGestionUsuarios}" class="boton secundario">Volver al Dashboard</a>
+            <!-- Botón para guardar cambios -->
+            <button type="submit" class="boton principal">Guardar Cambios</button>
+        </div>
+    </form>
 
 </div>
 </body>

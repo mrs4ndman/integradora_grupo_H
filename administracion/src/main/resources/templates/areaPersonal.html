@@ -9,6 +9,11 @@
 <div class="container">
     <h1><span class="etiqueta">Área personal del admin:</span> <span th:text="${email}"></span></h1>
 
+    <div>
+        <h2>Información del Cliente Actual</h2>
+        <p>Navegador (User-Agent): <span th:text="${navegadorActualAdmin}"></span></p>
+    </div>
+
     <section class="bloque">
         <h2>Contadores de Autenticación</h2>
         <ul>
@@ -46,14 +51,10 @@
 
     </div>
 
-    <div>
-        <h2>Información del Cliente Actual</h2>
-        <p>Navegador (User-Agent): <span th:text="${navegadorActualAdmin}"></span></p>
-    </div>
+
 
     <hr>
     <p>
-
         <a class="boton secundario" th:href="@{/administrador/logout}">Cerrar sesión</a>
     </p>
 </div>

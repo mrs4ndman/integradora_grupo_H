@@ -4,93 +4,17 @@
     <meta charset="UTF-8">
     <title>Búsqueda Empleados</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
-    <!--    <style>-->
-    <!--        body {-->
-    <!--            font-family: Arial, sans-serif;-->
-    <!--            background-color: #f7f9fc;-->
-    <!--            margin: 0;-->
-    <!--            padding: 20px;-->
-    <!--        }-->
 
-    <!--        form {-->
-    <!--            background-color: #ffffff;-->
-    <!--            padding: 20px;-->
-    <!--            border-radius: 8px;-->
-    <!--            max-width: 600px;-->
-    <!--            margin: auto;-->
-    <!--            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);-->
-    <!--        }-->
-
-    <!--        label {-->
-    <!--            display: block;-->
-    <!--            margin-top: 15px;-->
-    <!--            font-weight: bold;-->
-    <!--        }-->
-
-    <!--        input[type="text"],-->
-    <!--        input[type="number"],-->
-    <!--        select {-->
-    <!--            width: 100%;-->
-    <!--            padding: 8px;-->
-    <!--            margin-top: 5px;-->
-    <!--            border: 1px solid #ccc;-->
-    <!--            border-radius: 4px;-->
-    <!--        }-->
-
-    <!--        button[type="submit"],-->
-    <!--        button[type="reset"] {-->
-    <!--            margin-top: 20px;-->
-    <!--            background-color: #007bff;-->
-    <!--            color: white;-->
-    <!--            padding: 10px 15px;-->
-    <!--            border: none;-->
-    <!--            border-radius: 4px;-->
-    <!--            cursor: pointer;-->
-    <!--        }-->
-
-    <!--        button[type="submit"]:hover,-->
-    <!--        button[type="reset"]:hover {-->
-    <!--            background-color: #0056b3;-->
-    <!--        }-->
-
-    <!--        h3 {-->
-    <!--            text-align: center;-->
-    <!--            margin-top: 40px;-->
-    <!--            color: #333;-->
-    <!--        }-->
-
-    <!--        table {-->
-    <!--            width: 90%;-->
-    <!--            margin: 20px auto;-->
-    <!--            border-collapse: collapse;-->
-    <!--            background-color: #ffffff;-->
-    <!--            border-radius: 8px;-->
-    <!--            overflow: hidden;-->
-    <!--            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);-->
-    <!--        }-->
-
-    <!--        th, td {-->
-    <!--            padding: 12px;-->
-    <!--            text-align: left;-->
-    <!--            border-bottom: 1px solid #e0e0e0;-->
-    <!--        }-->
-
-    <!--        th {-->
-    <!--            background-color: #007bff;-->
-    <!--            color: white;-->
-    <!--        }-->
-
-    <!--        tr:hover {-->
-    <!--            background-color: #f1f1f1;-->
-    <!--        }-->
-
-    <!--        p {-->
-    <!--            text-align: center;-->
-    <!--            color: #555;-->
-    <!--        }-->
-    <!--    </style>-->
 </head>
 <body>
+
+<!--  Desactiva los estilos-->
+<label>
+    <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
+</label>
+
+<h2>Búsqueda de Empleado</h2>
+
 <div class="contenedor-principal">
 
     <div th:if="${error}" class="messages error" th:text="${error}"></div>
@@ -104,24 +28,32 @@
     <label for="nombreDTO">Nombre:</label>
         <input type="text" th:field="*{nombreDTO}"id="nombreDTO" />
 
-    <label for="numeroDni">DNI:</label>
-        <input type="text" th:field="*{numeroDni}"id="numeroDni" />
+        <label>DNI:</label>
+        <input type="text" th:field="*{numeroDni}"/>
 
         <label for="departamentoDTO">Departamento</label>
-        <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple="multiple"> <option value="">Selecciona un departamento</option>
-        <option th:each="departamento : ${departamentos}"
+        <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple="multiple">
+            <option value="">Selecciona un departamento</option>
+            <option th:each="departamento : ${departamentos}"
                 th:value="${departamento.id}"
                 th:text="${departamento.nombreDept}"></option>
     </select>
 
-    <label for="edadMin">Edad mínima:</label>
-        <input type="text" th:field="*{edadMin}"id="edadMin" /> <label for="edadMax">Edad máxima:</label>
-        <input type="text" th:field="*{edadMax}"id="edadMax" /> <button type="submit">Buscar</button>
-    <button type="reset">Borrar Campos</button>
-</form>
+        <label>Edad mínima:</label>
+        <input type="text" th:field="*{edadMin}"/>
 
-    <div th:if="${resultados != null}">
-        <h3>Resultados:</h3>
+        <label>Edad máxima:</label>
+        <input type="text" th:field="*{edadMax}"/>
+
+        <div class="btn-form">
+            <button type="reset" class="boton secundario">Borrar Campos</button>
+            <button type="submit" class="boton principal">Buscar</button>
+        </div>
+
+    </form>
+
+    <div th:if="${resultados != null}" class="resultados">
+        <h2>Resultados:</h2>
 
         <div th:if="${!#lists.isEmpty(resultados)}">
             <table class="tabla-datos">
@@ -133,7 +65,7 @@
                     <th>Departamento</th>
                     <th>DNI</th>
                     <th>Foto</th>
-                    <th class="texto-derecha">Acciones</th>
+                    <th class="texto-centrado">Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -148,10 +80,11 @@
                              style="width:50px;height:50px;object-fit:cover;" alt="foto_empleado"/></td>
                     <td class="texto-derecha">
                         <div class="acciones">
-                            <a class="boton" th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
+                            <a class="boton principal" th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
                                 Editar
                             </a>
-                            <a class="boton secundario" th:href="@{'/administrador/borrar-empleado/' + ${emp.numeroDni}}">
+                            <a class="boton secundario"
+                               th:href="@{'/administrador/borrar-empleado/' + ${emp.numeroDni}}">
                                 Borrar
                             </a>
                         </div>
