@@ -12,11 +12,13 @@
     <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
 </label>
 
-<h2>Identificación, Contacto y Dirección</h2>
+<h2>Registro de Empleado </h2>
+<!--NavBar-->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <div class="contenedor-principal">
-    <!--NavBar-->
-    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <h2>Identificación, Contacto y Dirección</h2>
 
     <!--Error del Servidor se muestran aquí cuando no salen en Logs-->
     <th:block th:text="${error}"/>
@@ -64,7 +66,7 @@
         <div th:if="${#fields.hasErrors('telefonoMovil')}" th:errors="*{telefonoMovil}" class="error"></div>
         <br><br>
 
-        <h2>Formulario de Dirección del Empleado</h2>
+        <h2>Dirección del Empleado</h2>
 
         <div>
             <span style="color:red">&#8226;</span> <label for="tipoVia" th:text="#{Datos-direccion.tipoVia}"/>
@@ -127,7 +129,8 @@
         <input type="text" id="codigoPostal" th:field="*{direccionDTO.codigoPostalDireccionPpalDTO}"/>
         <div th:if="${#fields.hasErrors('direccionDTO.codigoPostalDireccionPpalDTO')}"
              th:errors="*{direccionDTO.codigoPostalDireccionPpalDTO}" class="error"></div>
-        <br><br>
+
+        <hr>
 
         <div class="btn-form">
             <a class="boton secundario" th:href="@{/usuarios/logout}">logout</a>
@@ -147,6 +150,13 @@
             <input type="submit"
                    class="boton principal"
                    th:value="#{Boton.siguiente}">
+        </div>
+
+        <hr>
+
+        <div class="btn-form">
+            <a class="boton secundario" th:href="@{/usuarios/info}"> < Área Personal</a>
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Logout</a>
         </div>
     </form>
 

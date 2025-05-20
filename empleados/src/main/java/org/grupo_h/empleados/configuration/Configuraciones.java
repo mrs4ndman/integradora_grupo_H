@@ -51,7 +51,7 @@ public class Configuraciones implements WebMvcConfigurer {
                                 "/api/**",
                                 "/sendMail",
                                 "/prueba",
-                                "/css/*", "/js/", "/img/*").permitAll()
+                                "/css/*", "/js/*", "/img/*").permitAll()
 
                         .anyRequest().authenticated()
                 );

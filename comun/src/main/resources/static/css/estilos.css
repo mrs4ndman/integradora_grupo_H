@@ -29,6 +29,7 @@ h2 {
 
 a {
     vertical-align: middle;
+    text-decoration: none;
 }
 
 .contenedor-principal {
@@ -132,7 +133,7 @@ textarea {
     justify-content: space-around;
     display: flex;
     gap: 20px;
-    margin: 60px 0 30px;
+    margin: 60px 0 60px;
 }
 
 nav ul {
@@ -154,10 +155,12 @@ nav ul li a {
 
 
 nav ul li a img {
-    opacity: 0.5;
+    opacity: 0.1;
     transition: opacity 0.3s ease-in-out;
     width: 40px;
     height: auto;
+    background: #ededed;
+    border-radius: 0 10px 0 10px;
 }
 
 nav ul li a.active img {
@@ -241,6 +244,9 @@ hr {
 
 
 /*Botones*/
+
+
+button,
 .boton,
 input.boton {
     display: inline-block;
@@ -257,6 +263,11 @@ input.boton {
     transition: all 0.3s ease;
     font-family: inherit;
     vertical-align: middle;
+    cursor: pointer;
+}
+
+.boton-100{
+    width: 100%;
 }
 
 .boton:hover {
@@ -306,9 +317,17 @@ input.boton:hover {
 .btn-form {
     display: flex;
     gap: 3px;
-    justify-content: space-between;
+    justify-content: space-around;
     height: 50px;
     margin: 30px 0 auto;
+}
+
+.btn-inicio-sesion{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    width: 100%;
+    gap: 3px;
 }
 
 .btn-seleccionar {
