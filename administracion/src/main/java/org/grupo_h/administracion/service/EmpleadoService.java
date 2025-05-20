@@ -34,7 +34,7 @@ public interface EmpleadoService {
 
     List<EmpleadoSimpleDTO> obtenerTodosLosEmpleadosParaSeleccion();
 
-    List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro);
+    // List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro);
 
     Page<EmpleadoDTO> buscarEmpleadosPaginados(EmpleadoConsultaDTO filtro, int pagina, int tamanio);
 

@@ -55,13 +55,16 @@
     <input type="text" th:field="*{nombre}" id="nombre" required/>
 
     <label for="apellidos">Apellidos</label>
-    <input type="text" th:field="*{apellido}" id="apellidos" required/>
+    <input type="text" th:field="*{apellidos}" id="apellidos" required/>
 
     <label for="edad">Edad</label>
     <input type="text" th:field="*{edad}" id="edad" min="18" required/>
 
     <label for="numeroDocumento">DNI</label>
     <input type="text" th:field="*{numeroDni}" id="numeroDocumento" />
+
+    <label for="estado">Estado</label>
+    <input type="text" th:field="*{activo}" id="estado" />
 
     <label for="departamentoId">Departamento</label>
     <select th:field="*{nombreDepartamento}" id="departamentoId" required>
@@ -76,9 +79,7 @@
          alt="Foto de [[${empleado.nombre}]]"
          style="max-width:200px; max-height:200px; object-fit:cover;" />
 
-<!--    <label for="fotografia">Cambiar fotografía</label>-->
-<!--    <input type="file" th:field="*{fotografiaDTO}" name="nuevaFoto" id="fotografia"/>-->
-<!--    <img src="" alt="" id="miniatura">-->
+
 
 
 

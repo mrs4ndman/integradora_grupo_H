@@ -17,18 +17,12 @@ public class EmpleadoDTO {
     private Integer edad;
     private String nombreDepartamento;
     private String numeroDni;
-    private boolean activo;
 
-    public EmpleadoDTO(UUID id, String nombre, String apellidos, Integer edad, String nombreDept, String numeroDocumento) {
-        this.id = id;
-        this.nombre = nombre;
-        this.apellidos = apellidos;
-        this.edad = edad;
-        this.nombreDepartamento = nombreDept;
-        this.numeroDni = numeroDocumento;
-    }
+
     private String fotoBase64; // para mostrar la foto
     private MultipartFile fotografiaDTO;
+    private boolean activo;
+
 
     public EmpleadoDTO(UUID id, String nombre, String apellidos, Integer edad, String nombreDept, String numeroDocumento, String fotoB64, Object o) {
     }

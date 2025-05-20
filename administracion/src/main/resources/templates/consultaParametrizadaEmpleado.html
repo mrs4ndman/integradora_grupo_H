@@ -64,6 +64,7 @@
                     <th class="texto-centrado">Edad</th>
                     <th>Departamento</th>
                     <th>DNI</th>
+                    <th>Estado</th>
                     <th>Foto</th>
                     <th class="texto-centrado">Acciones</th>
                 </tr>
@@ -71,10 +72,11 @@
                 <tbody>
                 <tr th:each="emp : ${resultados}">
                     <td th:text="${emp.nombre}">Nombre</td>
-                    <td th:text="${emp.apellido}">Apellido</td>
+                    <td th:text="${emp.apellidos}">Apellido</td>
                     <td class="texto-centrado" th:text="${emp.edad}">Edad</td>
                     <td th:text="${emp.nombreDepartamento}">Depto</td>
                     <td th:text="${emp.numeroDni}">DNI</td>
+                    <td th:text="${emp.activo} == true ? 'Activo' : 'Desactivo'"></td>Estado</td>
                     <td><img th:if="${emp.fotoBase64 != ''}"
                              th:src="${emp.fotoBase64}"
                              style="width:50px;height:50px;object-fit:cover;" alt="foto_empleado"/></td>

@@ -133,53 +133,53 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional
-    public List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro) {
-        Specification<Empleado> spec = Specification.where(EmpleadoSpecs.esActivo());
-
-        if (filtro.getNombreDTO() != null && !filtro.getNombreDTO().trim().isEmpty()) {
-            spec = spec.and(EmpleadoSpecs.nombreContiene(filtro.getNombreDTO().trim()));
-        }
-
-        if (filtro.getNumeroDni() != null && !filtro.getNumeroDni().trim().isEmpty()) {
-            spec = spec.and(EmpleadoSpecs.numeroDocumentoContiene(filtro.getNumeroDni().trim()));
-        }
-
-        if (filtro.getEdadMin() != null && filtro.getEdadMax() != null) {
-            Specification<Empleado> edadSpec = EmpleadoSpecs.edadEntre(filtro.getEdadMin(), filtro.getEdadMax());
-            if (edadSpec != null) {
-                spec = spec.and(edadSpec);
-            }
-        }
-
-        if (filtro.getDepartamentosDTO() != null && !filtro.getDepartamentosDTO().isEmpty()) {
-            spec = spec.and(EmpleadoSpecs.departamentosEnLista(filtro.getDepartamentosDTO()));
-        }
-
-        Sort sort = Sort.by("apellidos").ascending().and(Sort.by("nombre").ascending());
-        List<Empleado> empleados = empleadosRepository.findAll(spec, sort);
-
-        return empleados.stream()
-                .map(e -> {
-                    String fotoB64 = "";
-                    if (e.getFotografia() != null && e.getFotografia().length > 0) {
-                        fotoB64 = "data:image/jpeg;base64," +
-                                Base64.getEncoder().encodeToString(e.getFotografia());
-                    }
-                    return new EmpleadoDTO(
-                            e.getId(),
-                            e.getNombre(),
-                            e.getApellidos(),
-                            e.getEdad(),
-                            e.getDepartamento().getNombreDept(),
-                            e.getNumeroDocumento(),
-                            fotoB64,
-                            null
-                    );
-                })
-                .collect(Collectors.toList());
-    }
+//    @Override
+//    @Transactional
+//    public List<EmpleadoDTO> buscarEmpleados(EmpleadoConsultaDTO filtro) {
+//        Specification<Empleado> spec = Specification.where(EmpleadoSpecs.esActivo());
+//
+//        if (filtro.getNombreDTO() != null && !filtro.getNombreDTO().trim().isEmpty()) {
+//            spec = spec.and(EmpleadoSpecs.nombreContiene(filtro.getNombreDTO().trim()));
+//        }
+//
+//        if (filtro.getNumeroDni() != null && !filtro.getNumeroDni().trim().isEmpty()) {
+//            spec = spec.and(EmpleadoSpecs.numeroDocumentoContiene(filtro.getNumeroDni().trim()));
+//        }
+//
+//        if (filtro.getEdadMin() != null && filtro.getEdadMax() != null) {
+//            Specification<Empleado> edadSpec = EmpleadoSpecs.edadEntre(filtro.getEdadMin(), filtro.getEdadMax());
+//            if (edadSpec != null) {
+//                spec = spec.and(edadSpec);
+//            }
+//        }
+//
+//        if (filtro.getDepartamentosDTO() != null && !filtro.getDepartamentosDTO().isEmpty()) {
+//            spec = spec.and(EmpleadoSpecs.departamentosEnLista(filtro.getDepartamentosDTO()));
+//        }
+//
+//        Sort sort = Sort.by("apellidos").ascending().and(Sort.by("nombre").ascending());
+//        List<Empleado> empleados = empleadosRepository.findAll(spec, sort);
+//
+//        return empleados.stream()
+//                .map(e -> {
+//                    String fotoB64 = "";
+//                    if (e.getFotografia() != null && e.getFotografia().length > 0) {
+//                        fotoB64 = "data:image/jpeg;base64," +
+//                                Base64.getEncoder().encodeToString(e.getFotografia());
+//                    }
+//                    return new EmpleadoDTO(
+//                            e.getId(),
+//                            e.getNombre(),
+//                            e.getApellidos(),
+//                            e.getEdad(),
+//                            e.getDepartamento().getNombreDept(),
+//                            e.getNumeroDocumento(),
+//                            fotoB64,
+//                            null
+//                    );
+//                })
+//                .collect(Collectors.toList());
+//    }
 
     @Override
     public Page<EmpleadoDTO> buscarEmpleadosPaginados(EmpleadoConsultaDTO filtro,
@@ -224,7 +224,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                     e.getDepartamento() != null ? e.getDepartamento().getNombreDept() : null,
                     e.getNumeroDocumento(),
                     fotoB64,
-                    null
+                    null,
+                    e.isActivo()
             );
         });
 
