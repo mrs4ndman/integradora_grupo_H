@@ -270,6 +270,10 @@ input.boton {
     width: 100%;
 }
 
+.boton-10{
+    width: 10%;
+}
+
 .boton:hover {
     background-color: #111;
     color: #fff;
@@ -336,15 +340,16 @@ input.boton:hover {
 
 /*Búsqueda de Empleados*/
 .resultados{
-    margin: 50px 0;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 /*Tablas Búsqueda de empleado*/
 
 .tabla-datos {
     width: 100%;
-    /*max-width: 900px;*/
-    margin: 2rem auto;
+    max-width: 900px;
+    margin: 0 auto;
     border-collapse: collapse;
     background-color: #ffffff;
     border-radius: 8px;
