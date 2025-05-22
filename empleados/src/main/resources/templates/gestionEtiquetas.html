@@ -157,7 +157,6 @@
     </div>
 
     <script th:inline="javascript">
-        /*<![CDATA[*/
         const contextPath = /*[[@{/}]]*/ '';
         const todasLasEtiquetasOriginalesParaReset = /*[[${etiquetasParaMasivo}]]*/ [];
         const todosLosSubordinadosOriginalesParaReset = /*[[${subordinados}]]*/ [];
@@ -178,7 +177,7 @@
                     return;
                 }
                 const basePath = contextPath.endsWith('/') ? contextPath : (contextPath === '' ? '' : contextPath + '/');
-                fetch(basePath + `empleados/etiquetado/api/empleado/${empleadoId}/etiquetas`)
+                fetch(basePath + `/empleados/empleados/etiquetado/api/empleado/${empleadoId}/etiquetas`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok: ' + response.statusText);

@@ -175,7 +175,7 @@
         </div>
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
         <button type="submit">Ingresar</button>
-        <a href="/usuarios/cambiar-password" style="display: block; margin: 10px 0;">¿Olvidaste tu
+        <a th:href="@{/usuarios/cambiar-password}" style="display: block; margin: 10px 0;">¿Olvidaste tu
             contraseña?</a>
     </form>
 
@@ -291,16 +291,15 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    // CSRF token si es necesario
                 },
                 body: 'emailAEliminar=' + encodeURIComponent(emailAEliminar)
             })
                 .then(response => {
                     if (response.ok) {
                         alert('Usuario eliminado.');
-                        window.location.reload(); // Recargar siempre para refrescar lista
+                        window.location.reload(); // Recargar siempre para refrescar lista al borrarse
                     } else {
-                        response.text().then(text => { // Leer cuerpo de la respuesta para más info
+                        response.text().then(text => {
                             console.error("Error al eliminar:", response.status, text);
                             alert('Error al eliminar el usuario: ' + (text || response.statusText));
                         });
@@ -334,13 +333,13 @@
             emailInputContainer.style.display = 'none'; // Ocultar input
             contenedorSelect.style.display = 'block';     // Mostrar select
             loginsAnterioresSelect.setAttribute('required', 'required'); // Select es requerido
-            emailInput.removeAttribute('required'); // Input no es requerido (está oculto)
-            // Poner el valor seleccionado (si lo hay) en el input oculto
+            emailInput.removeAttribute('required'); // Input no es requerido
+
             actualizarEmailDesdeSelect();
         } else {
             // Estado inicial: No hay lista
             if (emailInputContainer) emailInputContainer.style.display = 'block'; // Mostrar input
-            if (contenedorSelect) contenedorSelect.style.display = 'none';     // Ocultar select (si existiera)
+            if (contenedorSelect) contenedorSelect.style.display = 'none';     // Ocultar select
             if (emailInput) emailInput.setAttribute('required', 'required'); // Input es requerido
             if (loginsAnterioresSelect) loginsAnterioresSelect.removeAttribute('required'); // Select no requerido
         }

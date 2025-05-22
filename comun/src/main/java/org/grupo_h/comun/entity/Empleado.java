@@ -188,7 +188,7 @@ public class Empleado {
     }
 
     @Version
-    private Integer version;
+    private Integer version = 0;
 
     public void addEtiqueta(Etiqueta etiqueta) {
         this.etiquetas.add(etiqueta);
