@@ -170,7 +170,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             log.info("Datos del empleado guaradados correctamente");
             return empleadosRepository.save(empleado);
 
-        } catch (NonUniqueObjectException e) {
+        } catch (RuntimeException e) {
             log.warn("Datos del empleado no han sido guardados");
             // Si el usuario intenta registrarse de nuevo como empleado
             throw new EntidadDuplicadaEnSesionException("No puedes guardar más datos, ya existe una instancia con el mismo identificador en la sesión actual");
