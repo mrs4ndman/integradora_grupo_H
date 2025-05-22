@@ -10,6 +10,8 @@ import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.repository.DepartamentoRepository;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.grupo_h.comun.service.DepartamentoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Page;
@@ -45,6 +47,9 @@ public class GestionEmpleadosController {
     @Autowired
     EmpleadoRepository empleadoRepository;
 
+    private final Logger log = LoggerFactory.getLogger(GestionEmpleadosController.class);
+
+
 
     /* ------------------------ GESTION DE EMPLEADOS ----------------------------- */
     /* ------------------------ Búsqueda Parametrizada de Empleados ----------------------------- */
@@ -67,6 +72,7 @@ public class GestionEmpleadosController {
                                    Model model) {
 
         if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            log.info("Intento de acceso sin sesión. Redirigiendo al login.");
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
             System.out.println("Me sacó");
             return "redirect:/administrador/inicio-sesion";
@@ -101,21 +107,23 @@ public class GestionEmpleadosController {
                                            Model model) {
 
         if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            log.info("Intento de acceso sin sesión en POST. Redirigiendo al login.");
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
             System.out.println("Me sacó");
             return "redirect:/administrador/inicio-sesion";
         }
 
-        System.out.println("Estoy en el POST de Consulta");
-        System.out.println("DNI recibido en el filtro: " + filtro.getNumeroDni());
-
+        log.info("Procesando búsqueda de empleados (POST)");
+        log.info("Criterios recibidos: DNI={}, Página={}, Tamaño={}",
+                filtro.getNumeroDni(), page, size);
 
         List<Departamento> departamentos = departamentoService.obtenerTodosDepartamentos();
         model.addAttribute("departamentos", departamentos);
 
-//        List<EmpleadoDTO> resultados = empleadoService.buscarEmpleados(filtro);
         Page<EmpleadoDTO> empleadosPage = empleadoService
                 .buscarEmpleadosPaginados(filtro, page, size);
+
+        log.info("Resultados encontrados: {} empleados", empleadosPage.getTotalElements());
 
         model.addAttribute("resultados", empleadosPage.getContent());
         model.addAttribute("currentPage", empleadosPage.getNumber());
@@ -140,11 +148,10 @@ public class GestionEmpleadosController {
                                            Model model,
                                            RedirectAttributes redirectAttributes,
                                            HttpSession session) {
-        System.err.println("Estoy en editar empleado");
 
         if (session.getAttribute("emailAutenticadoAdmin") == null) {
             redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
-            System.out.println("Me sacó");
+            System.out.println("Email no autenticado en editar Empleado");
             return "redirect:/administrador/inicio-sesion";
         }
 
@@ -189,7 +196,7 @@ public class GestionEmpleadosController {
                                           @RequestParam(value = "fotografiaDTO", required = false) MultipartFile multipartFile) {
 
         Optional<Empleado> empleadoOpt = empleadoService.buscarPorDni(dto.getNumeroDni());
-        System.err.println(empleadoOpt);
+//        System.err.println(empleadoOpt);
         if (empleadoOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Empleado no encontrado en el post.");
             return "redirect:/administrador/consulta-empleado";
@@ -211,17 +218,14 @@ public class GestionEmpleadosController {
             System.out.println(e.getMessage());
         }
 
-//        if(!multipartFile.isEmpty()){
-//            dto.setFotografiaArchivo(multipartFile.getBytes());
-//        }else{
-//            dto.setFotografiaArchivo(null);
-//        }
 
         System.out.println("AQUI → " + empleado);
 
         try{
+            log.info("Empleado actualizado");
         empleadoRepository.save(empleado);
         }catch (Exception e){
+            log.error("'Exception en actualizar empleado:' {}", e.getMessage());
             System.out.println(e.getMessage());
         }
 
@@ -230,8 +234,8 @@ public class GestionEmpleadosController {
         return "redirect:/administrador/consulta-empleado";
     }
 
-    @PostMapping("/borrar-empleado/{dni}")
-    public String borrarEmpleadoPorDni(@PathVariable String dni,
+    @GetMapping("/borrar-empleado/{id}")
+    public String borrarEmpleadoPorDni(@PathVariable UUID id,
                                        RedirectAttributes attrs,
                                        HttpSession session) {
         if (session.getAttribute("emailAutenticadoAdmin") == null) {
@@ -239,13 +243,20 @@ public class GestionEmpleadosController {
             return "redirect:/administrador/inicio-sesion";
         }
         try {
-            empleadoService.eliminarPorDni(dni);
+            empleadoService.eliminarPorDni(id);
             attrs.addFlashAttribute("exito", "Empleado borrado correctamente.");
         } catch (EntityNotFoundException e) {
-            attrs.addFlashAttribute("error", e.getMessage());
+            attrs.addFlashAttribute("error", "Empleado no encontrado.");
+//            attrs.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/administrador/consulta-empleado";
     }
+
+
+
+
+
+
 
     @GetMapping("/gestion-estado-empleados")
     public String mostrarGestionEstadoEmpleados(

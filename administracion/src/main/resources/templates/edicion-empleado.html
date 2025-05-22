@@ -35,6 +35,8 @@
 
 
 <form th:action="@{/administrador/editar-empleado}" th:object="${empleado}" method="post" enctype="multipart/form-data">
+
+
     <label for="nombre">Nombre</label>
     <input type="text" th:field="*{nombre}" id="nombre" required/>
 

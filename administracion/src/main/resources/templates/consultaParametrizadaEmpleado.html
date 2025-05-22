@@ -36,11 +36,16 @@
     <div th:if="${error}" class="messages error" th:text="${error}"></div>
     <div th:if="${exito}" class="messages success" th:text="${exito}" id="exito"></div>
 
+
     <div class="navbar">
-        <a th:href="@{/administrador/consulta-empleado}">Consulta Avanzada Empleados</a>
+        <a th:href="@{/administrador/info}">Área Personal </a>
+        <a th:href="@{/administrador/consulta-empleado}" >Consulta Avanzada Empleados</a>
         <a th:href="@{/administrador/gestion-estado-empleados}">Gestión Simple de Estado</a>
     </div>
     <form th:action="@{/administrador/consulta-empleado}" th:object="${filtro}" method="post">
+
+        <input type="hidden" name="id" th:field="*{id}">
+
         <label for="nombreDTO">Nombre:</label>
         <input type="text" th:field="*{nombreDTO}" id="nombreDTO"/>
 
@@ -68,7 +73,7 @@
 
     </form>
 </div>
-    <h2>Resultados:</h2>
+<h2>Resultados:</h2>
 <div th:if="${resultados != null}" class="resultados">
 
     <div th:if="${!#lists.isEmpty(resultados)}">
@@ -92,7 +97,7 @@
                 <td class="texto-centrado" th:text="${emp.edad}">Edad</td>
                 <td th:text="${emp.nombreDepartamento}">Depto</td>
                 <td th:text="${emp.numeroDni}">DNI</td>
-                <td th:text="${emp.activo} == true ? 'Activo' : 'Desactivo'"></td>
+                <td th:text="${emp.activo} == true ? 'Activo' : 'Inactivo'"></td>
                 <td><img th:if="${emp.fotoBase64 != ''}"
                          th:src="${emp.fotoBase64}"
                          style="width:50px;height:50px;object-fit:cover;" alt="foto_empleado"/></td>
@@ -103,7 +108,7 @@
                             Editar
                         </a>
                         <a class="boton secundario"
-                           th:href="@{'/administrador/borrar-empleado/' + ${emp.numeroDni}}">
+                           th:href="@{'/administrador/borrar-empleado/' + ${emp.id}}">
                             Borrar
                         </a>
                     </div>
@@ -125,18 +130,18 @@
         </div>
     </div>
 
-    <div th:if="${#lists.isEmpty(resultados)}" >
+    <div th:if="${#lists.isEmpty(resultados)}">
         <p style="margin: 20px 0;">No hay resultados para empleados activos con los criterios seleccionados.</p>
     </div>
 </div>
 
 
 <script th:if="${exito}">
-    alert("Empleado actualizado correctamente");
+    alert([[${exito}]]);
 </script>
 
 <script th:if="${error}">
-    alert("Empleado no actualizado correctamente");
+    alert([[${error}]]);
 </script>
 </body>
 </html>

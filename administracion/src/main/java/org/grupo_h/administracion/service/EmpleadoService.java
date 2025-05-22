@@ -44,13 +44,15 @@ public interface EmpleadoService {
 
     void eliminarPorId(UUID id);
 
-    void eliminarPorDni(String dni);
+    @Transactional
+    void eliminarPorDni(UUID id);
 
     @Transactional
     void darDeBajaLogicaEmpleado(UUID empleadoId);
 
     @Transactional
     void reactivarEmpleado(UUID empleadoId);
+
 
     @Transactional
     Page<EmpleadoDTO> getEmpleadosParaGestionEstado(String searchTerm, Pageable pageable);
