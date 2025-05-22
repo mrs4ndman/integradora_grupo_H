@@ -310,7 +310,7 @@
         const emailAEliminar = select.value;
 
         if (confirm('¿Estás seguro de que quieres eliminar "' + emailAEliminar + '" de la lista de usuarios recordados?')) {
-            fetch('/usuarios/inicio-sesion/eliminar-usuario', {
+            fetch('/empleados/usuarios/inicio-sesion/eliminar-usuario', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
