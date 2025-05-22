@@ -14,56 +14,37 @@ services:
       - mysql_app_data:/var/lib/mysql
     networks:
       - app-network
-    healthcheck: # NUEVA SECCIÓN
-      # Comando para verificar la salud de MySQL.
-      # mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_PASSWORD} fallará si MYSQL_USER aún no existe
-      # por lo que usar el usuario root para el healthcheck es más fiable durante la inicialización.
-      # La opción --silent es para que no muestre errores en la salida estándar si falla, solo el código de salida.
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "--silent"]
-      interval: 10s     # Con qué frecuencia ejecutar el healthcheck
-      timeout: 5s       # Cuánto tiempo esperar por una respuesta
-      retries: 5        # Cuántas veces reintentar antes de marcar como 'unhealthy'
-      start_period: 30s # Tiempo de gracia al inicio antes de que los fallos cuenten para 'unhealthy' (para dar tiempo a inicializar)
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-  empleados-app-tomcat:
+  apps-tomcat: # Servicio Tomcat unificado
     build:
-      context: ./empleados
+      context: . # El contexto es la raíz del proyecto, donde se encuentra Dockerfile.tomcat-combined
+      dockerfile: Dockerfile.tomcat-combined # Especifica el nuevo Dockerfile
       args:
-        WAR_FILE: build/libs/empleados.war
-    container_name: empleados_app_tomcat_container
+        # Rutas a los archivos WAR relativas al contexto de construcción (.)
+        EMPLEADOS_WAR_PATH: ./empleados/build/libs/empleados.war
+        ADMINISTRACION_WAR_PATH: ./administracion/build/libs/administracion.war
+    container_name: apps_tomcat_container
     restart: unless-stopped
     ports:
-      - "8081:8080"
+      # Mapea un solo puerto del host (ej. 8080) al puerto 8080 de Tomcat
+      # Tus aplicaciones estarán disponibles en http://localhost:8080/empleados y http://localhost:8080/administracion
+      - "8080:8080"
     environment:
+      # Variables de entorno comunes para ambas aplicaciones Spring Boot
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-app-db:3306/mi_app_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: 'user_app'
-      SPRING_DATASOURCE_PASSWORD: 'password_app_muy_seguro'
+      SPRING_DATASOURCE_PASSWORD: 'password_app_muy_seguro' # ¡CAMBIA ESTO!
       SPRING_JPA_HIBERNATE_DDL_AUTO: 'validate'
-      # CATALINA_OPTS: "-Xms256m -Xmx512m"
-    depends_on: # MODIFICADO/EXTENDIDO
+      # CATALINA_OPTS: "-Xms512m -Xmx1024m" # Considera aumentar la memoria para dos aplicaciones
+    depends_on:
       mysql-app-db:
-        condition: service_healthy # Espera a que el healthcheck de mysql-app-db pase
-    networks:
-      - app-network
-
-  administracion-app-tomcat:
-    build:
-      context: ./administracion
-      args:
-        WAR_FILE: build/libs/administracion.war
-    container_name: administracion_app_tomcat_container
-    restart: unless-stopped
-    ports:
-      - "8082:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-app-db:3306/mi_app_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: 'user_app'
-      SPRING_DATASOURCE_PASSWORD: 'password_app_muy_seguro'
-      SPRING_JPA_HIBERNATE_DDL_AUTO: 'validate'
-      # CATALINA_OPTS: "-Xms256m -Xmx512m"
-    depends_on: # MODIFICADO/EXTENDIDO
-      mysql-app-db:
-        condition: service_healthy # Espera a que el healthcheck de mysql-app-db pase
+        condition: service_healthy # Espera a que mysql-app-db esté saludable
     networks:
       - app-network
 
