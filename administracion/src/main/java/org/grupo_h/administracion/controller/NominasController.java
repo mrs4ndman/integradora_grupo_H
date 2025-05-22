@@ -1,10 +1,13 @@
 package org.grupo_h.administracion.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.grupo_h.administracion.dto.EmpleadoSimpleDTO;
+import org.grupo_h.administracion.service.EmpleadoService;
 import org.grupo_h.administracion.specs.NominaSpecifications;
 import org.grupo_h.comun.entity.Empleado;
 import org.grupo_h.comun.entity.Nomina;
@@ -24,6 +27,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -31,10 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -47,6 +48,9 @@ public class NominasController {
 
     @Autowired
     private EmpleadoRepository empleadoRepository;
+
+    @Autowired
+    private EmpleadoService empleadoService;
 
     @Autowired
     private LineaNominaRepository lineaNominaRepository;
@@ -143,8 +147,15 @@ public class NominasController {
             @RequestParam(value = "fechaDesde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
             @RequestParam(value = "fechaHasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta,
             @PageableDefault(size = 10, sort = "fechaInicio", direction = Sort.Direction.DESC) Pageable pageable,
-            Model model
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
     ) {
+        String email = (String) session.getAttribute("emailAutenticadoAdmin");
+        if (email == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para ver esta información.");
+            return "redirect:/administrador/inicio-sesion";
+        }
         model.addAttribute("listaEmpleados", empleadoRepository.findAll(Sort.by("apellidos", "nombre")));
         Page<Nomina> paginaNominas = nominaRepository.findAll(
                 NominaSpecifications.conFiltros(empleadoId, nombreEmpleado, fechaDesde, fechaHasta),
@@ -160,6 +171,43 @@ public class NominasController {
         model.addAttribute("empresaNombre", parametrosRepository.findByClave(PARAM_NOMBRE_EMPRESA).map(Parametros::getValor).orElse("Empresa (No configurada)"));
         return "nomina/consulta-nominas";
     }
+
+    // En NominasController.java, por ejemplo
+    @GetMapping("/seleccionar-empleado-para-nomina")
+    public String mostrarSeleccionarEmpleadoParaNomina(
+            @RequestParam(name = "terminoBusqueda", required = false) String terminoBusqueda,
+            Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("emailAutenticadoAdmin") == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a esta página.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+        // Suponiendo que tienes un método en EmpleadoService para obtener todos los empleados activos
+        // o una forma de listarlos para selección.
+        List<EmpleadoSimpleDTO> empleados;
+        List<EmpleadoSimpleDTO> todosLosEmpleados = empleadoService.obtenerTodosLosEmpleadosParaSeleccion();
+
+        if (StringUtils.hasText(terminoBusqueda)) {
+            String terminoBusquedaLower = terminoBusqueda.toLowerCase();
+            empleados = todosLosEmpleados.stream()
+                    .filter(emp -> (emp.getNombre() != null && emp.getNombre().toLowerCase().contains(terminoBusquedaLower)) ||
+                                    (emp.getApellidos() != null && emp.getApellidos().toLowerCase().contains(terminoBusquedaLower))
+                            // Podrías añadir búsqueda por DNI si el EmpleadoSimpleDTO lo tuviera y fuera relevante
+                    )
+                    .collect(Collectors.toList());
+            model.addAttribute("terminoBusqueda", terminoBusqueda);
+        } else {
+            empleados = todosLosEmpleados;
+        }
+
+        // Opcional: ordenar la lista resultante si no viene ordenada del servicio
+        empleados.sort(Comparator.comparing(EmpleadoSimpleDTO::getApellidos, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(EmpleadoSimpleDTO::getNombre, String.CASE_INSENSITIVE_ORDER));
+
+        model.addAttribute("listaTodosEmpleados", empleados);
+        model.addAttribute("empresaNombre", parametrosRepository.findByClave("NOMBRE_EMPRESA").map(Parametros::getValor).orElse("Empresa"));
+        return "nomina/seleccionar-empleado-para-nomina";
+    }
+
 
     /**
      * Muestra la lista de nóminas asociadas a un empleado específico
@@ -409,7 +457,7 @@ public class NominasController {
             // nomina.getLineas().add(lineaNomina);
 
             // Validar que la nómina tenga un salario base válido
-            if (!nomina.tieneSalarioBaseValido()) {
+            if (!nomina.tieneSalarioBaseValido() && !nomina.getLineas().isEmpty()) {
                 throw new IllegalArgumentException("Toda nómina debe tener una línea de 'Salario base' con importe positivo.");
             }
 

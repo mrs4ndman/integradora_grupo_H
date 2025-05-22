@@ -400,7 +400,7 @@ public class UsuarioController {
             }
             // --- Fin Lógica Remember Me ---
 
-            return "redirect:/usuarios/info";
+            return "redirect:http://localhost:8081/empleados/area_personal.php";
         } else {
             // Llama al servicio para manejar el fallo
             usuarioService.procesarLoginFallido(email);

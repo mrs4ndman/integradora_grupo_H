@@ -169,6 +169,11 @@
                style="margin-left: 10px; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Limpiar
                 Filtros</a>
         </div>
+        <button>
+            <a th:href="@{/administrador/nominas/seleccionar-empleado-para-nomina}">
+                + Crear Nómina para Empleado Específico
+            </a>
+        </button>
     </form>
 
     <h2>Resultados (<span th:text="${paginaNominas?.totalElements ?: 0}"></span>)</h2>

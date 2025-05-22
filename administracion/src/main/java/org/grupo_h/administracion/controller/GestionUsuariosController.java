@@ -1,5 +1,6 @@
 package org.grupo_h.administracion.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.grupo_h.administracion.service.ParametrosService;
 import org.grupo_h.administracion.service.UsuarioService;
 import org.grupo_h.comun.entity.Usuario;
@@ -38,7 +39,13 @@ public class GestionUsuariosController {
     @GetMapping("/dashboardGestionUsuarios")
     public String mostrarDashboard(
             @RequestParam(value = "filtro", required = false) String filtro,
-            Model model) {
+            Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String email = (String) session.getAttribute("emailAutenticadoAdmin");
+        if (email == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para ver esta información.");
+            return "redirect:/administrador/inicio-sesion";
+        }
+
         List<Usuario> usuarios;
         if (filtro != null && !filtro.isEmpty()) {
             usuarios = usuarioService.buscarPorFiltro(filtro);

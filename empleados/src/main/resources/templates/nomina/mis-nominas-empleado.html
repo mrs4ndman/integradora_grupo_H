@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Mis Nóminas</title>
+  <th:block layout:fragment="page_css">
+    <style>
+      .filter-form div { margin-bottom: 10px; }
+      .filter-form label { margin-right: 5px; }
+      .table th.is-sortable { padding: 0; }
+      .table a.sortable-header, .table span.sortable-header-span {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0.75rem; text-decoration: none; color: inherit;
+        width: 100%; height: 100%; cursor: pointer;
+      }
+      .table a.sortable-header:hover, .table span.sortable-header-span:hover {
+        background-color: #e9ecef;
+      }
+      .loading-overlay { /* Para feedback visual durante la carga AJAX */
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(255, 255, 255, 0.7); display: flex;
+        justify-content: center; align-items: center; z-index: 10;
+      }
+      .table-container { position: relative; }
+    </style>
+  </th:block>
+</head>
+<body>
+<section layout:fragment="content">
+  <div class="container mt-4">
+    <h2>Mis Nóminas</h2>
+
+    <div id="globalAlertsNominasEmpleado" class="mb-3"></div>
+
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtrar Nóminas</h5>
+      </div>
+      <div class="card-body">
+        <form id="filtroNominasForm" class="filter-form">
+          <div class="row">
+            <div class="col-md-5 mb-3">
+              <label for="fechaDesde" class="form-label">Desde:</label>
+              <input type="date" id="fechaDesde" name="fechaDesde" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-5 mb-3">
+              <label for="fechaHasta" class="form-label">Hasta:</label>
+              <input type="date" id="fechaHasta" name="fechaHasta" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-2 mb-3 align-self-end">
+              <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search me-1"></i>Buscar</button>
+            </div>
+          </div>
+          <button type="button" id="limpiarFiltrosBtn" class="btn btn-outline-secondary btn-sm mt-2"><i class="fas fa-eraser me-1"></i>Limpiar Filtros</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm table-container">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Listado de Nóminas</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="loading-overlay d-none">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark">
+            <tr>
+              <th class="is-sortable"><span class="sortable-header-span" data-sortfield="fechaInicio">Período Inicio <span class="sort-icon"></span></span></th>
+              <th class="is-sortable"><span class="sortable-header-span" data-sortfield="fechaFin">Período Fin <span class="sort-icon"></span></span></th>
+              <th>Periodo Liquidación</th>
+              <th class="text-end is-sortable"><span class="sortable-header-span" data-sortfield="salarioNeto">Salario Neto <span class="sort-icon"></span></span></th>
+              <th class="text-center">Acciones</th>
+            </tr>
+            </thead>
+            <tbody id="nominasTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer bg-light border-top-0">
+        <nav aria-label="Paginación de nóminas">
+          <ul class="pagination justify-content-center mb-0" id="paginationControlsNominas">
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <div id="noNominasMessage" class="alert alert-info mt-3 d-none">
+      No se encontraron nóminas con los criterios seleccionados.
+    </div>
+
+  </div>
+</section>
+
+<th:block layout:fragment="page_scripts">
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const API_MIS_NOMINAS_URL = /*[[@{/api/empleados/mis-nominas}]]*/ '/api/empleados/mis-nominas';
+    let currentNominasPage = 0;
+    const nominasPageSize = 10;
+    let currentNominasSortField = 'fechaInicio';
+    let currentNominasSortDir = 'desc';
+
+    function showAlertNominas(message, type = 'danger', duration = 7000) {
+      const alertId = `alert-nominas-${Date.now()}`;
+      const alertHtml = `
+            <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+      $('#globalAlertsNominasEmpleado').append(alertHtml);
+      setTimeout(() => {
+        const alertElement = document.getElementById(alertId);
+        if (alertElement) {
+          const bsAlert = bootstrap.Alert.getOrCreateInstance(alertElement);
+          if (bsAlert) bsAlert.close();
+        }
+      }, duration);
+    }
+
+    function updateSortIconsNominas() {
+      document.querySelectorAll('#nominasTableBody th.is-sortable .sortable-header-span').forEach(header => {
+        const field = header.dataset.sortfield;
+        const iconSpan = header.querySelector('.sort-icon');
+        if (iconSpan) {
+          iconSpan.innerHTML = ''; // Limpiar icono previo
+          if (field === currentNominasSortField) {
+            iconSpan.innerHTML = `<i class="fas ${currentNominasSortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down'}"></i>`;
+          } else {
+            iconSpan.innerHTML = `<i class="fas fa-sort text-muted"></i>`; // Icono neutral
+          }
+        }
+      });
+    }
+
+
+    async function fetchMisNominas() {
+      const loadingOverlay = $('.loading-overlay');
+      loadingOverlay.removeClass('d-none');
+      $('#nominasTableBody').html('<tr><td colspan="5" class="text-center p-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Cargando nóminas...</td></tr>');
+      $('#noNominasMessage').addClass('d-none');
+
+      const params = new URLSearchParams({
+        page: currentNominasPage,
+        size: nominasPageSize,
+        sort: `${currentNominasSortField},${currentNominasSortDir}`
+      });
+
+      const fechaDesde = $('#fechaDesde').val();
+      const fechaHasta = $('#fechaHasta').val();
+      if (fechaDesde) params.append('fechaDesde', fechaDesde);
+      if (fechaHasta) params.append('fechaHasta', fechaHasta);
+
+      try {
+        const response = await fetch(`${API_MIS_NOMINAS_URL}?${params.toString()}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: `Error HTTP ${response.status}` }));
+          throw new Error(errorData.message || `Error al cargar nóminas (${response.status})`);
+        }
+        const pageData = await response.json();
+        renderNominasTable(pageData.content);
+        renderNominasPagination(pageData);
+        updateSortIconsNominas();
+        if (!pageData.content || pageData.content.length === 0) {
+          $('#noNominasMessage').removeClass('d-none');
+          $('#nominasTableBody').html('<tr><td colspan="5" class="text-center p-4">No se encontraron nóminas.</td></tr>');
+        }
+
+      } catch (error) {
+        console.error("Error fetching nominas:", error);
+        showAlertNominas(`Error al cargar nóminas: ${error.message}`);
+        $('#nominasTableBody').html(`<tr><td colspan="5" class="text-center p-4 text-danger">Error al cargar nóminas.</td></tr>`);
+      } finally {
+        loadingOverlay.addClass('d-none');
+      }
+    }
+
+    function renderNominasTable(nominas) {
+      const tbody = $('#nominasTableBody');
+      tbody.empty();
+      if (!nominas || nominas.length === 0) {
+        tbody.html('<tr><td colspan="5" class="text-center">No hay nóminas para mostrar.</td></tr>');
+        return;
+      }
+      nominas.forEach(nomina => {
+        const detalleUrl = /*[[@{/empleados/nominas/}]]*/ '/empleados/nominas/' + nomina.id;
+        const pdfUrl = detalleUrl + '/pdf';
+        const row = `
+                <tr>
+                    <td>${nomina.fechaInicio ? new Date(nomina.fechaInicio).toLocaleDateString('es-ES') : 'N/A'}</td>
+                    <td>${nomina.fechaFin ? new Date(nomina.fechaFin).toLocaleDateString('es-ES') : 'N/A'}</td>
+                    <td>${nomina.periodoLiquidacion || 'N/A'}</td>
+                    <td class="text-end">${nomina.salarioNeto != null ? nomina.salarioNeto.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) : 'N/A'}</td>
+                    <td class="text-center">
+                        <a href="${detalleUrl}" class="btn btn-info btn-sm" title="Ver Detalle">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="${pdfUrl}" class="btn btn-warning btn-sm" title="Descargar PDF" target="_blank">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                    </td>
+                </tr>`;
+        tbody.append(row);
+      });
+    }
+
+    function renderNominasPagination(pageData) {
+      const paginationControls = $('#paginationControlsNominas');
+      paginationControls.empty();
+      if (!pageData || pageData.totalPages <= 0) return;
+
+      const { number, totalPages, first, last } = pageData;
+
+      paginationControls.append(`<li class="page-item ${first ? 'disabled' : ''}"><a class="page-link" href="#" data-page="0">Primero</a></li>`);
+      paginationControls.append(`<li class="page-item ${first ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${number - 1}">&laquo;</a></li>`);
+
+      let startPage = Math.max(0, number - 2);
+      let endPage = Math.min(totalPages - 1, number + 2);
+      if (endPage - startPage + 1 < 5 && totalPages > 5) { // Ajustar rango para mantener 5 números si es posible
+        if (number < 3) endPage = Math.min(totalPages - 1, 4);
+        else if (number > totalPages - 4) startPage = Math.max(0, totalPages - 5);
+      }
+
+
+      for (let i = startPage; i <= endPage; i++) {
+        paginationControls.append(`<li class="page-item ${i === number ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i + 1}</a></li>`);
+      }
+
+      paginationControls.append(`<li class="page-item ${last ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${number + 1}">&raquo;</a></li>`);
+      paginationControls.append(`<li class="page-item ${last ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${totalPages - 1}">Último</a></li>`);
+
+      paginationControls.find('.page-link').on('click', function(e) {
+        e.preventDefault();
+        if (!$(this).parent().hasClass('disabled')) {
+          currentNominasPage = parseInt($(this).data('page'));
+          fetchMisNominas();
+        }
+      });
+    }
+
+    $(document).ready(function() {
+      fetchMisNominas();
+
+      $('#filtroNominasForm').on('submit', function(e) {
+        e.preventDefault();
+        currentNominasPage = 0;
+        fetchMisNominas();
+      });
+
+      $('#limpiarFiltrosBtn').on('click', function() {
+        $('#filtroNominasForm')[0].reset();
+        currentNominasPage = 0;
+        fetchMisNominas();
+      });
+
+      $('#nominasTableBody').on('click', '.sortable-header-span', function() {
+        const newSortField = $(this).data('sortfield');
+        if (currentNominasSortField === newSortField) {
+          currentNominasSortDir = currentNominasSortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentNominasSortField = newSortField;
+          currentNominasSortDir = 'asc';
+        }
+        currentNominasPage = 0;
+        fetchMisNominas();
+      });
+    });
+    /*]]>*/
+  </script>
+</th:block>
+</body>
+</html>

@@ -25,18 +25,22 @@
             padding: 10px;
             text-align: center;
         }
+
         .acciones {
             white-space: nowrap;
         }
+
         .search-container {
             margin-bottom: 20px;
         }
+
         .search-container input[type="text"] {
             padding: 8px;
             width: 300px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         .search-container button {
             padding: 8px 15px;
             background-color: #007bff;
@@ -45,6 +49,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         .search-container button:hover {
             background-color: #0056b3;
         }
@@ -107,9 +112,13 @@
     <div class="search-container">
         <form th:action="@{/administrador/dashboardGestionUsuarios}" method="get">
             <input type="text" name="filtro" th:value="${filtro}" placeholder="Buscar por correo"/>
-            <button type="submit" >Buscar</button>
+            <button type="submit">Buscar</button>
         </form>
     </div>
+
+    <button>
+        <a th:href="@{/administrador/info}">Volver al area personal</a>
+    </button>
 
     <!-- Tabla de usuarios -->
     <table>
@@ -125,21 +134,17 @@
         <tbody>
         <tr th:each="usuario : ${usuarios}">
             <td th:text="${usuario.email}"></td>
-<td class="estado-bloqueo">
+            <td class="estado-bloqueo">
     <span class="locker" th:data-id="${usuario.id}">
         <i th:class="${usuario.cuentaBloqueada ? 'fa-solid fa-lock' : 'fa-solid fa-lock-open'}"></i>
     </span>
-</td>
+            </td>
             <td th:text="${usuario.tiempoHastaDesbloqueo != null} ? ${#temporals.format(usuario.tiempoHastaDesbloqueo, 'dd/MM/yyyy HH:mm')} : ''"></td>
             <td th:text="${usuario.motivoBloqueo}"></td>
             <td class="acciones">
                 <!-- Botón para editar -->
                 <button>
-                    <a th:href="@{/administrador/editar-usuario/{id}(id=${usuario.id})}">Ajustes</a>
-                </button>
-
-                <button>
-                    <a th:href="@{/administrador/info}">area</a>
+                    <a th:href="@{/administrador/editar-usuario/{id}(id=${usuario.id})}">Editar</a>
                 </button>
             </td>
         </tr>
@@ -152,12 +157,9 @@
     <div class="modal">
         <h3>Bloqueo de usuario</h3>
         <textarea id="motivoBloqueo" placeholder="Escribe el motivo del bloqueo"></textarea>
-        <input type="date" id="fechaFinBloqueo" />
-        <div class="botones-modales">
-            <button onclick="cierraVentanaModalBloqueo()">Cancelar</button>
-            <button onclick="confirmaBloqueo()">Confirmar</button>
-        </div>
+        <button onclick="confirmaBloqueo()">Confirmar</button>
     </div>
+</div>
 </div>
 
 <!-- ventana modal de desbloqueo -->
@@ -193,7 +195,6 @@
     function cierraVentanaModalBloqueo() {
         document.getElementById('ventanaModalBloqueo').style.display = 'none';
         document.getElementById('motivoBloqueo').value = '';
-        document.getElementById('fechaFinBloqueo').value = '';
     }
 
     function cierraVentanaModalDesbloqueo() {
@@ -202,48 +203,47 @@
 
     function confirmaBloqueo() {
         const motivo = document.getElementById('motivoBloqueo').value;
-        const fechaFin = document.getElementById('fechaFinBloqueo').value;
 
-        if (!motivo || !fechaFin) {
-            alert("Por favor, rellena ambos campos");
+        if (!motivo) {
+            alert("Por favor, rellena el motivo");
             return;
         }
 
         // Enviar petición al servidor para bloquear
-        fetch('/administrador/bloquear-usuario', {
+        fetch('/administracion/administrador/bloquear-usuario', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: `id=${idUsuarioActual}&motivoBloqueo=${encodeURIComponent(motivo)}&fechaFinBloqueo=${encodeURIComponent(fechaFin)}`
+            body: `id=${idUsuarioActual}&motivoBloqueo=${encodeURIComponent(motivo)}`
         })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Error al bloquear el usuario');
-            }
-        });
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al bloquear el usuario');
+                }
+            });
 
         cierraVentanaModalBloqueo();
     }
 
     function confirmaDesbloqueo() {
         // Enviar petición al servidor para desbloquear
-        fetch('/administrador/desbloquear-usuario', {
+        fetch('/administracion/administrador/desbloquear-usuario', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: `id=${idUsuarioActual}`
         })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Error al desbloquear el usuario');
-            }
-        });
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al desbloquear el usuario');
+                }
+            });
 
         cierraVentanaModalDesbloqueo();
     }

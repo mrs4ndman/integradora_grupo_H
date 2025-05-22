@@ -45,6 +45,7 @@ dependencies {
 	implementation 'org.springframework:spring-context-support:7.0.0-M4'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.modelmapper:modelmapper:3.2.0'
+	implementation 'org.apache.pdfbox:pdfbox:2.0.24'
 	testImplementation 'org.springframework.security:spring-security-test'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'

@@ -5,6 +5,7 @@ import org.grupo_h.comun.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,7 +68,8 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id).orElse(null);
         if (usuario != null) {
             usuario.setCuentaBloqueada(true);
-            usuario.setTiempoHastaDesbloqueo(LocalDateTime.now().plusMinutes(duracionBloqueoMinutosAdmin));
+            LocalDateTime horaActual = LocalDateTime.now(ZoneId.of("Europe/Madrid"));
+            usuario.setTiempoHastaDesbloqueo(horaActual.plusMinutes(duracionBloqueoMinutosAdmin));
             usuario.setMotivoBloqueo(motivoBloqueo);
             usuarioRepository.save(usuario);
         }

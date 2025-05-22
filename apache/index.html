@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Navegación Principal</title>
+    <link rel="stylesheet" href="estilos.css">
+    <style>
+        body {
+            background-color: #f4f7f6; /* Un fondo suave para la página principal */
+            color: #333;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 2.8rem;
+            font-weight: 500;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.8rem;
+        }
+
+        .app-section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background-color: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .app-section h2 {
+            color: #3498db; /* Azul suave para los títulos de sección */
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Columnas responsivas */
+            gap: 1rem;
+        }
+
+        .boton-nav {
+            display: block;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 0.5rem; /* Espacio entre botones si se apilan */
+            border: 1px solid #2980b9; /* Borde más oscuro que el fondo */
+            background-color: #3498db; /* Azul principal */
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            font-size: 0.95rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .boton-nav:hover {
+            background-color: #2980b9; /* Azul más oscuro al pasar el ratón */
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .boton-nav.principal { /* Hereda de .boton pero puede tener variaciones si se define en estilos.css */
+            background-color: #2ecc71; /* Verde para acciones principales si se desea diferenciar */
+            border-color: #27ae60;
+        }
+
+        .boton-nav.principal:hover {
+            background-color: #27ae60;
+        }
+
+        .boton-nav.secundario { /* Hereda de .boton pero puede tener variaciones si se define en estilos.css */
+            background-color: #95a5a6; /* Gris para acciones secundarias */
+            border-color: #7f8c8d;
+        }
+
+        .boton-nav.secundario:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* Estilo para el contenedor-principal que ya tienes pero aplicado aquí */
+        .contenedor-principal-original {
+            max-width: 900px;
+            margin: 1rem auto; /* Reducido el margen superior para mejor encaje */
+            padding: 1rem 2rem; /* Reducido el padding */
+            border: 1px solid #eaeaea;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra más sutil */
+            border-radius: 6px; /* Bordes redondeados */
+        }
+
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <h1>Panel de Navegación del Proyecto</h1>
+
+    <div class="app-section">
+        <h2>Módulo de Administración (<code>/administracion</code>)</h2>
+        <div class="link-grid">
+            <a href="http://localhost:8080/administracion/administrador/inicio-sesion" class="boton-nav">Inicio de
+                Sesión Administrador</a>
+            <a href="http://localhost:8080/administracion/administrador/info" class="boton-nav">Área Personal
+                Administrador</a>
+            <a href="http://localhost:8080/administracion/administrador/consulta-empleado" class="boton-nav">Consulta
+                Parametrizada de Empleados</a>
+            <a href="http://localhost:8080/administracion/administrador/gestion-estado-empleados" class="boton-nav">Gestión
+                de Estado de Empleados (Alta/Baja)</a>
+            <a href="http://localhost:8080/administracion/administrador/importar-catalogo" class="boton-nav">Importar
+                Catálogo de Productos</a>
+            <a href="http://localhost:8080/administracion/administrador/consulta-productos" class="boton-nav">Consulta
+                de Productos</a>
+            <a href="http://localhost:8080/administracion/administrador/gestion-subordinados" class="boton-nav">Gestión
+                de Subordinados</a>
+            <a href="http://localhost:8080/administracion/administrador/dashboardGestionUsuarios" class="boton-nav">Dashboard
+                Gestión de Usuarios (Bloqueo/Desbloqueo)</a>
+            <a href="http://localhost:8080/administracion/administrador/nominas/consultar" class="boton-nav">Consulta y
+                Gestión de Nóminas</a>
+        </div>
+    </div>
+
+    <hr style="margin: 2.5rem 0;">
+
+    <div class="app-section">
+        <h2>Módulo de Empleados (<code>/empleados</code>)</h2>
+        <div class="link-grid">
+            <a href="http://localhost:8080/empleados/usuarios/registro" class="boton-nav">Registro de Nuevo Usuario</a>
+            <a href="http://localhost:8080/empleados/usuarios/inicio-sesion" class="boton-nav">Inicio de Sesión
+                Usuario/Empleado</a>
+            <a href="http://localhost:8080/empleados/usuarios/info" class="boton-nav">Área Personal Usuario/Empleado</a>
+            <a href="http://localhost:8080/empleados/empleados/registro-datos" class="boton-nav">Registro de Datos de
+                Empleado (Paso 1)</a>
+            <a href="http://localhost:8080/empleados/empleados/detalle" class="boton-nav">Detalle del Empleado
+                (Autenticado)</a>
+            <a href="http://localhost:8080/empleados/empleados/gestion-etiquetas" class="boton-nav">Gestión de Etiquetas
+                de Empleados</a>
+            <a href="http://localhost:8080/empleados/empleados/consulta-productos" class="boton-nav">Consulta de
+                Productos (Vista Empleado)</a>
+            <a href="http://localhost:8080/empleados/empleados/historial" class="boton-nav">Historial de Navegación</a>
+            <a href="http://localhost:8080/empleados/empleados/colaboraciones/solicitudes-ui" class="boton-nav">UI de
+                Solicitudes de Colaboración</a>
+            <a href="http://localhost:8080/empleados/empleados/colaboraciones/chat-ui" class="boton-nav">UI de Chat de
+                Colaboraciones</a>
+            <a href="http://localhost:8080/empleados/empleados/notificaciones" class="boton-nav">Ver Notificaciones</a>
+            <a href="http://localhost:8080/empleados/prueba" class="boton-nav">Página de Prueba (Selects)</a>
+
+        </div>
+    </div>
+</div>
+<script>
+    // Pequeño script para simular la funcionalidad del checkbox de estilos si es necesario, aunque es mejor manejarlo con CSS puro si es posible.
+    // O si el script.js ya maneja esto, no sería necesario aquí.
+    // Ejemplo:
+    // const checkboxEstilos = document.getElementById('quitaEstilos');
+    // if (checkboxEstilos) {
+    //     checkboxEstilos.addEventListener('change', function() {
+    //         const estilosCss = document.getElementById('estilosCss');
+    //         if (estilosCss) {
+    //             estilosCss.disabled = this.checked;
+    //         }
+    //     });
+    // }
+</script>
+</body>
+</html>

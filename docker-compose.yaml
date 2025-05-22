@@ -47,15 +47,6 @@ services:
         condition: service_healthy # Espera a que mysql-app-db esté saludable
     networks:
       - app-network
-    healthcheck: # Healthcheck añadido para Tomcat
-      # Intenta acceder a la raíz de una de las aplicaciones.
-      # Asegúrate de que 'curl' esté disponible en tu imagen Dockerfile.tomcat-combined.
-      # Si tus aplicaciones tienen endpoints de healthcheck específicos (ej. /actuator/health), úsalos para mayor precisión.
-      test: [ "CMD", "curl -f http://localhost:8080/empleados/ || curl -f http://localhost:8080/administracion/ || exit 1" ]
-      interval: 10s      # Intervalo entre verificaciones
-      timeout: 5s       # Tiempo de espera para la respuesta
-      retries: 2         # Número de reintentos antes de marcar como no saludable
-      start_period: 9s  # Período inicial durante el cual las fallas no cuentan como reintentos fallidos (para dar tiempo a que arranque)
 
   apache-webserver:
     image: httpd:latest # Imagen oficial de Apache HTTP Server
@@ -67,12 +58,12 @@ services:
       # Monta el contenido de la carpeta ./apache_html (en tu host)
       # al directorio raíz de documentos de Apache dentro del contenedor.
       # DEBES CREAR la carpeta ./apache_html en la raíz de tu proyecto.
-      - ./apache_html:/usr/local/apache2/htdocs/
+      - ./apache:/usr/local/apache2/htdocs/
     networks:
       - app-network
     depends_on:
-      apps-tomcat:
-        condition: service_healthy # Espera a que apps-tomcat esté saludable
+      mysql-app-db:
+        condition: service_healthy # Espera a que mysql-app-db esté saludable
 
 volumes:
   mysql_app_data:

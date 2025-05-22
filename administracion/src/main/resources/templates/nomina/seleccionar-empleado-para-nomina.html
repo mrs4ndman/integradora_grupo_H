@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Seleccionar Empleado para Nómina</title>
+  <link rel="stylesheet" th:href="@{/css/estilos.css}"> <style>
+  .container { max-width: 700px; margin-top: 2rem; }
+  select, input[type="text"], button { padding: 0.75rem; margin-top: 0.5rem; }
+  .search-form-container {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .search-form-container input[type="text"] {
+    flex-grow: 1; /* Para que el input ocupe el espacio disponible */
+  }
+</style>
+</head>
+<body>
+<div class="contenedor-principal">
+  <h2>Seleccionar Empleado para Crear Nómina</h2>
+
+  <div th:if="${param.error}" class="error" th:text="${param.error}"></div>
+
+  <form th:action="@{/administrador/nominas/seleccionar-empleado-para-nomina}" method="get" class="search-form-container">
+    <label for="terminoBusquedaInput" class="visually-hidden">Buscar empleado:</label> <input type="text" id="terminoBusquedaInput" name="terminoBusqueda" th:value="${terminoBusqueda}" placeholder="Buscar por nombre o apellidos...">
+    <button type="submit" class="boton">Buscar</button>
+    <a th:href="@{/administrador/nominas/seleccionar-empleado-para-nomina}" class="boton secundario" style="text-decoration: none;">Limpiar</a>
+  </form>
+
+  <form id="seleccionarEmpleadoForm" style="box-shadow: none; border: none; padding:0;">
+    <div style="margin-bottom: 1rem;">
+      <label for="empleadoId" class="form-label">Empleado:</label>
+      <select id="empleadoId" name="empleadoId" required>
+        <option value="">-- Seleccione un Empleado --</option>
+        <option th:each="emp : ${listaTodosEmpleados}"
+                th:value="${emp.id}"
+                th:text="${emp.apellidos + ', ' + emp.nombre + (emp.nombreJefe != null && emp.nombreJefe != '- Sin Jefe -' ? ' (Jefe: ' + emp.nombreJefe + ')' : '')}">
+        </option>
+      </select>
+      <div th:if="${listaTodosEmpleados == null or #lists.isEmpty(listaTodosEmpleados)} and ${terminoBusqueda != null and !terminoBusqueda.isEmpty()}">
+        <p class="error" style="margin-top: 0.5rem;">No se encontraron empleados con el término: <strong th:text="${terminoBusqueda}"></strong></p>
+      </div>
+    </div>
+    <button type="button" onclick="irACrearNomina()" class="boton principal">Crear Nómina para Seleccionado</button>
+  </form>
+
+  <div style="margin-top: 2rem;">
+    <a th:href="@{/administrador/nominas/consultar}" class="boton secundario">Volver a Consulta de Nóminas</a>
+    <a th:href="@{/administrador/info}" class="boton secundario" style="margin-left:10px;">Volver al Área Personal</a>
+  </div>
+</div>
+
+<script>
+  function irACrearNomina() {
+    const empleadoId = document.getElementById('empleadoId').value;
+    if (empleadoId) {
+      window.location.href = '/administracion/administrador/nominas/empleado/' + empleadoId + '/crear-nomina';
+    } else {
+      alert('Por favor, seleccione un empleado de la lista.');
+    }
+  }
+</script>
+</body>
+</html>
