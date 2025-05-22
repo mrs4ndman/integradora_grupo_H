@@ -53,7 +53,7 @@ services:
     container_name: apache_webserver_container
     restart: unless-stopped
     ports:
-      - "8081:80" # Mapea el puerto 8081 del host al puerto 80 de Apache
+      - "80:80" # Mapea el puerto 8081 del host al puerto 80 de Apache
     volumes:
       # Monta el contenido de la carpeta ./apache_html (en tu host)
       # al directorio raíz de documentos de Apache dentro del contenedor.

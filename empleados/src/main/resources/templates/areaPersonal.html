@@ -33,8 +33,8 @@
 
     <div class="card-body text-center">
         <h5 class="card-title">Consultar Productos</h5>
-    <!--    <p >Busca y filtra productos en el catálogo.</p>-->
-        <a class="boton" th:href="@{/empleados/consulta-productos}" >Ir a Consulta de Productos</a>
+        <!--    <p >Busca y filtra productos en el catálogo.</p>-->
+        <a class="boton" th:href="@{/empleados/consulta-productos}">Ir a Consulta de Productos</a>
     </div>
 
     <hr>
@@ -44,7 +44,12 @@
     </div>
 
     <hr>
+    <div class="acciones">
+        <a class="boton principal" th:href="@{/empleados/nominas/mis-nominas}">Consultar Mis Nóminas</a>
+    </div>
+    <hr>
 
-        <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
+    <a class="boton secundario" th:href="@{/usuarios/logout}">Cerrar sesión</a>
 </div>
-</body></html>
+</body>
+</html>
