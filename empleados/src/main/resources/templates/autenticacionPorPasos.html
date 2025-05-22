@@ -187,8 +187,8 @@
             </button>
         </div>
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
-        <button type="submit" class="boton principal boton-100">Ingresar</button>
-        <a href="/usuarios/cambiar-password" style="display: block; margin: 10px 0;">¿Olvidaste tu
+        <button type="submit">Ingresar</button>
+        <a th:href="@{/usuarios/cambiar-password}" style="display: block; margin: 10px 0;">¿Olvidaste tu
             contraseña?</a>
     </form>
 
@@ -314,7 +314,6 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    // CSRF token si es necesario
                 },
                 body: 'emailAEliminar=' + encodeURIComponent(emailAEliminar)
             })
@@ -357,13 +356,13 @@
             emailInputContainer.style.display = 'none'; // Ocultar input
             contenedorSelect.style.display = 'block';     // Mostrar select
             loginsAnterioresSelect.setAttribute('required', 'required'); // Select es requerido
-            emailInput.removeAttribute('required'); // Input no es requerido (está oculto)
-            // Poner el valor seleccionado (si lo hay) en el input oculto
+            emailInput.removeAttribute('required'); // Input no es requerido
+
             actualizarEmailDesdeSelect();
         } else {
             // Estado inicial: No hay lista
             if (emailInputContainer) emailInputContainer.style.display = 'block'; // Mostrar input
-            if (contenedorSelect) contenedorSelect.style.display = 'none';     // Ocultar select (si existiera)
+            if (contenedorSelect) contenedorSelect.style.display = 'none';     // Ocultar select
             if (emailInput) emailInput.setAttribute('required', 'required'); // Input es requerido
             if (loginsAnterioresSelect) loginsAnterioresSelect.removeAttribute('required'); // Select no requerido
         }

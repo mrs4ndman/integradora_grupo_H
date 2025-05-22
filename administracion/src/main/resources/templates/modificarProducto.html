@@ -259,7 +259,7 @@
                         const responseData = await response.json().catch(() => ({}));
                         showAlert(responseData.message || 'Producto modificado exitosamente.', 'success');
                         setTimeout(() => {
-                            window.location.href = /*[[@{/administrador/consulta-productos}]]*/ '/administrador/consulta-productos';
+                            window.location.href = '/administrador/consulta-productos';
                         }, 2000);
 
                     } else {

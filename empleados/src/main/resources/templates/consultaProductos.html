@@ -6,7 +6,7 @@
   <title>Consulta de Productos - Empleados</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" th:href="@{/css/estilos.css}">
+<!--  <link rel="stylesheet" th:href="@{/css/estilos.css}">-->
 
   <style>
     body {
@@ -214,7 +214,7 @@
   const noProductsMessage = document.getElementById('noProductsMessage');
   const globalAlerts = document.getElementById('globalAlerts');
 
-  function showAlert(message, type = 'danger', duration = 7000) {
+  function mostrarAlert(message, type = 'danger', duration = 7000) {
     console.log(`Showing alert (${type}): ${message}`);
     const alertId = `alert-${Date.now()}`;
     const alertHtml = `
@@ -232,7 +232,7 @@
     }, duration);
   }
 
-  async function fetchFiltersData() {
+  async function fetchFiltrosData() {
     console.log('Fetching filter data...');
     try {
       const [catResponse, provResponse] = await Promise.all([
@@ -266,15 +266,15 @@
       console.log('Filter data fetched successfully.');
     } catch (error) {
       console.error("Error cargando datos para filtros:", error);
-      showAlert(`No se pudieron cargar los datos para los filtros: ${error.message}`);
+      mostrarAlert(`No se pudieron cargar los datos para los filtros: ${error.message}`);
     }
   }
 
-  function formatCurrency(value) {
+  function formatoMoneda(value) {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
   }
 
-  function renderTable(products) {
+  function renderizarTabla(products) {
     console.log('Rendering table with products:', products);
     productsTableBody.innerHTML = '';
     if (!products || products.length === 0) {
@@ -295,7 +295,7 @@
                 <tr>
                     <td class="text-center">${producto.id || 'N/A'}</td>
                     <td>${(producto.descripcion || '').substring(0,70)}${(producto.descripcion || '').length > 70 ? '...' : ''}</td>
-                    <td class="text-end">${producto.precio != null ? formatCurrency(producto.precio) : 'N/A'}</td>
+                    <td class="text-end">${producto.precio != null ? formatoMoneda(producto.precio) : 'N/A'}</td>
                     <td class="category-list">${categoriasHtml}</td>
                     <td>${producto.proveedorNombre || 'N/A'}</td>
                     <td>${producto.marca || 'N/A'}</td>
@@ -313,7 +313,7 @@
     });
   }
 
-  function renderPagination(pageData) {
+  function renderizarPaginacion(pageData) {
     paginationControls.innerHTML = '';
     if (!pageData || pageData.totalPages <= 0) {
       return;
@@ -339,13 +339,13 @@
         e.preventDefault();
         if (!link.parentElement.classList.contains('disabled')) {
           currentState.page = parseInt(link.dataset.page);
-          fetchProducts();
+          fetchProductos();
         }
       });
     });
   }
 
-  function updateSortIcons() {
+  function actualizarSortIcons() {
     document.querySelectorAll('.sortable-header-span').forEach(header => {
       const field = header.dataset.sortfield;
       const iconSpan = header.querySelector('.sort-icon');
@@ -358,7 +358,7 @@
     });
   }
 
-  async function fetchProducts() {
+  async function fetchProductos() {
     console.log('Fetching products with state:', JSON.stringify(currentState));
     loadingOverlay.classList.remove('d-none');
     noProductsMessage.classList.add('d-none');
@@ -399,9 +399,9 @@
       const pageData = await response.json();
       console.log('Page Data from API:', pageData);
 
-      renderTable(pageData.content);
-      renderPagination(pageData);
-      updateSortIcons();
+      renderizarTabla(pageData.content);
+      renderizarPaginacion(pageData);
+      actualizarSortIcons();
 
       if (!pageData.content || pageData.content.length === 0) {
         noProductsMessage.classList.remove('d-none');
@@ -410,7 +410,7 @@
 
     } catch (error) {
       console.error("Error fetching products:", error);
-      showAlert(`Error al cargar productos: ${error.message}`);
+      mostrarAlert(`Error al cargar productos: ${error.message}`);
       productsTableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-danger">Error al cargar productos. ${error.message}</td></tr>`;
     } finally {
       loadingOverlay.classList.add('d-none');
@@ -419,8 +419,8 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM fully loaded and parsed.');
-    fetchFiltersData();
-    fetchProducts();
+    fetchFiltrosData();
+    fetchProductos();
 
     searchForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -432,7 +432,7 @@
       currentState.proveedorIds = Array.from(document.getElementById('proveedorIds').selectedOptions).map(opt => opt.value);
       currentState.esPerecedero = document.getElementById('esPerecedero').value;
       currentState.page = 0;
-      fetchProducts();
+      fetchProductos();
     });
 
     resetFiltersButton.addEventListener('click', () => {
@@ -447,7 +447,7 @@
       currentState.proveedorIds = [];
       currentState.esPerecedero = '';
       currentState.page = 0;
-      fetchProducts();
+      fetchProductos();
     });
 
     document.querySelectorAll('.sortable-header-span').forEach(header => {
@@ -461,7 +461,7 @@
           currentState.sortDir = 'asc';
         }
         currentState.page = 0;
-        fetchProducts();
+        fetchProductos();
       });
     });
   });
