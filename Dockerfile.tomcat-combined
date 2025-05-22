@@ -1,0 +1,22 @@
+# Usa una imagen base de Tomcat con JDK 17 (o la versión que uses)
+FROM tomcat:latest
+
+# Argumentos para especificar las rutas a los archivos WAR relativos al contexto de construcción
+ARG EMPLEADOS_WAR_PATH
+ARG ADMINISTRACION_WAR_PATH
+
+# Directorio webapps de Tomcat
+WORKDIR /usr/local/tomcat/webapps
+
+# Copia el primer archivo WAR y renómbralo para definir su ruta de contexto (ej. /empleados)
+# Asegúrate de que la ruta de origen sea relativa al contexto de construcción (la raíz del proyecto)
+COPY ${EMPLEADOS_WAR_PATH} ./empleados.war
+
+# Copia el segundo archivo WAR y renómbralo para definir su ruta de contexto (ej. /administracion)
+COPY ${ADMINISTRACION_WAR_PATH} ./administracion.war
+
+# Expone el puerto por defecto de Tomcat
+EXPOSE 8080
+
+# Comando por defecto para iniciar Tomcat
+CMD ["catalina.sh", "run"]
