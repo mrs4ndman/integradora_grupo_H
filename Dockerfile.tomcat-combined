@@ -1,10 +1,6 @@
 # Usa una imagen base de Tomcat con JDK 17 (o la versión que uses)
 FROM tomcat:latest
 
-# Argumentos para especificar las rutas a los archivos WAR relativos al contexto de construcción
-# ARG EMPLEADOS_WAR_PATH
-# ARG ADMINISTRACION_WAR_PATH
-
 # Directorio webapps de Tomcat
 WORKDIR /usr/local/tomcat/webapps
 

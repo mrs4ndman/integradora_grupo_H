@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <title>Gestión de Etiquetas de Empleados</title>
 </head>
@@ -28,20 +30,26 @@
                 <h3 class="mb-0 h5">1. Nuevo Etiquetado de Empleado(s)</h3>
             </div>
             <div class="card-body">
-                <form th:action="@{/empleados/etiquetado/nuevo}" th:object="${asignarEtiquetaRequestDTO}" method="post" onsubmit="return confirm('¿Está seguro de que desea asignar esta etiqueta a los empleados seleccionados?');">
+                <form th:action="@{/empleados/etiquetado/nuevo}" th:object="${asignarEtiquetaRequestDTO}" method="post"
+                      onsubmit="return confirm('¿Está seguro de que desea asignar esta etiqueta a los empleados seleccionados?');">
                     <div class="mb-3">
                         <label for="nuevoEtiquetadoEmpleados" class="form-label">Seleccionar Empleado(s):</label>
-                        <select id="nuevoEtiquetadoEmpleados" th:field="*{empleadoIds}" multiple class="form-select" size="5" aria-label="Seleccionar empleados">
-                            <option th:each="emp : ${subordinados}" th:value="${emp.id}" th:text="${emp.nombreCompleto}"></option>
+                        <select id="nuevoEtiquetadoEmpleados" th:field="*{empleadoIds}" multiple class="form-select"
+                                size="5" aria-label="Seleccionar empleados">
+                            <option th:each="emp : ${subordinados}" th:value="${emp.id}"
+                                    th:text="${emp.nombreCompleto}"></option>
                         </select>
                         <small class="form-text text-muted">Ctrl+Click para seleccionar varios.</small>
-                        <div th:if="${#fields.hasErrors('empleadoIds')}" th:errors="*{empleadoIds}" class="text-danger small mt-1"></div>
+                        <div th:if="${#fields.hasErrors('empleadoIds')}" th:errors="*{empleadoIds}"
+                             class="text-danger small mt-1"></div>
                     </div>
 
                     <div class="mb-3">
                         <label for="nombreEtiqueta" class="form-label">Etiqueta:</label>
-                        <input type="text" id="nombreEtiqueta" th:field="*{nombreEtiqueta}" class="form-control" placeholder="Escribe la etiqueta" autocomplete="off"/>
-                        <div th:if="${#fields.hasErrors('nombreEtiqueta')}" th:errors="*{nombreEtiqueta}" class="text-danger small mt-1"></div>
+                        <input type="text" id="nombreEtiqueta" th:field="*{nombreEtiqueta}" class="form-control"
+                               placeholder="Escribe la etiqueta" autocomplete="off"/>
+                        <div th:if="${#fields.hasErrors('nombreEtiqueta')}" th:errors="*{nombreEtiqueta}"
+                             class="text-danger small mt-1"></div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">
@@ -59,23 +67,31 @@
                 <h3 class="mb-0 h5">2. Gestionar Etiquetas de un Empleado</h3>
             </div>
             <div class="card-body">
-                <form th:action="@{/empleados/etiquetado/eliminar}" th:object="${gestionarEtiquetasEmpleadoRequestDTO}" method="post" id="formGestionarEtiquetas" onsubmit="return prepararYConfirmarGestionEtiquetas();">
+                <form th:action="@{/empleados/etiquetado/eliminar}" th:object="${gestionarEtiquetasEmpleadoRequestDTO}"
+                      method="post" id="formGestionarEtiquetas" onsubmit="return prepararYConfirmarGestionEtiquetas();">
                     <div class="mb-3">
-                        <label for="gestionarEtiquetasEmpleadoSeleccionado" class="form-label">Seleccionar Empleado:</label>
-                        <select id="gestionarEtiquetasEmpleadoSeleccionado" th:field="*{empleadoId}" class="form-select" aria-label="Seleccionar empleado para gestionar etiquetas">
+                        <label for="gestionarEtiquetasEmpleadoSeleccionado" class="form-label">Seleccionar
+                            Empleado:</label>
+                        <select id="gestionarEtiquetasEmpleadoSeleccionado" th:field="*{empleadoId}" class="form-select"
+                                aria-label="Seleccionar empleado para gestionar etiquetas">
                             <option value="">-- Elije un empleado --</option>
-                            <option th:each="emp : ${subordinados}" th:value="${emp.id}" th:text="${emp.nombreCompleto}"></option>
+                            <option th:each="emp : ${subordinados}" th:value="${emp.id}"
+                                    th:text="${emp.nombreCompleto}"></option>
                         </select>
-                        <div th:if="${#fields.hasErrors('empleadoId')}" th:errors="*{empleadoId}" class="text-danger small mt-1"></div>
+                        <div th:if="${#fields.hasErrors('empleadoId')}" th:errors="*{empleadoId}"
+                             class="text-danger small mt-1"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Etiquetas Actuales del Empleado (selecciona las que quieres MANTENER):</label>
-                        <div id="etiquetasActualesEmpleadoCheckboxes" class="p-2 border rounded bg-white" style="min-height: 100px;">
+                        <label class="form-label">Etiquetas Actuales del Empleado (selecciona las que quieres
+                            MANTENER):</label>
+                        <div id="etiquetasActualesEmpleadoCheckboxes" class="p-2 border rounded bg-white"
+                             style="min-height: 100px;">
                             <p class="text-muted">Selecciona un empleado para ver sus etiquetas.</p>
                         </div>
                         <input type="hidden" name="etiquetaIdsAMantener" id="hiddenEtiquetasAMantener"/>
-                        <div th:if="${#fields.hasErrors('etiquetaIdsAMantener')}" th:errors="*{etiquetaIdsAMantener}" class="text-danger small mt-1"></div>
+                        <div th:if="${#fields.hasErrors('etiquetaIdsAMantener')}" th:errors="*{etiquetaIdsAMantener}"
+                             class="text-danger small mt-1"></div>
                     </div>
 
                     <button type="submit" class="btn btn-info text-white">
@@ -94,54 +110,87 @@
             </div>
             <div class="card-body">
                 <p class="card-text">Asocia etiquetas existentes a un conjunto de subordinados.</p>
-                <form th:action="@{/empleados/etiquetado/masivo}" th:object="${etiquetadoMasivoRequestDTO}" method="post" id="formEtiquetadoMasivo" onsubmit="return confirmarEtiquetadoMasivo();">
+                <form th:action="@{/empleados/etiquetado/masivo}" th:object="${etiquetadoMasivoRequestDTO}"
+                      method="post" id="formEtiquetadoMasivo" onsubmit="return confirmarEtiquetadoMasivo();">
                     <div class="row">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <h4 class="h6">Empleados</h4>
                             <div class="d-flex flex-column flex-md-row align-items-stretch gap-3">
                                 <div class="flex-grow-1">
-                                    <label for="masivoEmpleadosDisponibles" class="form-label small">Disponibles:</label>
-                                    <select id="masivoEmpleadosDisponibles" multiple class="form-select" size="8" title="Empleados disponibles">
-                                        <option th:each="emp : ${subordinados}" th:value="${emp.id}" th:text="${emp.nombreCompleto}"></option>
+                                    <label for="masivoEmpleadosDisponibles"
+                                           class="form-label small">Disponibles:</label>
+                                    <select id="masivoEmpleadosDisponibles" multiple class="form-select" size="8"
+                                            title="Empleados disponibles">
+                                        <option th:each="emp : ${subordinados}" th:value="${emp.id}"
+                                                th:text="${emp.nombreCompleto}"></option>
                                     </select>
                                 </div>
                                 <div class="d-flex flex-md-column justify-content-center align-items-center gap-2 my-2 my-md-0">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEmpleadosDisponibles', 'masivoEmpleadosSeleccionados', false)" title="Pasar seleccionado"><i class="bi bi-chevron-right"></i></button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEmpleadosDisponibles', 'masivoEmpleadosSeleccionados', true)" title="Pasar todos"><i class="bi bi-chevron-double-right"></i></button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEmpleadosSeleccionados', 'masivoEmpleadosDisponibles', false)" title="Devolver seleccionado"><i class="bi bi-chevron-left"></i></button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEmpleadosSeleccionados', 'masivoEmpleadosDisponibles', true)" title="Devolver todos"><i class="bi bi-chevron-double-left"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEmpleadosDisponibles', 'masivoEmpleadosSeleccionados', false)"
+                                            title="Pasar seleccionado"><i class="bi bi-chevron-right"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEmpleadosDisponibles', 'masivoEmpleadosSeleccionados', true)"
+                                            title="Pasar todos"><i class="bi bi-chevron-double-right"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEmpleadosSeleccionados', 'masivoEmpleadosDisponibles', false)"
+                                            title="Devolver seleccionado"><i class="bi bi-chevron-left"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEmpleadosSeleccionados', 'masivoEmpleadosDisponibles', true)"
+                                            title="Devolver todos"><i class="bi bi-chevron-double-left"></i></button>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <label for="masivoEmpleadosSeleccionados" class="form-label small">Seleccionados:</label>
-                                    <select id="masivoEmpleadosSeleccionados" th:field="*{empleadoIds}" multiple class="form-select" size="8" title="Empleados seleccionados"></select>
+                                    <label for="masivoEmpleadosSeleccionados"
+                                           class="form-label small">Seleccionados:</label>
+                                    <select id="masivoEmpleadosSeleccionados" th:field="*{empleadoIds}" multiple
+                                            class="form-select" size="8" title="Empleados seleccionados"></select>
                                 </div>
                             </div>
-                            <div th:if="${#fields.hasErrors('empleadoIds')}" th:errors="*{empleadoIds}" class="text-danger small mt-1"></div>
-                            <div id="errorMasivoEmpleados" class="text-danger small mt-1" style="display:none;">Debe seleccionar al menos un empleado.</div>
+                            <div th:if="${#fields.hasErrors('empleadoIds')}" th:errors="*{empleadoIds}"
+                                 class="text-danger small mt-1"></div>
+                            <div id="errorMasivoEmpleados" class="text-danger small mt-1" style="display:none;">Debe
+                                seleccionar al menos un empleado.
+                            </div>
                         </div>
 
                         <div class="col-md-6">
                             <h4 class="h6">Etiquetas Disponibles (Globales)</h4>
                             <div class="d-flex flex-column flex-md-row align-items-stretch gap-3">
                                 <div class="flex-grow-1">
-                                    <label for="masivoEtiquetasDisponibles" class="form-label small">Disponibles:</label>
-                                    <select id="masivoEtiquetasDisponibles" multiple class="form-select" size="8" title="Etiquetas disponibles (globales)">
-                                        <option th:each="et : ${etiquetasParaMasivo}" th:value="${et.id}" th:text="${et.nombre}"></option>
+                                    <label for="masivoEtiquetasDisponibles"
+                                           class="form-label small">Disponibles:</label>
+                                    <select id="masivoEtiquetasDisponibles" multiple class="form-select" size="8"
+                                            title="Etiquetas disponibles (globales)">
+                                        <option th:each="et : ${etiquetasParaMasivo}" th:value="${et.id}"
+                                                th:text="${et.nombre}"></option>
                                     </select>
                                 </div>
                                 <div class="d-flex flex-md-column justify-content-center align-items-center gap-2 my-2 my-md-0">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEtiquetasDisponibles', 'masivoEtiquetasSeleccionadas', false)" title="Pasar seleccionada"><i class="bi bi-chevron-right"></i></button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEtiquetasDisponibles', 'masivoEtiquetasSeleccionadas', true)" title="Pasar todas"><i class="bi bi-chevron-double-right"></i></button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEtiquetasSeleccionadas', 'masivoEtiquetasDisponibles', false)" title="Devolver seleccionada"><i class="bi bi-chevron-left"></i></button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="transferirOpciones('masivoEtiquetasSeleccionadas', 'masivoEtiquetasDisponibles', true)" title="Devolver todas"><i class="bi bi-chevron-double-left"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEtiquetasDisponibles', 'masivoEtiquetasSeleccionadas', false)"
+                                            title="Pasar seleccionada"><i class="bi bi-chevron-right"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEtiquetasDisponibles', 'masivoEtiquetasSeleccionadas', true)"
+                                            title="Pasar todas"><i class="bi bi-chevron-double-right"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEtiquetasSeleccionadas', 'masivoEtiquetasDisponibles', false)"
+                                            title="Devolver seleccionada"><i class="bi bi-chevron-left"></i></button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="transferirOpciones('masivoEtiquetasSeleccionadas', 'masivoEtiquetasDisponibles', true)"
+                                            title="Devolver todas"><i class="bi bi-chevron-double-left"></i></button>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <label for="masivoEtiquetasSeleccionadas" class="form-label small">Seleccionadas:</label>
-                                    <select id="masivoEtiquetasSeleccionadas" th:field="*{etiquetaIds}" multiple class="form-select" size="8" title="Etiquetas seleccionadas"></select>
+                                    <label for="masivoEtiquetasSeleccionadas"
+                                           class="form-label small">Seleccionadas:</label>
+                                    <select id="masivoEtiquetasSeleccionadas" th:field="*{etiquetaIds}" multiple
+                                            class="form-select" size="8" title="Etiquetas seleccionadas"></select>
                                 </div>
                             </div>
-                            <div th:if="${#fields.hasErrors('etiquetaIds')}" th:errors="*{etiquetaIds}" class="text-danger small mt-1"></div>
-                            <div id="errorMasivoEtiquetas" class="text-danger small mt-1" style="display:none;">Debe seleccionar al menos una etiqueta.</div>
+                            <div th:if="${#fields.hasErrors('etiquetaIds')}" th:errors="*{etiquetaIds}"
+                                 class="text-danger small mt-1"></div>
+                            <div id="errorMasivoEtiquetas" class="text-danger small mt-1" style="display:none;">Debe
+                                seleccionar al menos una etiqueta.
+                            </div>
                         </div>
                     </div>
                     <hr class="my-4">
@@ -167,23 +216,21 @@
         const checkboxesDiv = document.getElementById('etiquetasActualesEmpleadoCheckboxes');
 
         if (selectGestionarEmpleado && checkboxesDiv) {
-            selectGestionarEmpleado.addEventListener('change', function() {
+            selectGestionarEmpleado.addEventListener('change', function () {
                 const empleadoId = this.value;
                 checkboxesDiv.innerHTML = '';
                 if (!empleadoId) {
                     checkboxesDiv.innerHTML = '<p class="text-muted">Selecciona un empleado para ver sus etiquetas.</p>';
                     const hiddenInput = document.getElementById('hiddenEtiquetasAMantener');
-                    if(hiddenInput) hiddenInput.value = '';
+                    if (hiddenInput) hiddenInput.value = '';
                     return;
                 }
-                const basePath = contextPath.endsWith('/') ? contextPath : (contextPath === '' ? '' : contextPath + '/');
-                fetch(basePath + `/empleados/empleados/etiquetado/api/empleado/${empleadoId}/etiquetas`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok: ' + response.statusText);
-                        }
-                        return response.json();
-                    })
+                fetch("/empleados/empleados/etiquetado/api/empleado/${empleadoId}/etiquetas").then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
                     .then(data => {
                         if (data.length > 0) {
                             data.forEach(etiqueta => {
@@ -216,7 +263,7 @@
                         console.error('Error al cargar etiquetas del empleado:', error);
                         checkboxesDiv.innerHTML = '<p class="text-danger">Error al cargar etiquetas. Inténtalo de nuevo.</p>';
                         const hiddenInput = document.getElementById('hiddenEtiquetasAMantener');
-                        if(hiddenInput) hiddenInput.value = '';
+                        if (hiddenInput) hiddenInput.value = '';
                     });
             });
         }
@@ -235,7 +282,7 @@
         }
 
         if (checkboxesDiv) {
-            checkboxesDiv.addEventListener('change', function(event) {
+            checkboxesDiv.addEventListener('change', function (event) {
                 if (event.target.type === 'checkbox') {
                     actualizarHiddenEtiquetasAMantener();
                 }
@@ -270,7 +317,7 @@
 
             opcionesATransferir.forEach(option => {
                 let yaExiste = false;
-                for(let i=0; i < destinoSelect.options.length; i++) {
+                for (let i = 0; i < destinoSelect.options.length; i++) {
                     if (destinoSelect.options[i].value === option.value) {
                         yaExiste = true;
                         break;
@@ -302,8 +349,8 @@
             const errorEtiquetas = document.getElementById('errorMasivoEtiquetas');
 
             let valido = true;
-            if(errorEmpleados) errorEmpleados.style.display = 'none';
-            if(errorEtiquetas) errorEtiquetas.style.display = 'none';
+            if (errorEmpleados) errorEmpleados.style.display = 'none';
+            if (errorEtiquetas) errorEtiquetas.style.display = 'none';
 
             if (empleadosSeleccionadosSelect) {
                 for (let i = 0; i < empleadosSeleccionadosSelect.options.length; i++) {
@@ -317,11 +364,11 @@
             }
 
             if (!empleadosSeleccionadosSelect || empleadosSeleccionadosSelect.options.length === 0) {
-                if(errorEmpleados) errorEmpleados.style.display = 'block';
+                if (errorEmpleados) errorEmpleados.style.display = 'block';
                 valido = false;
             }
             if (!etiquetasSeleccionadasSelect || etiquetasSeleccionadasSelect.options.length === 0) {
-                if(errorEtiquetas) errorEtiquetas.style.display = 'block';
+                if (errorEtiquetas) errorEtiquetas.style.display = 'block';
                 valido = false;
             }
 
@@ -361,9 +408,12 @@
             if (empleadosDisponiblesSelect) empleadosDisponiblesSelect.selectedIndex = -1;
             if (etiquetasDisponiblesSelect) etiquetasDisponiblesSelect.selectedIndex = -1;
         }
+
         /*]]>*/
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
 </div>
 </body>
 </html>
