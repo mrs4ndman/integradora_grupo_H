@@ -12,6 +12,8 @@ import org.grupo_h.comun.entity.Usuario;
 import org.grupo_h.comun.repository.EmpleadoRepository;
 import org.grupo_h.comun.repository.UsuarioRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,6 +40,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final UsuarioRepository usuarioRepository;
     @Autowired
     private final ModelMapper modelMapper;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Constructor para la inyección de dependencias.
@@ -235,8 +239,6 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
     @Override
     public Optional<Empleado> buscarPorDni(String dni) {
-        System.err.println("Estoy en el Servicio");
-        System.out.println("Hola");
         return empleadosRepository.findByNumeroDocumentoAndActivoTrue(dni);
     }
 
@@ -256,12 +258,19 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
     @Transactional
     @Override
-    public void eliminarPorDni(String dni) {
-        Optional<Empleado> opt = empleadosRepository.findByNumeroDocumentoAndActivoTrue(dni);
-        if (opt.isEmpty()) {
-            throw new EntityNotFoundException("Empleado no existe con DNI " + dni);
+    public void eliminarPorDni(UUID id) {
+        Optional<Empleado> empleadoOpt = empleadosRepository.findById(id);
+        if (empleadoOpt.isEmpty()) {
+            throw new EntityNotFoundException("Empleado no existe con id  " + id);
         }
-        empleadosRepository.delete(opt.get());
+        try {
+            empleadosRepository.delete(empleadoOpt.get());
+            log.warn("'Empleado borrado correctamente ' {}", empleadoOpt.get() );
+            System.out.println("Empleado borrado correctamente");
+        }catch (Exception e){
+            log.warn("'Excepcion al borrar Empleado ' {}", e.getMessage());
+            System.out.println("Empleado no borrado");
+        }
     }
 
     @Override

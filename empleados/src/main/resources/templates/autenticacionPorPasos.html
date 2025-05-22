@@ -23,7 +23,8 @@
             border-radius: 5px;
             padding: 40px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 350px;
+            max-width: 600px;
+            width: 500px;
             text-align: center;
         }
 
@@ -32,10 +33,11 @@
             margin-bottom: 20px;
             font-weight: bold;
         }
-        a{
-            text-decoration: none;
-            color: #000;
-        }
+
+        /*a {*/
+        /*    text-decoration: none;*/
+        /*    color: #000;*/
+        /*}*/
 
         input[type="text"], input[type="password"] {
             width: 100%;
@@ -47,29 +49,29 @@
             margin-bottom: 10px;
         }
 
-        button {
-            background-color: #f8f9fa;
-            color: #000000;
-            border: 1px solid #ccc;
-            padding: 10px;
-            font-size: 14px;
-            border-radius: 3px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
+        /*button {*/
+        /*    background-color: #f8f9fa;*/
+        /*    color: #000000;*/
+        /*    border: 1px solid #ccc;*/
+        /*    padding: 10px;*/
+        /*    font-size: 14px;*/
+        /*    border-radius: 3px;*/
+        /*    cursor: pointer;*/
+        /*    width: 100%;*/
+        /*    margin-top: 10px;*/
+        /*}*/
 
-        .btn {
-            background-color: #f8f9fa;
-            color: #000000;
-            border: 1px solid #ccc;
-            padding: 10px;
-            font-size: 14px;
-            border-radius: 3px;
-            cursor: pointer;
-            width: 94%;
-            margin-top: 10px;
-        }
+        /*.btn {*/
+        /*    background-color: #f8f9fa;*/
+        /*    color: #000000;*/
+        /*    border: 1px solid #ccc;*/
+        /*    padding: 10px;*/
+        /*    font-size: 14px;*/
+        /*    border-radius: 3px;*/
+        /*    cursor: pointer;*/
+        /*    width: 94%;*/
+        /*    margin-top: 10px;*/
+        /*}*/
 
         .error-message {
             color: red;
@@ -112,7 +114,8 @@
             outline: none;
         }
     </style>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
 </head>
 <body>
 <div class="container">
@@ -133,9 +136,10 @@
                     </th:block>
                 </select>
             </div>
-            <div>
-                <button type="button" onclick="eliminarUsuarioSeleccionado()">Eliminar Seleccionado</button>
-                <button type="button" onclick="mostrarInputManual()">Introducir email manualmente</button>
+            <div class="btn-form">
+                <button type="button" onclick="eliminarUsuarioSeleccionado()" class="boton foto">Eliminar Seleccionado
+                </button>
+                <button type="button" onclick="mostrarInputManual()" class="boton foto">Introducir email</button>
             </div>
             <br>
         </div>
@@ -144,7 +148,9 @@
              th:style="${not #lists.isEmpty(loginsAnteriores)} ? 'display: none;' : 'display: block;'">
             <label for="email">Email del usuario:</label>
             <input type="text" id="email" name="email">
-            <button th:if="${not #lists.isEmpty(loginsAnteriores)}" type="button" onclick="mostrarListaUsuarios()">Volver a la lista de usuarios</button>
+            <button th:if="${not #lists.isEmpty(loginsAnteriores)}" type="button" onclick="mostrarListaUsuarios()" class="boton secundario boton-100">
+                Volver a la lista de usuarios
+            </button>
         </div>
 
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
@@ -154,9 +160,15 @@
             <p>Has cerrado sesión desde: <a th:href="${logoutRefererUrl}" th:text="${logoutRefererText}"></a></p>
         </div>
 
-        <button type="submit">Siguiente</button>
-        <div class="btn">
-            <a th:href="@{/usuarios/registro}" >Registrar Usuario</a>
+
+        <div class="btn-inicio-sesion">
+            <hr>
+
+            <button class="boton principal boton-100" type="submit">Siguiente</button>
+
+            <hr>
+
+            <a class="boton secundario boton-100" th:href="@{/usuarios/registro}">Registrar Usuario</a>
         </div>
 
     </form>
@@ -169,12 +181,13 @@
         <div class="password-wrapper">
             <label for="contrasena">Contraseña</label>
             <input type="password" id="contrasena" name="contrasena" class="clase-password-objetivo" required>
-            <button type="button" class="toggle-password" onclick="mostrarContraseña(this)" aria-label="Mostrar u ocultar contraseña">
+            <button type="button" class="toggle-password" onclick="mostrarContraseña(this)"
+                    aria-label="Mostrar u ocultar contraseña">
                 <i class="bi bi-eye-fill"></i>
             </button>
         </div>
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
-        <button type="submit">Ingresar</button>
+        <button type="submit" class="boton principal boton-100">Ingresar</button>
         <a href="/usuarios/cambiar-password" style="display: block; margin: 10px 0;">¿Olvidaste tu
             contraseña?</a>
     </form>
@@ -186,13 +199,15 @@
             <div class="password-wrapper">
                 <label for="nuevaContraseña">Nueva Contraseña:</label>
                 <input type="password" id="nuevaContraseña" class="clase-password-objetivo"
-                       th:field="*{nuevaContraseña}"  required autofocus="autofocus"
+                       th:field="*{nuevaContraseña}" required autofocus="autofocus"
                        th:errorclass="is-invalid"/>
-                <button type="button" class="toggle-password" onclick="mostrarContraseña(this)" aria-label="Mostrar u ocultar contraseña">
+                <button type="button" class="toggle-password" onclick="mostrarContraseña(this)"
+                        aria-label="Mostrar u ocultar contraseña">
                     <i class="bi bi-eye-fill"></i>
                 </button>
-                <div class="error-message" th:if="${#fields.hasErrors('nuevaContraseña')}" th:errors="*{nuevaContraseña}">
-                Error en la contraseña
+                <div class="error-message" th:if="${#fields.hasErrors('nuevaContraseña')}"
+                     th:errors="*{nuevaContraseña}">
+                    Error en la contraseña
                 </div>
             </div>
             <div class="password-wrapper">
@@ -200,19 +215,27 @@
                 <input type="password" id="confirmarNuevaContraseña" class="clase-password-objetivo"
                        th:field="*{confirmarNuevaContraseña}" required
                        th:errorclass="is-invalid"/>
-                <button type="button" class="toggle-password" onclick="mostrarContraseña(this)" aria-label="Mostrar u ocultar contraseña">
+                <button type="button" class="toggle-password" onclick="mostrarContraseña(this)"
+                        aria-label="Mostrar u ocultar contraseña">
                     <i class="bi bi-eye-fill"></i>
                 </button>
-                <div class="error-message" th:if="${#fields.hasErrors('confirmarNuevaContraseña')}" th:errors="*{confirmarNuevaContraseña}">
-            Error en la confirmación
-            </div>
+                <div class="error-message" th:if="${#fields.hasErrors('confirmarNuevaContraseña')}"
+                     th:errors="*{confirmarNuevaContraseña}">
+                    Error en la confirmación
+                </div>
             </div>
             <div th:if="${error}" class="error-message" th:text="${error}"></div>
-            <button type="submit">Guardar Nueva Contraseña</button>
+
+            <hr>
+
+            <button type="submit" class="boton principal boton-100">Guardar Nueva Contraseña</button>
+
+            <hr>
+
+            <div>
+                <a th:href="@{/usuarios/inicio-sesion}" class="boton secundario">Cancelar</a>
+            </div>
         </form>
-        <div>
-            <a th:href="@{/usuarios/inicio-sesion}">Cancelar</a>
-        </div>
     </div>
 
 </div>

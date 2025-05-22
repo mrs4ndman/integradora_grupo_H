@@ -18,6 +18,7 @@ import org.grupo_h.comun.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -97,6 +98,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         log.info("La fotografia del empleado se procesó correctamente");
 
+        // Ma   peo de Tarjeta de Crédito
         if (empleado.getTarjetas() != null && empleado.getTarjetas().getTipoTarjetaCredito() != null) {
             String nombreTipoTarjeta = empleado.getTarjetas().getTipoTarjetaCredito().getNombreTipoTarjeta();
             if (nombreTipoTarjeta != null && !nombreTipoTarjeta.isEmpty()) {
@@ -149,8 +151,14 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                 throw new RuntimeException("Entidad bancaria no válida o no proporcionada.");
             }
 
+
+            try{
             // Persistir cuenta corriente
             cuentaCorrienteRepository.save(cuentaCorriente);
+            log.info("Datos Guardados en Cuenta Corriente");
+            }catch (Exception e) {
+                log.info("Excepcion: " + e.getMessage());
+            }
 
             // Asignar la cuenta ya persistida al empleado
             empleado.setCuentaCorriente(cuentaCorriente);
@@ -159,12 +167,15 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         try {
             // Persistir el empleado
+            log.info("Datos del empleado guaradados correctamente");
             return empleadosRepository.save(empleado);
 
         } catch (NonUniqueObjectException e) {
+            log.warn("Datos del empleado no han sido guardados");
             // Si el usuario intenta registrarse de nuevo como empleado
             throw new EntidadDuplicadaEnSesionException("No puedes guardar más datos, ya existe una instancia con el mismo identificador en la sesión actual");
         }
+
     }
 
     @Override

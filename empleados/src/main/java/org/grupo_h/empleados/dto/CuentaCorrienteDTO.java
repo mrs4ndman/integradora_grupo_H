@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosFinancieros;
 
 /**
  * DTO que representa los datos de una cuenta corriente.
@@ -15,9 +16,10 @@ public class CuentaCorrienteDTO {
     /**
      * Número de la cuenta corriente. Debe tener exactamente 20 caracteres.
      */
-    @NotBlank(message = "{Validacion.numeroCuenta.NotBlank}")
+    @NotBlank(message = "{Validacion.numeroCuenta.NotBlank}",
+    groups = DatosFinancieros.class)
     @Pattern(regexp = "^[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}$",
-            message = "{Validacion.numeroCuenta.IBAN}")
+            message = "{Validacion.numeroCuenta.IBAN}",groups = DatosFinancieros.class)
     private String numeroCuentaDTO;
 
 

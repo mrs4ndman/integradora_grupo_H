@@ -10,7 +10,6 @@
 <label>
     <input type="checkbox" id="quitaEstilos" onchange="alternarEstilos()"> Quitar estilos
 </label>
-<h2 th:text="#{Titulo.datosFinancieros}"/>
 
 <!-- Se muestra un mensaje de éxito si lo hay -->
 <div th:if="${param.success}">
@@ -22,9 +21,13 @@
     <p style="color: red;" th:text="${error}"></p>
 </div>
 
+<h2>Registro de Empleado </h2>
+
+<!--NavBar-->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
 <div class="contenedor-principal">
-    <!--NavBar-->
-    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <h2 th:text="#{Titulo.datosFinancieros}"/>
 
     <form th:action="@{/empleados/registro-financiero}" th:object="${empleadoRegistroDTO}" method="post" id="formulario"
           enctype="multipart/form-data">
@@ -34,6 +37,7 @@
             <p class="error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
         </div>
 
+        <h2 th:text="#{Titulo.cuentaCorriente}"/>
 
         <div>
             <span style="color:red">&#8226;</span> <label for="entidadBancaria"
@@ -95,7 +99,7 @@
         <span style="color:red">&#8226;</span> <label for="mesCaducidadTarjetaCredito"
                                                       th:text="#{Datos.Economicos.mesCaducidad}"/>
         <select th:field="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" id="mesCaducidadTarjetaCredito">
-            <option value="" disabled selected>Seleccione el mes</option>
+            <option value="" selected>Seleccione el mes</option>
             <option value="01">01</option>
             <option value="02">02</option>
             <option value="03">03</option>
@@ -110,14 +114,13 @@
             <option value="12">12</option>
         </select>
         <span th:if="${#fields.hasErrors('tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO')}"
-              th:errors="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" style="color:red"></span>
+              th:errors="*{tarjetasCreditoDTO.mesCaducidadTarjetaCreditoDTO}" class="error"></span>
         <br><br>
 
 
-        <span style="color:red">&#8226;</span> <label for="anioCaducidadTarjetaCredito"
-                                                      th:text="#{Datos.Economicos.anioCaducidad}"/>
+        <span style="color:red">&#8226;</span> <label for="anioCaducidadTarjetaCredito" th:text="#{Datos.Economicos.anioCaducidad}"/>
         <select th:field="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" id="anioCaducidadTarjetaCredito">
-            <option value="" disabled selected>Seleccione el año</option>
+            <option value="" selected>Seleccione el año</option>
             <option th:each="anio : ${#numbers.sequence(#dates.year(#dates.createNow()), #dates.year(#dates.createNow()) + 20)}"
                     th:value="${anio}"
                     th:text="${anio}">
@@ -125,7 +128,7 @@
         </select>
 
         <span th:if="${#fields.hasErrors('tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO')}"
-              th:errors="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" style="color:red"></span>
+              th:errors="*{tarjetasCreditoDTO.anioCaducidadTarjetaCreditoDTO}" class="error"></span>
         <br><br>
 
         <span style="color:red">&#8226;</span> <label for="cvc" th:text="#{Datos.Economicos.cvc}"/>
@@ -133,7 +136,9 @@
         <div th:if="${#fields.hasErrors('tarjetasCreditoDTO.cvcDTO')}"
              th:errors="*{tarjetasCreditoDTO.cvcDTO}" class="error"></div>
 
-        <br><br>
+
+
+        <hr>
 
         <div class="btn-form">
             <a class="boton secundario" th:href="@{/usuarios/logout}">logout</a>
@@ -152,6 +157,13 @@
                    class="boton principal"
                    th:value="#{Boton.siguiente}">
 
+        </div>
+
+        <hr>
+
+        <div class="btn-form">
+            <a class="boton secundario" th:href="@{/usuarios/info}"> < Área Personal</a>
+            <a class="boton secundario" th:href="@{/usuarios/logout}">Logout</a>
         </div>
 
     </form>

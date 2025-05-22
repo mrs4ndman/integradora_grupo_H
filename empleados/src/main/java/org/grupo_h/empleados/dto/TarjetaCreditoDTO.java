@@ -1,10 +1,7 @@
 package org.grupo_h.empleados.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.grupo_h.empleados.Validaciones.GruposValidaciones.DatosFinancieros;
 import org.hibernate.validator.constraints.LuhnCheck;
@@ -32,7 +29,7 @@ public class TarjetaCreditoDTO {
 
     @Pattern(regexp = "^\\d{4}$", message = "El año debe tener 4 dígitos",
     groups = DatosFinancieros.class)
-    @Min(value = 2025, message = "{Validacion.tarjetaCredito.anioMinimo}",
+    @Min(value = 2025, message = "{Validacion.tarjetaCredito.anioMinimno}",
     groups = DatosFinancieros.class)
     @Max(value = 2045, message = "{Validacion.tarjetaCredito.anioMaximo}",
     groups = DatosFinancieros.class)

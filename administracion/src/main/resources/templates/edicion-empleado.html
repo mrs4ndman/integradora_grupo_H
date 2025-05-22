@@ -3,54 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Editar Empleado</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            position: relative;
         }
-        h1 {
-            color: #333;
+
+        .foto-edicion {
+            position: absolute;
+            top: 10%;
+            left: 20%;
+            border: 1px solid #ddd;
+            padding: 5px;
         }
-        form {
-            margin-top: 20px;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error {
-            color: red;
-            font-size: 14px;
+
+        .btn-volver{
+            position: absolute;
+            top: -2%;
+            left: 3%;
         }
     </style>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script th:src="@{/js/script.js}"></script>
 </head>
 <body>
+<div>
+    <h2>Editar Empleado</h2>
+    <a th:href="@{/administrador/consulta-empleado}" class="boton secundario boton-10 btn-volver"> <span >&#8592;</span> consulta</a>
+</div>
 
-<h1>Editar Empleado</h1>
 
 <form th:action="@{/administrador/editar-empleado}" th:object="${empleado}" method="post" enctype="multipart/form-data">
+
+
     <label for="nombre">Nombre</label>
     <input type="text" th:field="*{nombre}" id="nombre" required/>
 
@@ -61,10 +47,10 @@
     <input type="text" th:field="*{edad}" id="edad" min="18" required/>
 
     <label for="numeroDocumento">DNI</label>
-    <input type="text" th:field="*{numeroDni}" id="numeroDocumento" />
+    <input type="text" th:field="*{numeroDni}" id="numeroDocumento"/>
 
     <label for="estado">Estado</label>
-    <input type="text" th:field="*{activo}" id="estado" />
+    <input type="text" th:field="*{activo}" id="estado"/>
 
     <label for="departamentoId">Departamento</label>
     <select th:field="*{nombreDepartamento}" id="departamentoId" required>
@@ -73,32 +59,34 @@
                 th:text="${departamento.nombreDept}"></option>
     </select>
 
-    <label>Foto actual</label>
-    <img th:if="${empleado.fotoBase64 != null}"
-         th:src="${empleado.fotoBase64}"
-         alt="Foto de [[${empleado.nombre}]]"
-         style="max-width:200px; max-height:200px; object-fit:cover;" />
+    <div class="acciones">
+        <!--        <label>Foto actual</label>-->
+        <img th:if="${empleado.fotoBase64 != null}"
+             th:src="${empleado.fotoBase64}"
+             alt="Foto de [[${empleado.nombre}]]"
+             style="max-width:200px; max-height:200px; object-fit:cover;"
+             class="foto-edicion"
+        />
+    </div>
 
 
+    <button type="submit" class="boton principal">Guardar cambios</button>
 
 
-
-    <button type="submit">Guardar cambios</button>
-
-<!--    <div th:if="${#fields.hasErrors('nombre')}" class="error">-->
-<!--        <p th:errors="*{nombre}">Nombre es obligatorio.</p>-->
-<!--    </div>-->
-<!--    <div th:if="${#fields.hasErrors('apellido')}" class="error">-->
-<!--        <p th:errors="*{apellido}">Apellidos son obligatorios.</p>-->
-<!--    </div>-->
-<!--    <div th:if="${#fields.hasErrors('edad')}" class="error">-->
-<!--        <p th:errors="*{edad}">Edad debe ser un número válido mayor de 18.</p>-->
-<!--    </div>-->
+    <!--    <div th:if="${#fields.hasErrors('nombre')}" class="error">-->
+    <!--        <p th:errors="*{nombre}">Nombre es obligatorio.</p>-->
+    <!--    </div>-->
+    <!--    <div th:if="${#fields.hasErrors('apellido')}" class="error">-->
+    <!--        <p th:errors="*{apellido}">Apellidos son obligatorios.</p>-->
+    <!--    </div>-->
+    <!--    <div th:if="${#fields.hasErrors('edad')}" class="error">-->
+    <!--        <p th:errors="*{edad}">Edad debe ser un número válido mayor de 18.</p>-->
+    <!--    </div>-->
 </form>
 
-<script >
+<script>
     $(document).ready(function () {
-        $('#fotografia').on('change', function (){
+        $('#fotografia').on('change', function () {
             // console.log(this.files);
 
             muestraMiniatura(this)
@@ -106,7 +94,7 @@
             function muestraMiniatura(fileInput) {
                 let file = fileInput.files[0];
                 let reader = new FileReader();
-                reader.onload= function (e){
+                reader.onload = function (e) {
                     $('#miniatura').attr('src', e.target.result)
                 }
                 reader.readAsDataURL(file);

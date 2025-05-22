@@ -58,6 +58,7 @@ public class EmpleadoDetalleDTO {
 
     // Información de cuenta corriente
     private CuentaCorriente cuentaCorriente;
+
 }
 
 // DTOs adicionales para las relaciones de Jefe y subordinados

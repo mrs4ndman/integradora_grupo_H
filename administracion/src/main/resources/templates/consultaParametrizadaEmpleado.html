@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <title>Búsqueda Empleados</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}" id="estilosCss">
+    <style>
+        a {
+            color: #000;
+            margin: 0 5px;
+            background: #fff;
+            box-shadow: -3px 2px rgba(0, 0, 0, .1);
+            border-radius: 0 10px 0 10px;
+            padding: 10px 46px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            background: #ededed;
+        }
+    </style>
 
 </head>
 <body>
@@ -20,13 +36,18 @@
     <div th:if="${error}" class="messages error" th:text="${error}"></div>
     <div th:if="${exito}" class="messages success" th:text="${exito}" id="exito"></div>
 
-    <div class="nav-links">
-    <a th:href="@{/administrador/consulta-empleado}" class="active-link">Consulta Avanzada Empleados</a> |
-    <a th:href="@{/administrador/gestion-estado-empleados}">Gestión Simple de Estado</a>
-</div>
-<form th:action="@{/administrador/consulta-empleado}" th:object="${filtro}" method="post">
-    <label for="nombreDTO">Nombre:</label>
-        <input type="text" th:field="*{nombreDTO}"id="nombreDTO" />
+
+    <div class="navbar">
+        <a th:href="@{/administrador/info}">Área Personal </a>
+        <a th:href="@{/administrador/consulta-empleado}" >Consulta Avanzada Empleados</a>
+        <a th:href="@{/administrador/gestion-estado-empleados}">Gestión Simple de Estado</a>
+    </div>
+    <form th:action="@{/administrador/consulta-empleado}" th:object="${filtro}" method="post">
+
+        <input type="hidden" name="id" th:field="*{id}">
+
+        <label for="nombreDTO">Nombre:</label>
+        <input type="text" th:field="*{nombreDTO}" id="nombreDTO"/>
 
         <label>DNI:</label>
         <input type="text" th:field="*{numeroDni}"/>
@@ -35,9 +56,9 @@
         <select th:field="*{departamentosDTO}" id="departamentoDTO" multiple="multiple">
             <option value="">Selecciona un departamento</option>
             <option th:each="departamento : ${departamentos}"
-                th:value="${departamento.id}"
-                th:text="${departamento.nombreDept}"></option>
-    </select>
+                    th:value="${departamento.id}"
+                    th:text="${departamento.nombreDept}"></option>
+        </select>
 
         <label>Edad mínima:</label>
         <input type="text" th:field="*{edadMin}"/>
@@ -51,75 +72,76 @@
         </div>
 
     </form>
+</div>
+<h2>Resultados:</h2>
+<div th:if="${resultados != null}" class="resultados">
 
-    <div th:if="${resultados != null}" class="resultados">
-        <h2>Resultados:</h2>
+    <div th:if="${!#lists.isEmpty(resultados)}">
+        <table class="tabla-datos">
+            <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th class="texto-centrado">Edad</th>
+                <th>Departamento</th>
+                <th>DNI</th>
+                <th>Estado</th>
+                <th>Foto</th>
+                <th class="texto-centrado">Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="emp : ${resultados}">
+                <td th:text="${emp.nombre}">Nombre</td>
+                <td th:text="${emp.apellidos}">Apellido</td>
+                <td class="texto-centrado" th:text="${emp.edad}">Edad</td>
+                <td th:text="${emp.nombreDepartamento}">Depto</td>
+                <td th:text="${emp.numeroDni}">DNI</td>
+                <td th:text="${emp.activo} == true ? 'Activo' : 'Inactivo'"></td>
+                <td><img th:if="${emp.fotoBase64 != ''}"
+                         th:src="${emp.fotoBase64}"
+                         style="width:50px;height:50px;object-fit:cover;" alt="foto_empleado"/></td>
+                <td class="texto-derecha">
+                    <div class="acciones">
+                        <a class="boton principal"
+                           th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
+                            Editar
+                        </a>
+                        <a class="boton secundario"
+                           th:href="@{'/administrador/borrar-empleado/' + ${emp.id}}">
+                            Borrar
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
 
-        <div th:if="${!#lists.isEmpty(resultados)}">
-            <table class="tabla-datos">
-                <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Apellidos</th>
-                    <th class="texto-centrado">Edad</th>
-                    <th>Departamento</th>
-                    <th>DNI</th>
-                    <th>Estado</th>
-                    <th>Foto</th>
-                    <th class="texto-centrado">Acciones</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="emp : ${resultados}">
-                    <td th:text="${emp.nombre}">Nombre</td>
-                    <td th:text="${emp.apellidos}">Apellido</td>
-                    <td class="texto-centrado" th:text="${emp.edad}">Edad</td>
-                    <td th:text="${emp.nombreDepartamento}">Depto</td>
-                    <td th:text="${emp.numeroDni}">DNI</td>
-                    <td th:text="${emp.activo} == true ? 'Activo' : 'Desactivo'"></td>Estado</td>
-                    <td><img th:if="${emp.fotoBase64 != ''}"
-                             th:src="${emp.fotoBase64}"
-                             style="width:50px;height:50px;object-fit:cover;" alt="foto_empleado"/></td>
-                    <td class="texto-derecha">
-                        <div class="acciones">
-                            <a class="boton principal" th:href="@{'/administrador/editar-empleado/' + ${emp.numeroDni}}">
-                                Editar
-                            </a>
-                            <a class="boton secundario"
-                               th:href="@{'/administrador/borrar-empleado/' + ${emp.numeroDni}}">
-                                Borrar
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-
-            <div class="pagination">
-                <a th:if="${currentPage > 0}"
-                   th:href="@{/administrador/consulta-empleado(page=${currentPage-1}, size=${pageSize})}">
-                    « Anterior
-                </a>
-                <span>Página [[${currentPage+1}]] de [[${totalPages}]]</span>
-                <a th:if="${currentPage+1 < totalPages}"
-                   th:href="@{/administrador/consulta-empleado(page=${currentPage+1}, size=${pageSize})}">
-                    Siguiente »
-                </a>
-            </div>
+        <div class="pagination">
+            <a th:if="${currentPage > 0}"
+               th:href="@{/administrador/consulta-empleado(page=${currentPage-1}, size=${pageSize})}">
+                « Anterior
+            </a>
+            <span>Página [[${currentPage+1}]] de [[${totalPages}]]</span>
+            <a th:if="${currentPage+1 < totalPages}"
+               th:href="@{/administrador/consulta-empleado(page=${currentPage+1}, size=${pageSize})}">
+                Siguiente »
+            </a>
         </div>
+    </div>
 
-        <div th:if="${#lists.isEmpty(resultados)}">
-            <p>No hay resultados para empleados activos con los criterios seleccionados.</p>
-        </div>
+    <div th:if="${#lists.isEmpty(resultados)}">
+        <p style="margin: 20px 0;">No hay resultados para empleados activos con los criterios seleccionados.</p>
     </div>
 </div>
 
+
 <script th:if="${exito}">
-    alert("Empleado actualizado correctamente");
+    alert([[${exito}]]);
 </script>
 
 <script th:if="${error}">
-    alert("Empleado no actualizado correctamente");
+    alert([[${error}]]);
 </script>
 </body>
 </html>
