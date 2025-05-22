@@ -22,48 +22,42 @@ services:
       start_period: 30s
 
   apps-tomcat: # Servicio Tomcat unificado
-    build:
-      context: . # El contexto es la raíz del proyecto, donde se encuentra Dockerfile.tomcat-combined
-      dockerfile: Dockerfile.tomcat-combined # Especifica el nuevo Dockerfile
-      args:
-        # Rutas a los archivos WAR relativas al contexto de construcción (.)
-        EMPLEADOS_WAR_PATH: ./empleados/build/libs/empleados.war
-        ADMINISTRACION_WAR_PATH: ./administracion/build/libs/administracion.war
+    # REEMPLAZA la siguiente línea con el nombre de tu imagen de Tomcat en Docker Hub
+    image: juanmananesprieto/apps-tomcat-integrada:latest
     container_name: apps_tomcat_container
     restart: unless-stopped
     ports:
-      # Mapea un solo puerto del host (ej. 8080) al puerto 8080 de Tomcat
-      # Tus aplicaciones estarán disponibles en http://localhost:8080/empleados y http://localhost:8080/administracion
       - "8080:8080"
     environment:
-      # Variables de entorno comunes para ambas aplicaciones Spring Boot
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-app-db:3306/mi_app_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: 'user_app'
       SPRING_DATASOURCE_PASSWORD: 'password_app_muy_seguro' # ¡CAMBIA ESTO!
       SPRING_JPA_HIBERNATE_DDL_AUTO: 'validate'
-      # CATALINA_OPTS: "-Xms512m -Xmx1024m" # Considera aumentar la memoria para dos aplicaciones
     depends_on:
       mysql-app-db:
-        condition: service_healthy # Espera a que mysql-app-db esté saludable
+        condition: service_healthy
     networks:
       - app-network
+    # healthcheck: # Opcional, si tu imagen de Tomcat tiene curl y quieres verificar las apps
+    #   test: [ "CMD", "curl", "-f", "http://localhost:8080/empleados/" ]
+    #   interval: 15s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 60s
 
   apache-webserver:
-    image: httpd:latest # Imagen oficial de Apache HTTP Server
+    # REEMPLAZA la siguiente línea con el nombre de tu imagen de Apache en Docker Hub
+    image: juanmananesprieto/mi-apache-personalizado:latest
     container_name: apache_webserver_container
     restart: unless-stopped
     ports:
-      - "80:80" # Mapea el puerto 8081 del host al puerto 80 de Apache
-    volumes:
-      # Monta el contenido de la carpeta ./apache_html (en tu host)
-      # al directorio raíz de documentos de Apache dentro del contenedor.
-      # DEBES CREAR la carpeta ./apache_html en la raíz de tu proyecto.
-      - ./apache:/usr/local/apache2/htdocs/
+      - "80:80" # Apache escuchando en el puerto 80 del host
+    # Ya no se necesita el 'volumes' aquí porque el contenido está en la imagen
     networks:
       - app-network
     depends_on:
-      mysql-app-db:
-        condition: service_healthy # Espera a que mysql-app-db esté saludable
+      mysql-app-db: # Dependencia cambiada
+        condition: service_healthy
 
 volumes:
   mysql_app_data:

@@ -1,0 +1,8 @@
+# Usar la imagen oficial de Apache httpd como base
+FROM httpd:latest
+
+# Copiar el contenido de tu carpeta local 'apache'
+# al directorio de documentos raíz de Apache en el contenedor
+COPY ./apache/ /usr/local/apache2/htdocs/
+
+# El puerto 80 ya está expuesto por la imagen base de httpd
