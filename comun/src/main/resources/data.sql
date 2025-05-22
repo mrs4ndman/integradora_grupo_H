@@ -148,14 +148,15 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
                       departamento_id, fecha_alta_en_BD, jefe_id,
-                      acepta_informacion, cuenta_corriente_id)
+                      acepta_informacion, cuenta_corriente_id, activo)
 VALUES (@uuid_usuario_empleado1,
         'Juan', 'Pérez García', NULL, 'M',
         '1980-07-22', 44, 'ES', 'Empleado experimentado en desarrollo de software.',
         @tipo_doc_dni, '12345678A', '+34', '600112233',
         @tipo_via_calle, 'Calle Mayor', 5, 'B', 1, 'Derecha',
         'Madrid', 'Comunidad de Madrid', '28001', 'cv_juan_perez.pdf',
-        @departamento_admin, CURRENT_DATE, NULL, true,@uuid_cuenta_corriente1 );
+        @departamento_admin, CURRENT_DATE, NULL,
+        true,@uuid_cuenta_corriente1, 1 );
 
 -- Datos Económicos para Empleado 1
 
@@ -190,14 +191,15 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
                       departamento_id, fecha_alta_en_BD, jefe_id,
-                      acepta_informacion, cuenta_corriente_id)
+                      acepta_informacion, cuenta_corriente_id, activo)
 VALUES (@uuid_usuario_empleado2,
         'María', 'López Fernández', NULL, 'F',
         '1990-10-15', 34, 'ES', 'Especialista en marketing digital.',
         @tipo_doc_dni, '17654321B', '+34', '600112234',
         @tipo_via_avenida, 'Avenida de la Paz', 18, 'C', 2, 'Derecha',
         'Madrid', 'Comunidad de Madrid', '28002', 'cv_maria_lopez.pdf',
-        @departamento_admin, CURRENT_DATE, NULL, true, @uuid_cuenta_corriente2);
+        @departamento_admin, CURRENT_DATE,
+        NULL, true, @uuid_cuenta_corriente2, 1);
 
 
 -- Datos Económicos para Empleado 2
@@ -232,14 +234,15 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
                       departamento_id, fecha_alta_en_BD, jefe_id,
-                      acepta_informacion, cuenta_corriente_id)
+                      acepta_informacion, cuenta_corriente_id, activo)
 VALUES (@uuid_usuario_empleado3,
         'Pedro', 'Sánchez Jiménez', NULL, 'M',
         '1985-03-25', 39, 'ES', 'Gerente de recursos humanos.',
         @tipo_doc_dni, '11223344C', '+34', '600112235',
         @tipo_via_paseo, 'Paseo de la Castellana', 23, 'D', 3, 'Izquierda',
         'Madrid', 'Comunidad de Madrid', '28003', 'cv_pedro_sanchez.pdf',
-        @departamento_venta, CURRENT_DATE, NULL, true, @uuid_cuenta_corriente3);
+        @departamento_venta, CURRENT_DATE,
+        NULL, true, @uuid_cuenta_corriente3, 1);
 
 -- Datos Económicos para Empleado 3
 
@@ -274,14 +277,15 @@ INSERT INTO empleado (id, nombre, apellidos, fotografia, codigo_genero,
                       tipo_via_direccion_ppal_id, nombre_via, numero, portal, planta, puerta,
                       localidad, region, cod_postal, archivo_nombre_original,
                       departamento_id, fecha_alta_en_BD, jefe_id,
-                      acepta_informacion, cuenta_corriente_id)
+                      acepta_informacion, cuenta_corriente_id, activo)
 VALUES (@uuid_usuario_empleado4,
         'Luisa', 'Martinez Sánchez', NULL, 'F',
         '1990-05-14', 34, 'ES', 'Especialista en desarrollo front-end.',
         @tipo_doc_dni, '87684321B', '+34', '612345678',
         @tipo_via_avenida, 'Avenida de la Constitución', 10, 'A', 2, 'Izquierda',
         'Sevilla', 'Andalucía', '41001', 'cv_maria_lopez.pdf',
-        @departamento_prep, CURRENT_DATE, @uuid_usuario_empleado1, true, @uuid_cuenta_corriente4);
+        @departamento_prep, CURRENT_DATE, @uuid_usuario_empleado1, true,
+        @uuid_cuenta_corriente4, 1);
 
 -- Datos Económicos para Empleado 4
 
