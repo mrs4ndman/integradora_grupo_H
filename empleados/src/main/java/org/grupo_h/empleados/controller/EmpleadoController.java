@@ -786,9 +786,9 @@ public class EmpleadoController {
         Sort.Direction currentSortDirection = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
 
         String baseUrlApi = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-        String apiUrlProductos = baseUrlApi + "/api/empleado/productos";
-        String apiUrlCategorias = baseUrlApi + "/api/empleado/productos/categorias";
-        String apiUrlProveedores = baseUrlApi + "/api/empleado/productos/proveedores";
+        String apiUrlProductos = baseUrlApi + "/empleados/api/empleado/productos";
+        String apiUrlCategorias = baseUrlApi + "/empleados/api/empleado/productos/categorias";
+        String apiUrlProveedores = baseUrlApi + "/empleados/api/empleado/productos/proveedores";
 
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(apiUrlProductos)

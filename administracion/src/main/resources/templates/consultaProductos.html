@@ -132,7 +132,7 @@
 </div>
 
 <script>
-    const API_BASE_URL = '/api/administrador/productos'; // Tu URL base
+    const API_BASE_URL = '/administracion/api/administrador/productos'; // Tu URL base
     const CATEGORIAS_API_URL = `${API_BASE_URL}/categorias`;
     const PROVEEDORES_API_URL = `${API_BASE_URL}/proveedores`;
 
@@ -278,8 +278,8 @@
                 const esPerecederoTexto = typeof producto.esPerecedero === 'boolean' ? (producto.esPerecedero ? 'Sí' : 'No') : 'N/A';
                 // const activoTexto = typeof producto.activo === 'boolean' ? (producto.activo ? '<span class="badge bg-success">Sí</span>' : '<span class="badge bg-danger">No</span>') : 'N/A'; // Si lo añades
 
-                const urlDetalle = `/administrador/productos/detalle/${id}`; // Ajusta si es necesario
-                const urlModificar = `/administrador/productos/modificar/${id}`; // Ajusta si es necesario
+                const urlDetalle = `/administracion/administrador/productos/detalle/${id}`; // Ajusta si es necesario
+                const urlModificar = `/administracion/administrador/productos/modificar/${id}`; // Ajusta si es necesario
                 const urlBorrarBase = API_BASE_URL; // Usar la URL base para la acción de borrar
 
                 const fila = `

@@ -114,9 +114,9 @@ public class GestionProductosController {
         Sort.Direction currentSortDirection = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
 
         String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
-        String apiUrl = baseUrl + "/api/administrador/productos";
-        String apiUrlCategorias = baseUrl + "/api/administrador/productos/categorias";
-        String apiUrlProveedores = baseUrl + "/api/administrador/productos/proveedores";
+        String apiUrl = baseUrl + "/administracion/api/administrador/productos";
+        String apiUrlCategorias = baseUrl + "/administracion/api/administrador/productos/categorias";
+        String apiUrlProveedores = baseUrl + "/administracion/api/administrador/productos/proveedores";
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(apiUrl)
                 .queryParam("page", page)

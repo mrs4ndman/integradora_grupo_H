@@ -201,7 +201,7 @@
     page: 0, size: 10, sortField: 'descripcion', sortDir: 'asc'
   };
 
-  const API_BASE_URL_EMPLEADOS ='/api/empleado';
+  const API_BASE_URL_EMPLEADOS ='/empleados/api/empleado';
   const API_PRODUCTS_URL = `${API_BASE_URL_EMPLEADOS}/productos`;
   const API_CATEGORIES_URL = `${API_BASE_URL_EMPLEADOS}/productos/categorias`;
   const API_PROVEEDORES_URL = `${API_BASE_URL_EMPLEADOS}/productos/proveedores`;
@@ -303,7 +303,7 @@
                     <td class="text-center">${producto.unidadesDisponibles != null ? producto.unidadesDisponibles : 'N/A'}</td>
                     <td class="text-center">${producto.esPerecedero != null ? (producto.esPerecedero ? 'Sí' : 'No') : 'N/A'}</td>
                     <td class="action-cell">
-                        <a href="/empleados/productos/detalle/${producto.id}" class="btn btn-info btn-sm" title="Ver Detalle">
+                        <a href="/empleados/empleados/productos/detalle/${producto.id}" class="btn btn-info btn-sm" title="Ver Detalle">
                             <i class="fas fa-eye"></i> Detalle
                         </a>
                     </td>

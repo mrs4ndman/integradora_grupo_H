@@ -274,8 +274,8 @@
 
       async function cargarSolicitudesUIPage(tipo, page = 0, size = 6) {
         const endpoint = tipo === 'recibidas'
-                ? `/api/empleados/colaboraciones/solicitudes/recibidas?page=${page}&size=${size}&sort=fechaSolicitud,DESC`
-                : `/api/empleados/colaboraciones/solicitudes/emitidas?page=${page}&size=${size}&sort=fechaSolicitud,DESC`;
+                ? `/empleados/api/empleados/colaboraciones/solicitudes/recibidas?page=${page}&size=${size}&sort=fechaSolicitud,DESC`
+                : `/empleados/api/empleados/colaboraciones/solicitudes/emitidas?page=${page}&size=${size}&sort=fechaSolicitud,DESC`;
         const container = tipo === 'recibidas' ? panesSolicitudesPageEl.recibidas : panesSolicitudesPageEl.emitidas;
         const paginacionContainer = tipo === 'recibidas' ? paginacionContainersPageEl.recibidas : paginacionContainersPageEl.emitidas;
 

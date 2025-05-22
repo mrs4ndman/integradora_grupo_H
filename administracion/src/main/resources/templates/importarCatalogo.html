@@ -47,11 +47,10 @@
 
         try {
             // Asegúrate de que la URL coincida con tu endpoint en CatalogoRestController
-            const response = await fetch('/api/administracion/catalogo/importar', {
+            const response = await fetch('/administracion/api/administracion/catalogo/importar', {
                 method: 'POST',
                 body: formData
-                // No necesitas 'Content-Type': 'multipart/form-data' aquí,
-                // el navegador lo establece automáticamente para FormData con archivos.
+
             });
 
             const result = await response.json(); // Siempre intentar parsear como JSON
